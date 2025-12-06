@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Register as Vendor — Agri B2B{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body p-5">
+                    <h2 class="fw-bold text-center mb-4 text-success"><i class="bi bi-shop me-2"></i>Vendor Registration</h2>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="{{ form.name.id_for_label }}">Shop / Business Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="{{ form.email.id_for_label }}">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="{{ form.password.id_for_label }}">Password</label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small">{{ form.password.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="{{ form.city.id_for_label }}">City / Location</label>
+                            {{ form.city }}
+                             {% if form.city.errors %}
+                                <div class="text-danger small">{{ form.city.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="{{ form.logo.id_for_label }}">Shop Logo (Optional)</label>
+                            {{ form.logo }}
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold">Register Business</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-success fw-bold">Login here</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Form styling helper */
+    input[type="text"], input[type="email"], input[type="password"], input[type="file"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    input:focus {
+        border-color: #2ecc71;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25);
+    }
+</style>
+{% endblock %}

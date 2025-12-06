@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.id }} - Vibe E-commerce{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-success text-white p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0 fw-bold">Order Details</h4>
+                        <span class="opacity-75">#{{ order.id }}</span>
+                    </div>
+                    <div class="text-end">
+                        <div class="fs-5 fw-bold">{{ order.created_at|date:"M d, Y" }}</div>
+                        <span class="badge bg-white text-success rounded-pill px-3">{{ order.get_status_display }}</span>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Progress Tracker (Visual enhancement) -->
+                    <div class="position-relative m-4">
+                        {% with status=order.status %}
+                        {% if status == 'ordered' %}
+                            {% assign width='25%' %}
+                        {% elif status == 'shipped' %}
+                            {% assign width='75%' %}
+                        {% elif status == 'delivered' %}
+                            {% assign width='100%' %}
+                        {% else %}
+                            {% assign width='15%' %}
+                        {% endif %}
+                        <div class="progress" style="height: 4px;">
+                             <div class="progress-bar bg-success" role="progressbar" style="width: {% if status == 'ordered' %}25%{% elif status == 'shipped' %}75%{% elif status == 'delivered' %}100%{% else %}15%{% endif %};" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        {% endwith %}
+                        <div class="d-flex justify-content-between position-absolute top-0 w-100 translate-middle-y">
+                            <span class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                <i class="bi bi-check"></i>
+                            </span>
+                            <span class="{% if order.status in 'ordered,shipped,delivered' %}bg-success text-white{% else %}bg-light text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                <i class="bi bi-box-seam"></i>
+                            </span>
+                             <span class="{% if order.status in 'shipped,delivered' %}bg-success text-white{% else %}bg-light text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                <i class="bi bi-truck"></i>
+                            </span>
+                             <span class="{% if order.status == 'delivered' %}bg-success text-white{% else %}bg-light text-muted border{% endif %} rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                <i class="bi bi-geo-alt"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2 text-muted small">
+                            <span>Placed</span>
+                            <span>Confirmed</span>
+                            <span>Shipped</span>
+                            <span>Delivered</span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted opacity-25">
+
+                    <!-- Customer Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-secondary text-uppercase small fw-bold mb-3">Billing Address</h6>
+                            <div class="text-dark">
+                                <strong>{{ order.first_name }} {{ order.last_name }}</strong><br>
+                                {{ order.address }}<br>
+                                {{ order.place }} - {{ order.zipcode }}<br>
+                                {{ order.phone }}<br>
+                                {{ order.email }}
+                            </div>
+                        </div>
+                         <div class="col-md-6 text-md-end mt-4 mt-md-0">
+                            <h6 class="text-secondary text-uppercase small fw-bold mb-3">Payment Info</h6>
+                            <div class="text-dark">
+                                <strong>Total Amount:</strong> <span class="text-success fw-bold fs-5">₹{{ order.paid_amount }}</span><br>
+                                <strong>Method:</strong> Card (Stripe)<br>
+                                <strong>Status:</strong> {% if order.paid %}<span class="text-success"><i class="bi bi-check-circle me-1"></i>Paid</span>{% else %}<span class="text-warning">Pending</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="table-responsive rounded-3 border">
+                        <table class="table mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="border-0 py-3 ps-4">Product</th>
+                                    <th class="border-0 py-3">Price</th>
+                                    <th class="border-0 py-3 text-center">Qty</th>
+                                    <th class="border-0 py-3 pe-4 text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="rounded-3 me-3 border" width="50" height="50" style="object-fit: cover;">
+                                            {% else %}
+                                            <div class="rounded-3 me-3 bg-light d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <a href="{% url 'product_detail' item.product.slug %}" class="text-decoration-none text-dark fw-bold">{{ item.product.name }}</a>
+                                                <div class="small text-muted">{{ item.product.vendor.name }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>₹{{ item.price }}</td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="pe-4 text-end fw-bold">₹{{ item.get_total_price }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr>
+                                    <td colspan="3" class="text-end py-3 fw-bold">Subtotal</td>
+                                    <td class="text-end py-3 pe-4">₹{{ order.paid_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end py-3 fw-bold border-0">Shipping</td>
+                                    <td class="text-end py-3 pe-4 border-0 text-success">Free</td>
+                                </tr>
+                                 <tr class="fw-bold fs-5">
+                                    <td colspan="3" class="text-end py-3">Total Paid</td>
+                                    <td class="text-end py-3 pe-4 text-success">₹{{ order.paid_amount }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light p-4 text-center">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-question-circle me-2"></i>Need Help?
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

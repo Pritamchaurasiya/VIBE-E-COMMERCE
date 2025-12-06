@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Contact Us — Agri B2B{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold text-center mb-5">Contact Us</h1>
+            
+            <div class="row mb-5">
+                <div class="col-md-4 text-center">
+                    <div class="p-4 bg-light rounded h-100">
+                        <i class="bi bi-geo-alt fs-1 text-success mb-3"></i>
+                        <h5>Visit Us</h5>
+                        <p class="text-muted small">Agri Park, IIT Madras Research Park, Chennai</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="p-4 bg-light rounded h-100">
+                        <i class="bi bi-envelope fs-1 text-success mb-3"></i>
+                        <h5>Email Us</h5>
+                        <p class="text-muted small">support@agrib2b.com<br>sales@agrib2b.com</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="p-4 bg-light rounded h-100">
+                        <i class="bi bi-telephone fs-1 text-success mb-3"></i>
+                        <h5>Call Us</h5>
+                        <p class="text-muted small">+91 1800-123-4567<br>Mon-Sat, 9AM-6PM</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <h3 class="fw-bold mb-4">Send us a message</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" name="name" id="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" name="email" id="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea name="message" id="message" rows="5" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

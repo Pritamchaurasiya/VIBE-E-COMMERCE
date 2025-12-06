@@ -1,0 +1,4 @@
+Django~=4.2.0
+stripe
+pillow
+python-dotenv

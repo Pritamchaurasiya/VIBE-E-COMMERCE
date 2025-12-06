@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Wishlist — Agri B2B{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wishlist-header {
+        background: linear-gradient(135deg, var(--light-gray), white);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .wishlist-item {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .wishlist-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .wishlist-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid #f3f4f6;
+    }
+
+    .wishlist-details {
+        flex: 1;
+        margin-left: 1.5rem;
+    }
+
+    .wishlist-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .wishlist-vendor {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .wishlist-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        margin-bottom: 1rem;
+    }
+
+    .wishlist-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .btn-remove-wishlist {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 2px solid #fee2e2;
+        background: white;
+        color: #dc2626;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-remove-wishlist:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        transform: scale(1.1);
+    }
+
+    .btn-add-cart {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-cart:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+    }
+
+    .empty-wishlist {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-wishlist i {
+        font-size: 5rem;
+        color: #d1d5db;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-wishlist h3 {
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .empty-wishlist p {
+        color: #6b7280;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .wishlist-item {
+            padding: 1rem;
+        }
+
+        .wishlist-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .wishlist-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Wishlist Header -->
+    <div class="wishlist-header">
+        <h1 class="fw-bold text-dark mb-2">
+            <i class="bi bi-heart me-3 text-danger"></i>My Wishlist
+        </h1>
+        <p class="text-muted mb-0">Your saved products for later</p>
+    </div>
+
+    {% if wishlist_items %}
+    <div class="row">
+        <div class="col-12">
+            {% for item in wishlist_items %}
+            <div class="wishlist-item">
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'product_detail' item.product.slug %}">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="wishlist-image">
+                        {% else %}
+                        <img src="https://placehold.co/150x150?text={{ item.product.name|urlencode }}" alt="{{ item.product.name }}" class="wishlist-image">
+                        {% endif %}
+                    </a>
+                    <div class="wishlist-details">
+                        <h3 class="wishlist-title">
+                            <a href="{% url 'product_detail' item.product.slug %}" class="text-decoration-none text-dark">
+                                {{ item.product.name }}
+                            </a>
+                        </h3>
+                        <div class="wishlist-vendor">{{ item.product.brand|default:item.product.vendor.name }}</div>
+                        <div class="wishlist-price">₹{{ item.product.price }}</div>
+                        <small class="text-muted">Added on {{ item.added_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+                <div class="wishlist-actions">
+                    <form action="{% url 'cart_add' item.product.id %}" method="POST" class="d-inline add-to-cart-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-add-cart">
+                            <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                        </button>
+                    </form>
+                    <a href="{% url 'wishlist_remove' item.product.id %}" class="btn-remove-wishlist">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="empty-wishlist">
+        <i class="bi bi-heart"></i>
+        <h3>Your wishlist is empty</h3>
+        <p>Save products you're interested in for later by clicking the heart icon.</p>
+        <a href="{% url 'shop' %}" class="btn btn-success btn-lg">
+            <i class="bi bi-shop me-2"></i>Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
