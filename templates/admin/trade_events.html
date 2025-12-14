@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trade Events — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Trade Events</h1>
+                    <p class="text-muted mb-0">Manage trade shows and events</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'admin:store_tradeevent_add' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Add Event
+                    </a>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="row g-4">
+        {% for event in events %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                {% if event.banner_image %}
+                <img src="{{ event.banner_image.url }}" class="card-img-top event-card-img" alt="{{ event.name }}">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center event-card-placeholder">
+                    <i class="bi bi-calendar-event display-3 text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ event.name }}</h5>
+                        {% if event.is_featured %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Featured</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>{{ event.venue }}, {{ event.city }}
+                    </p>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ event.start_date|date:"M d" }} - {{ event.end_date|date:"M d, Y" }}
+                    </p>
+                    <p class="card-text small">{{ event.description|truncatechars:100 }}</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-2">{{ event.registrations_count }} Registrations</span>
+                            {% if event.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'admin:store_tradeevent_change' event.id %}" class="btn btn-sm btn-outline-primary" title="Edit event" aria-label="Edit event">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-calendar-x display-3 mb-3"></i>
+                <h4>No Trade Events</h4>
+                <p>Create your first trade event to get started.</p>
+                <a href="{% url 'admin:store_tradeevent_add' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-2"></i>Add Event
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

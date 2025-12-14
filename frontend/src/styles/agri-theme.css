@@ -1,0 +1,1363 @@
+/* ============================================
+   AGRI-VIBE THEME - Agricultural B2B Platform
+   Inspired by AGRIM Mobile App Design
+   ============================================ */
+
+/* ==========================================
+   CSS VARIABLES & DESIGN TOKENS
+   ========================================== */
+:root {
+  /* Primary Brand Colors - Agricultural Theme */
+  --agri-green-primary: #2e7d32;
+  --agri-green-light: #4caf50;
+  --agri-green-dark: #1b5e20;
+  --agri-green-pale: #e8f5e9;
+
+  /* Secondary Colors */
+  --agri-brown: #795548;
+  --agri-brown-light: #a1887f;
+  --agri-brown-dark: #4e342e;
+  --agri-yellow: #ffc107;
+  --agri-yellow-light: #ffecb3;
+  --agri-orange: #ff9800;
+  --agri-orange-dark: #e65100;
+
+  /* Neutral Colors */
+  --agri-cream: #fff8e1;
+  --agri-soil: #3e2723;
+  --agri-sand: #efebe9;
+  --agri-white: #ffffff;
+  --agri-gray-50: #fafafa;
+  --agri-gray-100: #f5f5f5;
+  --agri-gray-200: #eeeeee;
+  --agri-gray-300: #e0e0e0;
+  --agri-gray-500: #9e9e9e;
+  --agri-gray-700: #616161;
+  --agri-gray-900: #212121;
+
+  /* Functional Colors */
+  --discount-red: #e53935;
+  --discount-red-light: #ffebee;
+  --trend-up: #43a047;
+  --trend-down: #e53935;
+  --success-green: #4caf50;
+  --warning-amber: #ffc107;
+  --error-red: #f44336;
+  --info-blue: #2196f3;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+  --gradient-gold: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  --gradient-deal: linear-gradient(135deg, #e53935 0%, #ff5722 100%);
+  --gradient-cream: linear-gradient(180deg, #fff8e1 0%, #ffffff 100%);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 8px rgba(46, 125, 50, 0.1);
+  --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-primary: "Inter", "Segoe UI", -apple-system, sans-serif;
+  --font-hindi: "Noto Sans Devanagari", "Mangal", sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Layout */
+  --nav-height: 56px;
+  --bottom-nav-height: 64px;
+  --max-width: 1400px;
+  --content-padding: 16px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ==========================================
+   GLOBAL STYLES
+   ========================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--agri-gray-50);
+  color: var(--agri-gray-900);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: var(--bottom-nav-height);
+}
+
+body.agri-theme {
+  background: var(--gradient-cream);
+}
+
+/* ==========================================
+   TOP NAVIGATION BAR
+   ========================================== */
+.agri-top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--content-padding);
+  gap: var(--space-md);
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+}
+
+.agri-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--agri-white);
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.agri-logo-icon {
+  font-size: 1.5rem;
+}
+
+.agri-search-wrapper {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+}
+
+.agri-search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 44px 0 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 0.9375rem;
+  color: var(--agri-gray-900);
+  transition: box-shadow var(--transition-normal);
+}
+
+.agri-search-input::placeholder {
+  color: var(--agri-gray-500);
+}
+
+.agri-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.agri-search-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--agri-green-primary);
+  font-size: 1.25rem;
+}
+
+.agri-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.agri-nav-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--agri-white);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-size: 1.25rem;
+}
+
+.agri-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.agri-nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--discount-red);
+  color: var(--agri-white);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Search Dropdown */
+.agri-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--agri-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.agri-search-dropdown.active {
+  display: block;
+}
+
+.agri-search-section-title {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--agri-gray-100);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--agri-gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.agri-search-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  text-decoration: none;
+  color: var(--agri-gray-900);
+  transition: background var(--transition-fast);
+}
+
+.agri-search-item:hover {
+  background: var(--agri-green-pale);
+}
+
+.agri-search-item-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--agri-gray-100);
+}
+
+.agri-search-item-info {
+  flex: 1;
+}
+
+.agri-search-item-name {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.agri-search-item-category {
+  font-size: 0.8125rem;
+  color: var(--agri-gray-500);
+}
+
+.agri-search-item-price {
+  font-weight: 600;
+  color: var(--agri-green-primary);
+}
+
+/* ==========================================
+   BOTTOM NAVIGATION BAR
+   ========================================== */
+.agri-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-nav-height);
+  background: var(--agri-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid var(--agri-gray-200);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  padding: 0 var(--space-sm);
+}
+
+.agri-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--space-sm) var(--space-md);
+  text-decoration: none;
+  color: var(--agri-gray-500);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+  position: relative;
+}
+
+.agri-nav-item-icon {
+  font-size: 1.375rem;
+  transition: transform var(--transition-fast);
+}
+
+.agri-nav-item.active,
+.agri-nav-item:hover {
+  color: var(--agri-green-primary);
+}
+
+.agri-nav-item.active .agri-nav-item-icon {
+  transform: scale(1.1);
+}
+
+.agri-nav-item.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: var(--agri-green-primary);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ==========================================
+   MAIN CONTENT AREA
+   ========================================== */
+.agri-main {
+  padding-top: calc(var(--nav-height) + var(--space-md));
+  min-height: 100vh;
+}
+
+.agri-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--content-padding);
+}
+
+.agri-section {
+  margin-bottom: var(--space-xl);
+}
+
+.agri-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.agri-section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--agri-soil);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.agri-section-title-icon {
+  color: var(--agri-green-primary);
+}
+
+.agri-section-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--agri-green-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.agri-section-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================
+   PROMO BANNER CAROUSEL
+   ========================================== */
+.agri-promo-carousel {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+
+.agri-promo-slide {
+  display: flex;
+  align-items: center;
+  padding: var(--space-lg) var(--space-xl);
+  min-height: 140px;
+  background: var(--gradient-gold);
+  color: var(--agri-soil);
+}
+
+.agri-promo-slide.deal {
+  background: var(--gradient-deal);
+  color: var(--agri-white);
+}
+
+.agri-promo-slide.green {
+  background: var(--gradient-primary);
+  color: var(--agri-white);
+}
+
+.agri-promo-content {
+  flex: 1;
+}
+
+.agri-promo-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.agri-promo-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: var(--space-xs);
+}
+
+.agri-promo-subtitle {
+  font-size: 0.9375rem;
+  opacity: 0.9;
+  margin-bottom: var(--space-md);
+}
+
+.agri-promo-code {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--agri-white);
+  color: var(--agri-soil);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.agri-promo-code:hover {
+  transform: scale(1.02);
+}
+
+.agri-promo-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+/* Carousel Dots */
+.agri-carousel-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.agri-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.agri-carousel-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--agri-white);
+}
+
+/* ==========================================
+   PRODUCT CARDS - AGRIM STYLE
+   ========================================== */
+.agri-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .agri-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+.agri-product-card {
+  background: var(--agri-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.agri-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.agri-product-badges {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  right: var(--space-sm);
+  display: flex;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.agri-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.agri-badge-instant {
+  background: var(--agri-yellow);
+  color: var(--agri-soil);
+}
+
+.agri-badge-discount {
+  background: var(--discount-red);
+  color: var(--agri-white);
+}
+
+.agri-badge-new {
+  background: var(--agri-green-primary);
+  color: var(--agri-white);
+}
+
+.agri-badge-trending {
+  background: var(--agri-orange);
+  color: var(--agri-white);
+}
+
+.agri-product-wishlist {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--agri-white);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  color: var(--agri-gray-500);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  z-index: 10;
+}
+
+.agri-product-wishlist:hover,
+.agri-product-wishlist.active {
+  color: var(--discount-red);
+  transform: scale(1.1);
+}
+
+.agri-product-wishlist.active {
+  background: var(--discount-red-light);
+}
+
+.agri-product-image-wrapper {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--agri-gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.agri-product-image {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
+  transition: transform var(--transition-normal);
+}
+
+.agri-product-card:hover .agri-product-image {
+  transform: scale(1.08);
+}
+
+.agri-product-info {
+  padding: var(--space-md);
+}
+
+.agri-product-brand {
+  font-size: 0.6875rem;
+  color: var(--agri-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.agri-product-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--agri-gray-900);
+  margin-bottom: var(--space-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2; /* Standard property for compatibility */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.agri-product-packing {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.agri-packing-option {
+  padding: 4px 10px;
+  border: 1px solid var(--agri-gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--agri-gray-700);
+  background: var(--agri-white);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.agri-packing-option:hover,
+.agri-packing-option.active {
+  border-color: var(--agri-green-primary);
+  background: var(--agri-green-pale);
+  color: var(--agri-green-primary);
+}
+
+.agri-packing-more {
+  color: var(--agri-green-primary);
+  font-weight: 600;
+}
+
+.agri-product-pricing {
+  margin-bottom: var(--space-md);
+}
+
+.agri-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.agri-price-current {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--agri-green-primary);
+}
+
+.agri-price-mrp {
+  font-size: 0.875rem;
+  color: var(--agri-gray-500);
+  text-decoration: line-through;
+}
+
+.agri-price-discount {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--discount-red);
+  background: var(--discount-red-light);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.agri-price-bulk {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--agri-orange-dark);
+  font-weight: 500;
+}
+
+.agri-price-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.agri-price-trend.up {
+  color: var(--trend-up);
+  background: rgba(67, 160, 71, 0.1);
+}
+
+.agri-price-trend.down {
+  color: var(--trend-down);
+  background: rgba(229, 57, 53, 0.1);
+}
+
+.agri-add-to-cart {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--agri-green-primary);
+  color: var(--agri-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  transition: background var(--transition-fast);
+}
+
+.agri-add-to-cart:hover {
+  background: var(--agri-green-dark);
+}
+
+.agri-add-to-cart:active {
+  transform: scale(0.98);
+}
+
+.agri-add-to-cart.added {
+  background: var(--success-green);
+}
+
+/* ==========================================
+   DEAL OF THE DAY
+   ========================================== */
+.agri-deal-section {
+  background: var(--gradient-deal);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  color: var(--agri-white);
+}
+
+.agri-deal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.agri-deal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.agri-deal-timer {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.agri-timer-block {
+  background: rgba(255, 255, 255, 0.2);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  min-width: 48px;
+}
+
+.agri-timer-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: block;
+}
+
+.agri-timer-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.agri-deal-products {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-sm);
+}
+@supports (scrollbar-width: none) {
+  .agri-deal-products {
+    scrollbar-width: none;
+  }
+}
+
+/* Webkit fallback for older Chrome/Safari */
+.agri-deal-products::-webkit-scrollbar {
+  display: none;
+}
+
+.agri-deal-products .agri-product-card {
+  flex-shrink: 0;
+  width: 180px;
+}
+
+/* ==========================================
+   CATEGORY/CROP/DISEASE GRID
+   ========================================== */
+.agri-category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .agri-category-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.agri-category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--agri-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  color: var(--agri-gray-900);
+  transition: all var(--transition-normal);
+}
+
+.agri-category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.agri-category-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-sm);
+  object-fit: contain;
+}
+
+.agri-category-icon.emoji,
+.agri-category-icon.mui-icon {
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--agri-green-primary);
+}
+
+.agri-category-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ==========================================
+   BRAND SHOWCASE
+   ========================================== */
+.agri-brand-scroll {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding: var(--space-sm) 0;
+  /* stylelint-disable-next-line property-no-unknown -- Firefox/modern browsers */
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none; /* Firefox 64+, Chrome 121+ */
+  }
+}
+
+/* Webkit fallback for older Chrome/Safari */
+.agri-brand-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.agri-brand-card {
+  flex-shrink: 0;
+  width: 100px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  background: var(--agri-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-fast);
+}
+
+.agri-brand-card:hover {
+  transform: scale(1.05);
+}
+
+.agri-brand-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(30%);
+  transition: filter var(--transition-fast);
+}
+
+.agri-brand-card:hover .agri-brand-logo {
+  filter: grayscale(0%);
+}
+
+/* ==========================================
+   LOCATION BADGE
+   ========================================== */
+.agri-location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 4px 12px;
+  background: var(--agri-orange);
+  color: var(--agri-white);
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* ==========================================
+   HORIZONTAL SCROLL SECTION
+   ========================================== */
+.agri-scroll-row {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding: var(--space-sm) 0;
+  /* stylelint-disable-next-line property-no-unknown -- Firefox/modern browsers */
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none; /* Firefox 64+, Chrome 121+ */
+  }
+  scroll-snap-type: x mandatory;
+}
+
+/* Webkit fallback for older Chrome/Safari */
+.agri-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.agri-scroll-row .agri-product-card {
+  flex-shrink: 0;
+  width: 180px;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 768px) {
+  .agri-scroll-row .agri-product-card {
+    width: 220px;
+  }
+}
+
+/* ==========================================
+   ACCOUNT PAGE STYLES
+   ========================================== */
+.agri-account-header {
+  background: var(--gradient-primary);
+  padding: var(--space-xl) var(--content-padding);
+  padding-top: calc(var(--nav-height) + var(--space-xl));
+  color: var(--agri-white);
+  margin-bottom: var(--space-lg);
+}
+
+.agri-account-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.agri-account-avatar {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.agri-account-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.agri-account-business {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.agri-coin-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--agri-yellow);
+  color: var(--agri-soil);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.agri-account-menu {
+  background: var(--agri-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin: 0 var(--content-padding);
+}
+
+.agri-account-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  text-decoration: none;
+  color: var(--agri-gray-900);
+  border-bottom: 1px solid var(--agri-gray-200);
+  transition: background var(--transition-fast);
+}
+
+.agri-account-menu-item:last-child {
+  border-bottom: none;
+}
+
+.agri-account-menu-item:hover {
+  background: var(--agri-gray-50);
+}
+
+.agri-account-menu-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--agri-green-pale);
+  color: var(--agri-green-primary);
+  border-radius: var(--radius-sm);
+  font-size: 1.25rem;
+}
+
+.agri-account-menu-text {
+  flex: 1;
+}
+
+.agri-account-menu-title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.agri-account-menu-subtitle {
+  font-size: 0.75rem;
+  color: var(--agri-gray-500);
+}
+
+.agri-account-menu-arrow {
+  color: var(--agri-gray-500);
+}
+
+/* ==========================================
+   OFFLINE BANNER
+   ========================================== */
+.agri-offline-banner {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--agri-gray-900);
+  color: var(--agri-white);
+  text-align: center;
+  font-size: 0.875rem;
+  z-index: 999;
+  display: none;
+}
+
+.agri-offline-banner.active {
+  display: block;
+}
+
+/* ==========================================
+   LOADING STATES
+   ========================================== */
+.agri-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--agri-gray-200) 25%,
+    var(--agri-gray-100) 50%,
+    var(--agri-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.agri-skeleton-card {
+  height: 280px;
+}
+
+.agri-skeleton-banner {
+  height: 140px;
+  border-radius: var(--radius-lg);
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+@media (max-width: 480px) {
+  :root {
+    --content-padding: 12px;
+  }
+
+  .agri-category-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .agri-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .agri-promo-title {
+    font-size: 1.125rem;
+  }
+
+  .agri-promo-image {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .agri-bottom-nav {
+    display: none;
+  }
+
+  body {
+    padding-bottom: 0;
+  }
+
+  .agri-top-nav {
+    padding: 0 var(--space-xl);
+  }
+
+  /* Desktop sidebar nav could be added here */
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+.agri-text-center {
+  text-align: center;
+}
+.agri-text-primary {
+  color: var(--agri-green-primary);
+}
+.agri-text-muted {
+  color: var(--agri-gray-500);
+}
+.agri-bg-cream {
+  background: var(--agri-cream);
+}
+.agri-mt-md {
+  margin-top: var(--space-md);
+}
+.agri-mb-md {
+  margin-bottom: var(--space-md);
+}
+.agri-py-lg {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-lg);
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agri-animate-in {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.agri-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Print Styles */
+@media print {
+  .agri-top-nav,
+  .agri-bottom-nav {
+    display: none;
+  }
+
+  body {
+    padding: 0;
+  }
+}
+
+/* ==========================================
+   ENHANCED VISUAL EFFECTS (GLASSMORPHISM & 3D)
+   ========================================== */
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-card);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 3D Tilt & Hover Effects */
+.hover-3d-lift {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.hover-3d-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15), 0 0 20px rgba(46, 125, 50, 0.2);
+  z-index: 10;
+}
+
+/* Floating Animation */
+@keyframes agri-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: agri-float 4s ease-in-out infinite;
+}
+
+/* Modern Gradient Text */
+.text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+/* Image Enhancements */
+.img-premium {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.5s ease;
+}
+
+.img-premium:hover {
+  transform: scale(1.05);
+}
+
+. a s p e c t - r a t i o - 4 - 3 
+ 
+   a s p e c t - r a t i o :   4 / 3 ;   
+ 
+ 

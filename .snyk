@@ -1,0 +1,43 @@
+# Snyk Policy File (.snyk)
+# This file configures Snyk to ignore certain false-positive security warnings
+
+version: v1.25.0
+
+# Ignore hardcoded credential warnings in test files
+# These are test fixtures with non-sensitive usernames used for authentication testing
+ignore:
+  'snyk:lic:pip:django:BSD-3-Clause':
+    - '*':
+        reason: Django's BSD-3-Clause license is acceptable for this project
+        expires: 2030-12-31T00:00:00.000Z
+
+# Exclude certain paths from scanning
+exclude:
+  global:
+    - frontend/node_modules/.cache/**
+    - frontend/node_modules/**
+    - __pycache__/**
+    - staticfiles/**
+    - media/**
+
+# Note: The following warnings are expected false positives or acceptable risks:
+#
+# 1. store/tests/test_*.py - "Use of Hardcoded Credentials"
+#    - Lines with self.client.login(username='testuser', ...)
+#    - These are test fixture usernames, not actual credentials
+#    - Actual passwords use TEST_USER_PASSWORD from environment variables
+#
+# 2. populate_*.py - "Standard pseudo-random generators are not suitable for security"
+#    - The random module is intentionally used for non-security test data generation
+#    - These scripts generate sample data for development/testing only
+#    - For security-sensitive operations, the secrets module is used instead
+#
+# 3. frontend/node_modules/.cache/babel-loader/* - "Failed to load file content"
+#    - This is a transient error related to cached build artifacts
+#    - Clear the cache with: Remove-Item -Recurse frontend/node_modules/.cache
+#
+# These warnings are informational (severity: info) and do not represent
+# actual security vulnerabilities. The passwords in these tests are:
+# - Sourced from environment variables (TEST_USER_PASSWORD, TEST_ADMIN_PASSWORD)
+# - Only used in test environments
+# - Never deployed to production

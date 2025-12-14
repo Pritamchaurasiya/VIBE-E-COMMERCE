@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PWA Analytics Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="fw-bold mb-1">📱 PWA Analytics Dashboard</h1>
+          <p class="text-muted mb-0">Monitor PWA installation metrics and user engagement</p>
+        </div>
+        <div>
+          <button class="btn btn-outline-primary" id="refreshStats">
+            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1 text-uppercase fw-semibold">Total Installs</p>
+              <h2 class="fw-bold mb-0" id="totalInstalls">--</h2>
+              <p class="text-success small mb-0"><i class="bi bi-arrow-up"></i> Last 30 days</p>
+            </div>
+            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-download text-success fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1 text-uppercase fw-semibold">Install Rate</p>
+              <h2 class="fw-bold mb-0" id="installRate">--%</h2>
+              <p class="text-muted small mb-0">Prompts → Installs</p>
+            </div>
+            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-percent text-primary fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1 text-uppercase fw-semibold">Prompts Shown</p>
+              <h2 class="fw-bold mb-0" id="promptsShown">--</h2>
+              <p class="text-muted small mb-0">Total impressions</p>
+            </div>
+            <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-eye text-warning fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1 text-uppercase fw-semibold">Dismiss Rate</p>
+              <h2 class="fw-bold mb-0" id="dismissRate">--%</h2>
+              <p class="text-muted small mb-0">Users who dismissed</p>
+            </div>
+            <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+              <i class="bi bi-x-circle text-danger fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="fw-semibold mb-0">📈 Installation Trends (Last 7 Days)</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="installTrendsChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="fw-semibold mb-0">🔘 Prompt Responses</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="promptResponsesChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Device & Browser Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="fw-semibold mb-0">📱 Device Breakdown</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3" id="deviceStats">
+            <div class="col-4 text-center">
+              <div class="bg-primary bg-opacity-10 rounded-3 p-3 mb-2">
+                <i class="bi bi-phone text-primary fs-2"></i>
+              </div>
+              <h5 class="fw-bold mb-0">--</h5>
+              <p class="text-muted small mb-0">Mobile</p>
+            </div>
+            <div class="col-4 text-center">
+              <div class="bg-success bg-opacity-10 rounded-3 p-3 mb-2">
+                <i class="bi bi-tablet text-success fs-2"></i>
+              </div>
+              <h5 class="fw-bold mb-0">--</h5>
+              <p class="text-muted small mb-0">Tablet</p>
+            </div>
+            <div class="col-4 text-center">
+              <div class="bg-info bg-opacity-10 rounded-3 p-3 mb-2">
+                <i class="bi bi-laptop text-info fs-2"></i>
+              </div>
+              <h5 class="fw-bold mb-0">--</h5>
+              <p class="text-muted small mb-0">Desktop</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="fw-semibold mb-0">🌐 Browser Stats</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-borderless mb-0">
+              <thead class="text-muted small">
+                <tr>
+                  <th>Browser</th>
+                  <th class="text-end">Installs</th>
+                  <th class="text-end">%</th>
+                </tr>
+              </thead>
+              <tbody id="browserStats">
+                <tr>
+                  <td><i class="bi bi-browser-chrome me-2"></i>Chrome</td>
+                  <td class="text-end">--</td>
+                  <td class="text-end">--%</td>
+                </tr>
+                <tr>
+                  <td><i class="bi bi-browser-edge me-2"></i>Edge</td>
+                  <td class="text-end">--</td>
+                  <td class="text-end">--%</td>
+                </tr>
+                <tr>
+                  <td><i class="bi bi-browser-safari me-2"></i>Safari (iOS)</td>
+                  <td class="text-end">--</td>
+                  <td class="text-end">--%</td>
+                </tr>
+                <tr>
+                  <td><i class="bi bi-browser-firefox me-2"></i>Firefox</td>
+                  <td class="text-end">--</td>
+                  <td class="text-end">--%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA Status & Features -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="fw-semibold mb-0">⚙️ PWA Configuration</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span><i class="bi bi-file-earmark-code me-2"></i>Manifest</span>
+              <span class="badge bg-success">Active</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span><i class="bi bi-gear me-2"></i>Service Worker</span>
+              <span class="badge bg-success">Registered</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span><i class="bi bi-wifi-off me-2"></i>Offline Support</span>
+              <span class="badge bg-success">Enabled</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span><i class="bi bi-bell me-2"></i>Push Notifications</span>
+              <span class="badge bg-success">Ready</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span><i class="bi bi-arrow-repeat me-2"></i>Background Sync</span>
+              <span class="badge bg-success">Enabled</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span><i class="bi bi-download me-2"></i>Install Prompt</span>
+              <span class="badge bg-success">Active</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-4 pb-0">
+          <h5 class="fw-semibold mb-0">📊 Recent Activity</h5>
+        </div>
+        <div class="card-body">
+          <div class="activity-feed" id="recentActivity">
+            <div class="d-flex mb-3">
+              <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                <i class="bi bi-download text-success"></i>
+              </div>
+              <div>
+                <p class="mb-0 fw-medium">New installation</p>
+                <p class="text-muted small mb-0">Chrome on Android • 2 mins ago</p>
+              </div>
+            </div>
+            <div class="d-flex mb-3">
+              <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                <i class="bi bi-eye text-primary"></i>
+              </div>
+              <div>
+                <p class="mb-0 fw-medium">Prompt shown</p>
+                <p class="text-muted small mb-0">Safari on iOS • 5 mins ago</p>
+              </div>
+            </div>
+            <div class="d-flex mb-3">
+              <div class="bg-info bg-opacity-10 rounded-circle p-2 me-3">
+                <i class="bi bi-clock text-info"></i>
+              </div>
+              <div>
+                <p class="mb-0 fw-medium">User snoozed prompt</p>
+                <p class="text-muted small mb-0">Edge on Windows • 12 mins ago</p>
+              </div>
+            </div>
+            <div class="d-flex">
+              <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                <i class="bi bi-download text-success"></i>
+              </div>
+              <div>
+                <p class="mb-0 fw-medium">New installation</p>
+                <p class="text-muted small mb-0">Chrome on Windows • 25 mins ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Fetch PWA stats
+  fetchStats();
+
+  // Refresh button
+  document.getElementById('refreshStats').addEventListener('click', fetchStats);
+
+  async function fetchStats() {
+    try {
+      const response = await fetch('/api/pwa-status/');
+      const data = await response.json();
+
+      if (data.admin_stats) {
+        updateStats(data.admin_stats);
+        createCharts(data.admin_stats);
+      }
+    } catch (error) {
+      console.error('Failed to fetch PWA stats:', error);
+    }
+  }
+
+  function updateStats(stats) {
+    document.getElementById('totalInstalls').textContent = stats.total_installs || 0;
+    document.getElementById('installRate').textContent = (stats.install_rate || 0) + '%';
+    document.getElementById('promptsShown').textContent = stats.prompts_shown || 0;
+    document.getElementById('dismissRate').textContent = (stats.dismiss_rate || 0) + '%';
+  }
+
+  function createCharts(stats) {
+    // Installation Trends Chart
+    const trendsCtx = document.getElementById('installTrendsChart').getContext('2d');
+
+    // Sample data (would come from API in production)
+    const dailyStats = stats.daily_stats || [];
+    const labels = dailyStats.map(d => d.date).reverse();
+    const values = dailyStats.map(d => d.installs).reverse();
+
+    new Chart(trendsCtx, {
+      type: 'line',
+      data: {
+        labels: labels.length > 0 ? labels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Installations',
+          data: values.length > 0 ? values : [2, 5, 3, 8, 12, 7, 15],
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 5,
+          pointBackgroundColor: '#22c55e'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          x: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+
+    // Prompt Responses Doughnut Chart
+    const responsesCtx = document.getElementById('promptResponsesChart').getContext('2d');
+
+    new Chart(responsesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Installed', 'Snoozed', 'Dismissed', 'Closed'],
+        datasets: [{
+          data: [
+            stats.total_installs || 45,
+            Math.round((stats.snooze_rate || 25) / 100 * (stats.prompts_shown || 100)),
+            Math.round((stats.dismiss_rate || 15) / 100 * (stats.prompts_shown || 100)),
+            15
+          ],
+          backgroundColor: ['#22c55e', '#3b82f6', '#ef4444', '#94a3b8'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 20 }
+          }
+        },
+        cutout: '60%'
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

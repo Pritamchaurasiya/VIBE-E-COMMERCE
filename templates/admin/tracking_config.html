@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Tracking Configuration</h1>
+<div class="config-list">
+    {% for config in configs %}
+    <div class="config-item">
+        <h3>{{ config.get_category_display }}</h3>
+        <p>Enabled: {{ config.is_enabled }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

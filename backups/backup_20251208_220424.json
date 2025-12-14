@@ -1,0 +1,969 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$9S0pZnDNEz7jh0VmGsvvDC$nf7xd7WS+vWWrs01VjcYNSMmLlZKCQOaG3Kglz4UQgA=",
+    "last_login": "2025-12-08T06:15:12.519Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@example.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-12-06T10:18:36.924Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$ikwhaXLV86IsAQmk1jK7pa$Oz1otAS4lsjb6Cm8jYyh5zvNuOmHIuYMPtnM5sluagM=",
+    "last_login": "2025-12-06T16:49:16.507Z",
+    "is_superuser": false,
+    "username": "vendor_64c5d786",
+    "first_name": "jgug",
+    "last_name": "",
+    "email": "admin@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-12-06T16:49:15.249Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$KimdhHDeHlFXNy8kZcbe49$6YF5Hy31lLT+JtsUUUlr3BQ32IHB3oouvPlBUFOIN2Y=",
+    "last_login": "2025-12-07T07:39:31.943Z",
+    "is_superuser": false,
+    "username": "user_r3avSd0C1V",
+    "first_name": "Test",
+    "last_name": "User",
+    "email": "user_r3avSd0C1V@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-12-07T07:39:23.302Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "27k0m7wkpjnlchildr337w6wbp9we770",
+  "fields": {
+    "session_data": ".eJxVjDEOgzAMRe_iuYpoEoNh7N4zIGMnDW1FpAAT4u4tEgvrf-_9DYTLAt2236DndUn9OofSjwod3OGyDSyfMB1A3zy9spE8LWUczKGYk87mmTV8H6d7OUg8p39N6sl5h2ij1oGqVqhCGwZSJWt9Y21LyB5FKUZppRKpXS2C6FgDN7D_ABMfOzU:1vSAe4:AMmFwwmox6-HDKXuHDIXpAb_UR2GRHf1lmfsS9Ew514",
+    "expire_date": "2025-12-08T09:01:32.462Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "2dlmeyetcslnff6gmmed2q91wlmmx9lm",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZKT:6Ss7hwGLTO0295GLgpPm7NQjyEFYjkJ2APnSJ_oRuS0",
+    "expire_date": "2025-12-09T11:22:57.024Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "49cx7j1wkw7b1ixdm7zbppirvhrg907u",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZYx:FvG1mbwj1ENMBON-u5805c_1CcGZoPG6LaLOjea04bM",
+    "expire_date": "2025-12-09T11:37:55.868Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "7xf5e4eqhw6e702kar4gelwzyvuf8evf",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSJJT:9TkuICARrrStnrgGRcqxc-uxDr_SE6M5igOsu-iNyOc",
+    "expire_date": "2025-12-08T18:16:51.394Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "7ydis7jfkc5uv3s07qoh7gbfx0z15t2n",
+  "fields": {
+    "session_data": ".eJxVjDEOgzAMRe_iuYpoEoNh7N4zIGMnDW1FpAAT4u4tEgvrf-_9DYTLAt2236DndUn9OofSjwod3OGyDSyfMB1A3zy9spE8LWUczKGYk87mmTV8H6d7OUg8p39N6sl5h2ij1oGqVqhCGwZSJWt9Y21LyB5FKUZppRKpXS2C6FgDN7D_ABMfOzU:1vS9Bz:p6QfVVM9eHK-nObfNbI07KtBpqBUz5w7-L40WhLqC-g",
+    "expire_date": "2025-12-08T07:28:27.529Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "8p6yjppiiq7sydh6ma305di0op03wexb",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vS85L:McVJmlMmlil0G-qDI0jzuDkimjVK-DqFqQGazJgqj4s",
+    "expire_date": "2025-12-08T06:17:31.740Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "97n937zaxkr86f63qgbgqb144cy2df0c",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSVUa:hpkCEJ-9MRCE9YlccS8T5IJR92cGmyHBkjYt5rqonzU",
+    "expire_date": "2025-12-09T07:17:08.968Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "99ay6orivm7b5x4hu4k6yhfnpc10e62r",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZYx:FvG1mbwj1ENMBON-u5805c_1CcGZoPG6LaLOjea04bM",
+    "expire_date": "2025-12-09T11:37:55.676Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "9cb4uqjdpqq4sfqegz46l9e1s3gs1y9c",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZVY:ep3_QpalLst9ZGSFrYuHvq1E_KxGbDy2OS974W8vvCE",
+    "expire_date": "2025-12-09T11:34:24.879Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ayzzmjnyoy4wkwpnp6691aac1ja9f4dp",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.362Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "b62tmq6wbd8egvq57583rwfr8kq4neux",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSYoF:Bp8KBbY49M6SoRHjW2zcy0mC9nsrS2T5wdIs0LnL-M0",
+    "expire_date": "2025-12-09T10:49:39.796Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "bggmm6fwb3l0p724fwygqdsk2qtzaopf",
+  "fields": {
+    "session_data": ".eJxVjEsKwjAUAO-StYT8mgSX7j1DeL-YqrTQz6p4dwl0oduZYQ5VYN9a2VdZysjqqry6_DIEesnUBT9hesya5mlbRtQ90add9X1med_O9m_QYG19ywxoiHJCiWCNWIfO1pCzC8l7HpJLAwskgmirrZEIfcpSDYWM1anPF_nlOIY:1vS9Mh:bzIpp8LqD7RmsTI39bKXHFMFP0Rk1WLXMGo-jGbFWN0",
+    "expire_date": "2025-12-08T07:39:31.959Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "cih2vw72noarih030j724yp0dmtaf5kn",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vS89h:6zmuLPSQIa9a5InzXuOkbdv7nvWMLz4Dfm6yR2QNv7c",
+    "expire_date": "2025-12-08T06:22:01.789Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "deficssrelg17shzm5u45rpvi9tymxjp",
+  "fields": {
+    "session_data": ".eJxVjEsKwjAUAO-StYT8mgSX7j1DeL-YqrTQz6p4dwl0oduZYQ5VYN9a2VdZysjqqry6_DIEesnUBT9hesya5mlbRtQ90add9X1med_O9m_QYG19ywxoiHJCiWCNWIfO1pCzC8l7HpJLAwskgmirrZEIfcpSDYWM1anPF_nlOIY:1vS9Md:wKHkdY8d-laFLU2daCN0_jwgS_0UqGB7UiJ-_9-ujNw",
+    "expire_date": "2025-12-08T07:39:27.263Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "dfvjm4txvj63619p2v4abfbiqk50w8i7",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pAKDB1cuu8ZyHQGpGpoUtqV8e7apAvd_vfef6lI21ri1tISJ1EXdVan320kfqS6A7lTvc2a57ou06h3RR-06WGW9Lwe7t9BoVa-NYpD6yyAyeITdoGxA5NGFEFjXG9MQCAHLJgzB-6YvfXMAJYkUa_eH8vMN-k:1vS8uB:cPCCzzjeDWrX-8whTzm8H9j8qJwDG-VSPfGVbrWMa78",
+    "expire_date": "2025-12-08T07:10:03.577Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "drhnplugohwy46sd82pzj5uqyqt06ikr",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSYoF:Bp8KBbY49M6SoRHjW2zcy0mC9nsrS2T5wdIs0LnL-M0",
+    "expire_date": "2025-12-09T10:49:39.943Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "e1m0g7z9xi27nmzkz5xe176f73knwtva",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSBtZ:GYkdD_PedolZPZH5iwZrlPvT9CDs8Eck7MRdhTKcVnY",
+    "expire_date": "2025-12-08T10:21:37.015Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ezw4l9h51h7swpxrk2clffsadup5eim7",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZKS:7UdrbY8Zd4udAva4DHqwfoXNgtEeNvbzSx4jsKHAdx0",
+    "expire_date": "2025-12-09T11:22:56.845Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "g2slvh1bll9119xwj0n752u7x69wmhk9",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZKS:7UdrbY8Zd4udAva4DHqwfoXNgtEeNvbzSx4jsKHAdx0",
+    "expire_date": "2025-12-09T11:22:56.691Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "gxk094y7hk1kv98hqeebgn5kxsfa2kcj",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pAKDB1cuu8ZyHQGpGpoUtqV8e7apAvd_vfef6lI21ri1tISJ1EXdVan320kfqS6A7lTvc2a57ou06h3RR-06WGW9Lwe7t9BoVa-NYpD6yyAyeITdoGxA5NGFEFjXG9MQCAHLJgzB-6YvfXMAJYkUa_eH8vMN-k:1vS8tU:uDJxepr6xCWa7c3b6vvFgxzBHDq5RR0EMl0pkZNBc6Y",
+    "expire_date": "2025-12-08T07:09:20.627Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "h0g3gn3zveua50x8oi81xihyfljch6xk",
+  "fields": {
+    "session_data": ".eJxVjDEOgzAMRe_iuYpoEoNh7N4zIGMnDW1FpAAT4u4tEgvrf-_9DYTLAt2236DndUn9OofSjwod3OGyDSyfMB1A3zy9spE8LWUczKGYk87mmTV8H6d7OUg8p39N6sl5h2ij1oGqVqhCGwZSJWt9Y21LyB5FKUZppRKpXS2C6FgDN7D_ABMfOzU:1vSUWe:yCIBmZLyHlQt4oLrKMzF7xS1KnKKqV-uMHapDMBmw1Y",
+    "expire_date": "2025-12-09T06:15:12.531Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "h6tqmifpu5vfa5p7umjzsrn895j4g5md",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7Ijc1Ijp7InF1YW50aXR5IjoxLCJpZCI6Ijc1In19fQ:1vS9Mm:N75-u9aevxOKmWQLboq-iJbCiOHCGjj6BuxqsSxU6Zw",
+    "expire_date": "2025-12-08T07:39:36.757Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "hb1yzdc1smyvy4uhlwg87mce4ka6ez4v",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.292Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "hwuznqvx8xf2e2pl0r80k8o380fryuq9",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSYoF:Bp8KBbY49M6SoRHjW2zcy0mC9nsrS2T5wdIs0LnL-M0",
+    "expire_date": "2025-12-09T10:49:39.925Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "i722iv5motufg08gt0l967wtsk3ggtmk",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.198Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "i97km0y5s60tkqur5l71ols5u93iqoap",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZKS:7UdrbY8Zd4udAva4DHqwfoXNgtEeNvbzSx4jsKHAdx0",
+    "expire_date": "2025-12-09T11:22:56.984Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "jdt6y8wwtihvsgf8lfjbnwlqmmfl2nkh",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.440Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "jew776zk495girij8uhcks9rbhxvxo1w",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vS8fC:k21qpLgA6rwqucjsBzEECCQ2QiscUgiP8QdAPjnFW80",
+    "expire_date": "2025-12-08T06:54:34.013Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "khkv80wwqrnhwye1x7v2fi4s6wkuje7k",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZR9:NMlP6cYCUvQBojv5WR4uiOObYLN54Y-5f1QA2pr7JjM",
+    "expire_date": "2025-12-09T11:29:51.089Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "kmh4toajxt7i73bvlh9tl7l99avcdk0c",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.412Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "kmje22vr7eo5al7onawszdxpqtzrr8v1",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZKS:7UdrbY8Zd4udAva4DHqwfoXNgtEeNvbzSx4jsKHAdx0",
+    "expire_date": "2025-12-09T11:22:56.944Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "lsp2lb4qloe4wjkk5qhk91a364nifnn0",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZYx:FvG1mbwj1ENMBON-u5805c_1CcGZoPG6LaLOjea04bM",
+    "expire_date": "2025-12-09T11:37:55.962Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "nc7kxcg0pecxo6ubw9qq2w2z5cd37ku3",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.385Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "nt9bm7t63gyhv732xw0ebipfk6he5ri5",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZDu:jh7x5weXbMDINuE9Ab6Rq3VoKTk_wL8tI50g02vGGh0",
+    "expire_date": "2025-12-09T11:16:10.029Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "o2ee17f8iipomp7r9o2ijp0lig4hscqu",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSBta:_oGlCA4V2oGMEn8jzK_dBTFYy5_y-VatviYfKKHV-Lk",
+    "expire_date": "2025-12-08T10:21:38.085Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "u320ejcl5jpq2x7z6c604mnest9n7sw8",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSYnz:Eldk8kYK2L8WIR9UScPD23E8Bd54VDEicyHv6ZgJ-ZU",
+    "expire_date": "2025-12-09T10:49:23.386Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "uw666c1hia0tq8z1htc3y7g9nzr1pa4m",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vS9Mo:iLq513yo0ZtYbpKEVN0T6DAPQsc1aHnVsFDNPmLAp_A",
+    "expire_date": "2025-12-08T07:39:38.893Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "wl7gt9sppldzwo5p50myq80qsz2fj6ha",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSYoF:Bp8KBbY49M6SoRHjW2zcy0mC9nsrS2T5wdIs0LnL-M0",
+    "expire_date": "2025-12-09T10:49:39.879Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "wpbwna117zz44ixp923z7wobjs0dwqwo",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ9F:Vuyxgap_KAE4HpdZ7aJeOfORy1XMqovabVJ2KMmZshc",
+    "expire_date": "2025-12-09T11:11:21.256Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "zhtio0ifc4ww8j2uvbxfsuny8e2z12j2",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSdn5:fL80aMh_3fW8sUWEL5ghsfp6GHK1HnAp2qqudnNcYPY",
+    "expire_date": "2025-12-09T16:08:47.155Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ztuww0su0w85dym9o8fbkmpoisv5qtcx",
+  "fields": {
+    "session_data": "eyJjYXJ0Ijp7fX0:1vSZ3f:VOVlAAwOId8iQm7THh7xdUbUtDdqDz49i9IHO8UKrDQ",
+    "expire_date": "2025-12-09T11:05:35.340Z"
+  }
+},
+{
+  "model": "sites.site",
+  "fields": {
+    "domain": "example.com",
+    "name": "example.com"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 39,
+  "fields": {
+    "name": "UPL Ltd",
+    "slug": "upl",
+    "logo": "",
+    "city": "Mumbai",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 40,
+  "fields": {
+    "name": "Godrej Agrovet",
+    "slug": "godrej-agrovet",
+    "logo": "",
+    "city": "Mumbai",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 41,
+  "fields": {
+    "name": "Corteva Agriscience",
+    "slug": "corteva",
+    "logo": "",
+    "city": "Hyderabad",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 42,
+  "fields": {
+    "name": "Syngenta India",
+    "slug": "syngenta",
+    "logo": "",
+    "city": "Pune",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 43,
+  "fields": {
+    "name": "Bayer CropScience",
+    "slug": "bayer",
+    "logo": "",
+    "city": "Thane",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 44,
+  "fields": {
+    "name": "Dhanuka Agritech",
+    "slug": "dhanuka",
+    "logo": "",
+    "city": "Gurgaon",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.vendor",
+  "pk": 45,
+  "fields": {
+    "name": "Tata Rallis",
+    "slug": "tata-rallis",
+    "logo": "",
+    "city": "Mumbai",
+    "created_by": null,
+    "is_active": true,
+    "is_verified": false,
+    "description": "",
+    "phone": "",
+    "email": "",
+    "website": "",
+    "rating": "0.00",
+    "total_products": 0,
+    "created_at": "2025-12-08T10:46:22.131Z",
+    "updated_at": "2025-12-08T10:46:22.399Z"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 32,
+  "fields": {
+    "name": "Seeds",
+    "slug": "field-crops-vegetables"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 33,
+  "fields": {
+    "name": "Agrochemicals",
+    "slug": "pesticides-herbicides-fungicides"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 34,
+  "fields": {
+    "name": "Nutrients",
+    "slug": "bio-fertilizers-crop-nutrition"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 35,
+  "fields": {
+    "name": "Agri Tools",
+    "slug": "sprayers-cutters-tools"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 36,
+  "fields": {
+    "name": "Animal Nutrition",
+    "slug": "cattle-feed-fish-feed"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 37,
+  "fields": {
+    "name": "Crop Protection",
+    "slug": "crop-protection"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 64,
+  "fields": {
+    "category": 32,
+    "vendor": 42,
+    "name": "Syngenta 6242 Tomato Seeds",
+    "slug": "syngenta-syngenta-6242-tomato-seeds",
+    "description": "High-yielding hybrid tomato variety, good heat set, disease resistant.",
+    "short_description": "High-yielding hybrid tomato variety, good heat set, disease resistant.",
+    "price": "850.00",
+    "mrp": "1100.00",
+    "image": "",
+    "brand": "Syngenta",
+    "technical_name": "Hybrid Tomato F1",
+    "target_crops": "Tomato",
+    "usage_instructions": "Seed rate: 40-50g per acre. Transplanting 25 days after sowing.",
+    "safety_guidelines": "Store in cool, dry place. Treated with Thiram.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.788Z",
+    "updated_at": "2025-12-07T06:14:25.788Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 65,
+  "fields": {
+    "category": 32,
+    "vendor": 43,
+    "name": "Proagro 5222 Mustard Seeds",
+    "slug": "proagro-bayer-proagro-5222-mustard-seeds",
+    "description": "Bold siliqua, high oil content, and tolerant to white rust.",
+    "short_description": "Bold siliqua, high oil content, and tolerant to white rust.",
+    "price": "420.00",
+    "mrp": "550.00",
+    "image": "",
+    "brand": "Proagro (Bayer)",
+    "technical_name": "Mustard Hybrid",
+    "target_crops": "Mustard (Sarson)",
+    "usage_instructions": "Sowing time: Oct-Nov. Seed rate: 1.5 kg/acre.",
+    "safety_guidelines": "Use gloves while handling treated seeds.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.800Z",
+    "updated_at": "2025-12-07T06:14:25.800Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 66,
+  "fields": {
+    "category": 32,
+    "vendor": 41,
+    "name": "Pioneer 30B11 Wheat Seeds",
+    "slug": "pioneer-pioneer-30b11-wheat-seeds",
+    "description": "Excellent grain quality, resistant to rusts.",
+    "short_description": "Excellent grain quality, resistant to rusts.",
+    "price": "1200.00",
+    "mrp": "1450.00",
+    "image": "",
+    "brand": "Pioneer",
+    "technical_name": "High Yielding Wheat Variety",
+    "target_crops": "Wheat",
+    "usage_instructions": "Irrigated timing. Depth of sowing 5-6 cm.",
+    "safety_guidelines": "Fungicide treated.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.811Z",
+    "updated_at": "2025-12-07T06:14:25.811Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 67,
+  "fields": {
+    "category": 33,
+    "vendor": 39,
+    "name": "Saaf Fungicide",
+    "slug": "upl-saaf-fungicide",
+    "description": "Systemic and contact fungicide, effective against leaf spot, blast, and rust.",
+    "short_description": "Systemic and contact fungicide, effective against leaf spot, blast, and rust.",
+    "price": "480.00",
+    "mrp": "600.00",
+    "image": "",
+    "brand": "UPL",
+    "technical_name": "Carbendazim 12% + Mancozeb 63% WP",
+    "target_crops": "Paddy, Groundnut, Potato",
+    "usage_instructions": "Foliar Spray: 2g per liter of water.",
+    "safety_guidelines": "Wear mask and gloves during spraying. Keep away from water bodies.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.822Z",
+    "updated_at": "2025-12-07T06:14:25.822Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 68,
+  "fields": {
+    "category": 33,
+    "vendor": 42,
+    "name": "Amistar Top",
+    "slug": "syngenta-amistar-top",
+    "description": "Broad spectrum fungicide controlling yellow rust and sheath blight.",
+    "short_description": "Broad spectrum fungicide controlling yellow rust and sheath blight.",
+    "price": "1850.00",
+    "mrp": "2200.00",
+    "image": "",
+    "brand": "Syngenta",
+    "technical_name": "Azoxystrobin 18.2% + Difenoconazole 11.4% SC",
+    "target_crops": "Wheat, Rice, Corn",
+    "usage_instructions": "200ml per acre. Apply at booting/heading stage.",
+    "safety_guidelines": "Toxic to fish and aquatic invertebrates.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.832Z",
+    "updated_at": "2025-12-07T06:14:25.832Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 69,
+  "fields": {
+    "category": 33,
+    "vendor": 43,
+    "name": "Confidor Insecticide",
+    "slug": "bayer-confidor-insecticide",
+    "description": "Systemic insecticide for control of aphids, jassids, and whiteflies.",
+    "short_description": "Systemic insecticide for control of aphids, jassids, and whiteflies.",
+    "price": "350.00",
+    "mrp": "450.00",
+    "image": "",
+    "brand": "Bayer",
+    "technical_name": "Imidacloprid 17.8% SL",
+    "target_crops": "Cotton, Chilli, Tomato",
+    "usage_instructions": "0.5ml per liter of water for sucking pests.",
+    "safety_guidelines": "Highly toxic to bees. Do not spray during flowering.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.843Z",
+    "updated_at": "2025-12-07T06:14:25.843Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 70,
+  "fields": {
+    "category": 33,
+    "vendor": 44,
+    "name": "Targa Super Herbicide",
+    "slug": "dhanuka-targa-super-herbicide",
+    "description": "Selective post-emergence herbicide for narrow-leaf weeds.",
+    "short_description": "Selective post-emergence herbicide for narrow-leaf weeds.",
+    "price": "780.00",
+    "mrp": "950.00",
+    "image": "",
+    "brand": "Dhanuka",
+    "technical_name": "Quizalofop Ethyl 5% EC",
+    "target_crops": "Soybean, Cotton, Groundnut",
+    "usage_instructions": "400ml per acre. Apply when weeds are at 2-3 leaf stage.",
+    "safety_guidelines": "Avoid drift to adjacent cereal crops.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.856Z",
+    "updated_at": "2025-12-07T06:14:25.856Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 71,
+  "fields": {
+    "category": 34,
+    "vendor": 40,
+    "name": "Double Yield Stimulant",
+    "slug": "godrej-double-yield-stimulant",
+    "description": "Increases yield, improves quality and quantity of produce.",
+    "short_description": "Increases yield, improves quality and quantity of produce.",
+    "price": "950.00",
+    "mrp": "1200.00",
+    "image": "",
+    "brand": "Godrej",
+    "technical_name": "Homobrassinolide 0.04%",
+    "target_crops": "All Veg and Fruit Crops",
+    "usage_instructions": "Spray 2-3 times during flowering and fruit setting.",
+    "safety_guidelines": "Keep out of reach of children.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.868Z",
+    "updated_at": "2025-12-07T06:14:25.868Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 72,
+  "fields": {
+    "category": 34,
+    "vendor": 39,
+    "name": "Macarena Bio-Stimulant",
+    "slug": "upl-macarena-bio-stimulant",
+    "description": "Promotes root growth and stress tolerance.",
+    "short_description": "Promotes root growth and stress tolerance.",
+    "price": "1100.00",
+    "mrp": "1350.00",
+    "image": "",
+    "brand": "UPL",
+    "technical_name": "Seaweed Extract based",
+    "target_crops": "Vegetables, Fruits",
+    "usage_instructions": "Foliar application: 2ml/liter.",
+    "safety_guidelines": "Organic product, safe to handle.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.879Z",
+    "updated_at": "2025-12-07T06:14:25.879Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 73,
+  "fields": {
+    "category": 35,
+    "vendor": 45,
+    "name": "Battery Sprayer 16L",
+    "slug": "rallis-battery-sprayer-16l",
+    "description": "High pressure battery operated sprayer for ease of use.",
+    "short_description": "High pressure battery operated sprayer for ease of use.",
+    "price": "2800.00",
+    "mrp": "3500.00",
+    "image": "",
+    "brand": "Rallis",
+    "technical_name": "12V 8AH Battery, Double Motor",
+    "target_crops": "All",
+    "usage_instructions": "Charge battery fully before first use (8 hours).",
+    "safety_guidelines": "Wear protective gear while spraying chemicals.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.891Z",
+    "updated_at": "2025-12-07T06:14:25.891Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 74,
+  "fields": {
+    "category": 35,
+    "vendor": 40,
+    "name": "Brush Cutter 4-Stroke",
+    "slug": "stihl-godrej-brush-cutter-4-stroke",
+    "description": "Heavy duty brush cutter for weed management and harvesting.",
+    "short_description": "Heavy duty brush cutter for weed management and harvesting.",
+    "price": "12500.00",
+    "mrp": "16000.00",
+    "image": "",
+    "brand": "Stihl / Godrej",
+    "technical_name": "35cc Engine, Backpack Type",
+    "target_crops": "Field crops",
+    "usage_instructions": "Use fresh petrol. Check oil level before start.",
+    "safety_guidelines": "Wear eye protection and sturdy boots.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.902Z",
+    "updated_at": "2025-12-07T06:14:25.902Z"
+  }
+},
+{
+  "model": "store.product",
+  "pk": 75,
+  "fields": {
+    "category": 36,
+    "vendor": 40,
+    "name": "Bovizyme Cattle Feed",
+    "slug": "godrej-bovizyme-cattle-feed",
+    "description": "Improves milk yield and fat content in dairy cattle.",
+    "short_description": "Improves milk yield and fat content in dairy cattle.",
+    "price": "1200.00",
+    "mrp": "1400.00",
+    "image": "",
+    "brand": "Godrej",
+    "technical_name": "Probiotics + Minerals",
+    "target_crops": "Cattle",
+    "usage_instructions": "Mix 50g daily in feed.",
+    "safety_guidelines": "Store in dry place.",
+    "stock_quantity": 100,
+    "low_stock_threshold": 10,
+    "is_active": true,
+    "meta_title": "",
+    "meta_description": "",
+    "created_at": "2025-12-07T06:14:25.912Z",
+    "updated_at": "2025-12-07T06:14:25.912Z"
+  }
+},
+{
+  "model": "store.profile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "shop_name": "admin's Shop",
+    "gst_number": "",
+    "address": "",
+    "city": "",
+    "state": "",
+    "pincode": "",
+    "credit_limit": "0.00",
+    "credit_used": "0.00",
+    "is_kyc_verified": false
+  }
+},
+{
+  "model": "store.profile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "vendor_64c5d786"
+    ],
+    "shop_name": "vendor_64c5d786's Shop",
+    "gst_number": "",
+    "address": "",
+    "city": "",
+    "state": "",
+    "pincode": "",
+    "credit_limit": "0.00",
+    "credit_used": "0.00",
+    "is_kyc_verified": false
+  }
+},
+{
+  "model": "store.review",
+  "pk": 2,
+  "fields": {
+    "product": 75,
+    "user": [
+      "admin"
+    ],
+    "rating": 5,
+    "title": "jkgujg",
+    "comment": "fyfh",
+    "created_at": "2025-12-07T15:45:09.033Z",
+    "updated_at": "2025-12-07T15:45:09.033Z",
+    "is_verified_purchase": false,
+    "helpful_votes": []
+  }
+},
+{
+  "model": "store.contact",
+  "pk": 1,
+  "fields": {
+    "name": "pritam chaurasiya",
+    "email": "pritamgamingxyz@gmail.com",
+    "message": "website kaisa hai guru jiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii bivgiwogvkmhsih",
+    "created_at": "2025-12-07T16:16:37.555Z"
+  }
+}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Server Error â€” VIBE E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="py-5">
+                <!-- Error Icon -->
+                <div class="mb-4">
+                    <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
+                </div>
+
+                <!-- Error Code -->
+                <h1 class="display-1 fw-bold text-danger">500</h1>
+
+                <!-- Error Message -->
+                <h2 class="fw-bold mb-3">Something Went Wrong</h2>
+                <p class="text-muted mb-4">
+                    We're experiencing technical difficulties. Our team has been notified
+                    and is working to fix the issue. Please try again later.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{% url 'frontpage' %}" class="btn btn-success btn-lg px-4">
+                        <i class="bi bi-house me-2"></i>Go Home
+                    </a>
+                    <button onclick="window.location.reload()" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+                    </button>
+                </div>
+
+                <!-- Support Info -->
+                <div class="mt-5 p-4 bg-light rounded-3">
+                    <h5 class="fw-bold mb-2">Need Help?</h5>
+                    <p class="text-muted mb-0">
+                        Contact our support team at
+                        <a href="mailto:support@vibe-ecommerce.com" class="text-success">
+                            support@vibe-ecommerce.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .display-1 {
+        font-size: 8rem;
+    }
+    @media (max-width: 576px) {
+        .display-1 {
+            font-size: 5rem;
+        }
+    }
+</style>
+{% endblock %}

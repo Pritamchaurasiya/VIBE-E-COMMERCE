@@ -1,22 +1,29 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Vendors — Agri B2B{% endblock %}
+{% block title %}Vendors â€” Agri B2B{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <h1 class="fw-bold text-center mb-5">Our Trusted Vendors</h1>
-    
+
     <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
         {% for vendor in vendors %}
         <div class="col">
-            <div class="card h-100 border-0 shadow-sm text-center">
-                <div class="card-body">
-                    <img src="{% if vendor.logo %}{{ vendor.logo.url }}{% else %}{% static 'images/placeholder-vendor.png' %}{% endif %}" 
-                         alt="{{ vendor.name }}" class="rounded-circle mb-3 border p-1" width="100" height="100" style="object-fit: cover;">
-                    <h5 class="fw-bold mb-1">{{ vendor.name }}</h5>
-                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> {{ vendor.city }}</p>
-                    <a href="{% url 'vendor_detail' vendor.slug %}" class="btn btn-outline-success btn-sm stretched-link">Visit Store</a>
+            <div class="glass-card h-100 hover-3d-lift border-0 overflow-hidden text-center p-4">
+                <div class="position-relative mb-3 d-inline-block">
+                    <img src="{% if vendor.logo %}{{ vendor.logo.url }}{% else %}{% static 'images/placeholder-vendor.png' %}{% endif %}"
+                         alt="{{ vendor.name }}" class="rounded-circle shadow-sm p-1 bg-white object-fit-cover" width="100" height="100">
+                    {% if vendor.is_verified %}
+                    <span class="position-absolute bottom-0 end-0 bg-primary text-white p-1 rounded-circle square-24 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-check-lg small"></i>
+                    </span>
+                    {% endif %}
+                </div>
+                <h5 class="fw-bold mb-1">{{ vendor.name }}</h5>
+                <p class="text-muted small mb-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ vendor.city }}</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'vendor_detail' vendor.slug %}" class="btn btn-premium-outline btn-sm">Visit Store</a>
                 </div>
             </div>
         </div>

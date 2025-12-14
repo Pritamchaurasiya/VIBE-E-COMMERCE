@@ -1,0 +1,399 @@
+""""
+Enhanced Admin Permission Framework
+
+This module provides a comprehensive permission system for Django admin with:
+- Granular role-based access control
+- Tracking feature permissions
+- Admin action auditing
+- Security enforcement
+"""
+
+from django.contrib.auth.models import User, Group, Permission
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
+from django.utils.translation import gettext_lazy as _
+from functools import wraps
+import logging
+import os
+
+# pylint: disable=no-member, broad-except, import-outside-toplevel
+
+logger = logging.getLogger(__name__)
+
+# Define admin roles and their permissions
+ADMIN_ROLES = {
+    'super_admin': {
+        'name': 'Super Administrator',
+        'description': 'Full access to all admin features and settings',
+        'permissions': ['*']
+    },
+    'tracking_admin': {
+        'name': 'Tracking Administrator',
+        'description': 'Access to tracking features and configurations only',
+        'permissions': [
+            'view_tracking_configuration',
+            'change_tracking_configuration',
+            'view_tracking_data',
+            'manage_tracking_alerts',
+            'view_tracking_dashboard',
+            'export_tracking_data',
+        ]
+    },
+    'content_admin': {
+        'name': 'Content Administrator',
+        'description': 'Access to manage products, categories, and content',
+        'permissions': [
+            'add_product', 'change_product', 'delete_product',
+            'add_category', 'change_category', 'delete_category',
+            'add_vendor', 'change_vendor', 'view_vendor',
+            'add_flashsale', 'change_flashsale', 'delete_flashsale',
+            'add_deal', 'change_deal', 'delete_deal',
+        ]
+    },
+    'order_admin': {
+        'name': 'Order Administrator',
+        'description': 'Access to manage orders and customer data',
+        'permissions': [
+            'view_order', 'change_order',
+            'view_orderitem', 'change_orderitem',
+            'view_profile', 'change_profile',
+            'view_contact', 'change_contact',
+        ]
+    },
+    'security_admin': {
+        'name': 'Security Administrator',
+        'description': 'Access to security features and audit logs',
+        'permissions': [
+            'view_auditlog', 'view_admintrackingaudit',
+            'view_systemaccesstracker', 'view_trackingalert',
+            'manage_security_settings',
+            'view_user_sessions',
+        ]
+    },
+    'reporting_admin': {
+        'name': 'Reporting Administrator',
+        'description': 'Access to generate and view reports',
+        'permissions': [
+            'view_analytics', 'export_data',
+            'generate_reports', 'view_dashboard',
+            'view_vendoranalytics', 'view_useranalyticsreport',
+        ]
+    }
+}
+
+# Tracking-specific permissions
+TRACKING_PERMISSIONS = {
+    'view_tracking_configuration': 'Can view tracking configurations',
+    'change_tracking_configuration': 'Can enable/disable tracking features',
+    'view_tracking_data': 'Can view all tracking data',
+    'manage_tracking_alerts': 'Can manage tracking alerts',
+    'view_tracking_dashboard': 'Can access tracking dashboard',
+    'export_tracking_data': 'Can export tracking data',
+    'configure_data_retention': 'Can configure data retention policies',
+    'manage_tracking_exports': 'Can manage data exports',
+    # Security permissions
+    'manage_security_settings': 'Can manage security settings',
+    'view_user_sessions': 'Can view user sessions',
+    # Reporting permissions
+    'view_analytics': 'Can view analytics',
+    'export_data': 'Can export data',
+    'generate_reports': 'Can generate reports',
+    'view_dashboard': 'Can view dashboard',
+    'view_vendoranalytics': 'Can view vendor analytics',
+    'view_useranalyticsreport': 'Can view user analytics report',
+}
+
+def setup_admin_permissions():
+    """
+    Set up custom permissions for admin roles and tracking features.
+    """
+
+    # Get or create content types for tracking models
+    tracking_models = [
+        'TrackingConfiguration', 'SystemFileTracker', 'UserActionTracker',
+        'SystemAccessTracker', 'DataModificationTracker', 'SessionTracker',
+        'PerformanceMetric', 'TrackingAlert', 'TrackingDataRetention',
+        'TrackingExport', 'AdminTrackingAudit'
+    ]
+
+    for model_name in tracking_models:
+        try:
+            app_label = 'store'
+            content_type, _ = ContentType.objects.get_or_create(
+                app_label=app_label,
+                model=model_name.lower()
+            )
+
+            # Create basic permissions if they don't exist
+            for codename, name in [
+                ('view', f'Can view {model_name}'),
+                ('change', f'Can change {model_name}'),
+                ('add', f'Can add {model_name}'),
+                ('delete', f'Can delete {model_name}'),
+            ]:
+                Permission.objects.get_or_create(
+                    codename=f'{codename}_{model_name.lower()}',
+                    name=name,
+                    content_type=content_type
+                )
+
+        except Exception as e:
+            logger.error("Error setting up permissions for %s: %s", model_name, e)
+
+    # Create custom tracking permissions
+    try:
+        from store.models import TrackingConfiguration
+        content_type = ContentType.objects.get_for_model(TrackingConfiguration)
+
+        for codename, name in TRACKING_PERMISSIONS.items():
+            try:
+                Permission.objects.get_or_create(
+                    codename=codename,
+                    name=name,
+                    content_type=content_type
+                )
+            except Exception as e:
+                logger.error("Error creating tracking permission %s: %s", codename, e)
+    except Exception as e:
+        logger.error("Error getting ContentType for TrackingConfiguration: %s", e)
+
+def setup_admin_roles():
+    """
+    Set up admin roles with appropriate permissions.
+    """
+
+    for role_name, role_config in ADMIN_ROLES.items():
+        group, _ = Group.objects.get_or_create(name=role_name)
+
+        if not group.permissions.exists():
+            if role_config['permissions'] == ['*']:
+                # Super admin gets all permissions
+                permissions = Permission.objects.all()
+            else:
+                # Get specific permissions for the role
+                permissions = Permission.objects.filter(
+                    codename__in=role_config['permissions']
+                )
+
+            group.permissions.set(permissions)
+            logger.info(f"Set up {role_name} role with {permissions.count()} permissions")
+
+def check_admin_permission(permission_codename):
+    """
+    Decorator to check if user has specific admin permission.
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise PermissionDenied(_("You must be logged in to access this feature."))
+
+            if not request.user.is_staff:
+                raise PermissionDenied(_("Admin access required."))
+
+            # Check if user has the specific permission
+            if not request.user.has_perm(f'store.{permission_codename}'):
+                logger.warning(f"Permission denied: {request.user.username} lacks {permission_codename}")
+                raise PermissionDenied(_("You don't have permission to perform this action."))
+
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
+
+def admin_role_required(role_name):
+    """
+    Decorator to check if user has a specific admin role.
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise PermissionDenied(_("You must be logged in to access this feature."))
+
+            if not request.user.is_staff:
+                raise PermissionDenied(_("Admin access required."))
+
+            # Check if user has the required role
+            if not request.user.groups.filter(name=role_name).exists():
+                logger.warning(f"Role access denied: {request.user.username} is not a {role_name}")
+                raise PermissionDenied(_("This feature requires specific admin privileges."))
+
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
+
+def tracking_admin_required(view_func):
+    """
+    Decorator specifically for tracking admin access.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise PermissionDenied(_("You must be logged in to access tracking features."))
+
+        if not request.user.is_staff:
+            raise PermissionDenied(_("Admin access required for tracking features."))
+
+        # Check if user has tracking admin role or specific tracking permissions
+        has_tracking_role = request.user.groups.filter(name='tracking_admin').exists()
+        has_tracking_perms = any(
+            request.user.has_perm(f'store.{perm}')
+            for perm in TRACKING_PERMISSIONS.keys()
+        )
+
+        if not (has_tracking_role or has_tracking_perms):
+            logger.warning(f"Tracking access denied: {request.user.username} lacks tracking permissions")
+            raise PermissionDenied(_("You don't have permission to access tracking features."))
+
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+class AdminPermissionMixin:
+    """
+    Mixin for admin views to enforce granular permissions.
+    """
+
+    def has_permission(self, request):
+        """Check if user has permission to access this view."""
+        if not request.user.is_authenticated:
+            return False
+
+        if not request.user.is_staff:
+            return False
+
+        # Check for specific permissions if defined
+        if hasattr(self, 'required_permissions'):
+            for perm in self.required_permissions:
+                if not request.user.has_perm(perm):
+                    return False
+
+        return True
+
+    def dispatch(self, request, *args, **kwargs):
+        """Override dispatch to check permissions."""
+        if not self.has_permission(request):
+            raise PermissionDenied(_("You don't have permission to access this feature."))
+        return super().dispatch(request, *args, **kwargs)
+
+class TrackingPermissionMixin:
+    """
+    Mixin specifically for tracking-related admin views.
+    """
+
+    def has_tracking_permission(self, request):
+        """Check if user has tracking permissions."""
+        if not request.user.is_authenticated or not request.user.is_staff:
+            return False
+
+        # Check for tracking admin role or specific permissions
+        has_tracking_role = request.user.groups.filter(name='tracking_admin').exists()
+        has_tracking_perms = any(
+            request.user.has_perm(f'store.{perm}')
+            for perm in TRACKING_PERMISSIONS.keys()
+        )
+
+        return has_tracking_role or has_tracking_perms
+
+    def dispatch(self, request, *args, **kwargs):
+        """Override dispatch to check tracking permissions."""
+        if not self.has_tracking_permission(request):
+            raise PermissionDenied(_("You don't have permission to access tracking features."))
+        return super().dispatch(request, *args, **kwargs)
+
+def get_user_admin_permissions(user):
+    """
+    Get all admin permissions for a user in a structured format.
+    """
+    if not user or not user.is_authenticated:
+        return {}
+
+    # Get permissions from groups
+    group_permissions = {}
+    for group in user.groups.all():
+        group_permissions[group.name] = list(
+            group.permissions.values_list('codename', flat=True)
+        )
+
+    # Get direct user permissions
+    user_permissions = list(
+        user.user_permissions.values_list('codename', flat=True)
+    )
+
+    # Get all available permissions for comparison
+    all_permissions = Permission.objects.values_list('codename', flat=True)
+
+    return {
+        'is_superuser': user.is_superuser,
+        'is_staff': user.is_staff,
+        'groups': group_permissions,
+        'direct_permissions': user_permissions,
+        'all_available_permissions': list(all_permissions),
+        'tracking_permissions': {
+            perm: user.has_perm(f'store.{perm}')
+            for perm in TRACKING_PERMISSIONS.keys()
+        }
+    }
+
+def log_admin_action(user, action, model_name, object_id=None, object_repr=None, changes=None):
+    """
+    Log admin actions to the audit trail.
+    """
+    try:
+        from .models import AdminTrackingAudit
+
+        AdminTrackingAudit.objects.create(
+            action=action,
+            admin_user=user,
+            target_type=model_name,
+            object_id=object_id,
+            object_repr=object_repr,
+            changes=changes,
+            ip_address=get_client_ip(user),
+            is_successful=True
+        )
+        logger.info("Admin action logged: %s %s %s", user.username, action, model_name)
+    except Exception as e:
+        logger.error("Error logging admin action: %s", e)
+
+def get_client_ip(user):
+    """
+    Get client IP address from request.
+    """
+    request = getattr(user, '_current_request', None)
+    if request:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    return None
+
+def initialize_admin_security():
+    """
+    Initialize admin security settings and permissions.
+    """
+    logger.info("Initializing admin security system...")
+
+    # Set up permissions
+    setup_admin_permissions()
+
+    # Set up roles
+    setup_admin_roles()
+
+    # Create default super admin if none exists
+    if not User.objects.filter(is_superuser=True).exists():
+        try:
+            # Use environment variable or default secure-ish password for dev
+            admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+            User.objects.create_superuser(
+                username='admin',
+                email='admin@example.com',
+                password=admin_password
+            )
+            logger.info("Created default super admin user: admin")
+        except Exception as e:
+            logger.error("Error creating default admin: %s", e)
+
+    logger.info("Admin security system initialized")

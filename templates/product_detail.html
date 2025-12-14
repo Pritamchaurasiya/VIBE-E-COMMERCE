@@ -16,14 +16,50 @@
 
     <div class="row g-5">
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
-                <img src="{% if product.image %}{{ product.image.url }}{% else %}https://placehold.co/600x600?text={{ product.name|urlencode }}{% endif %}"
-                     class="card-img-top rounded"
-                     alt="{{ product.name }}"
-                     style="height: 500px; object-fit: cover;">
+            <!-- Main Image -->
+            <div class="card border-0 shadow-lg mb-4 position-relative overflow-hidden rounded-4 product-main-card">
+                {% if not product.is_in_stock %}
+                <div class="position-absolute top-0 start-0 m-3 z-3">
+                    <span class="badge bg-danger fs-6 shadow-sm">Out of Stock</span>
+                </div>
+                {% elif product.is_low_stock %}
+                <div class="position-absolute top-0 start-0 m-3 z-3">
+                    <span class="badge bg-warning text-dark fs-6 shadow-sm">Only {{ product.stock_quantity }} left!</span>
+                </div>
+                {% endif %}
+                {% if product.discount_percentage > 0 %}
+                <div class="position-absolute top-0 end-0 m-3 z-3">
+                    <span class="badge bg-success fs-6 shadow-sm">{{ product.discount_percentage }}% OFF</span>
+                </div>
+                {% endif %}
+                <div class="ratio ratio-1x1 bg-light">
+                    <img src="{% if product.image %}{{ product.image.url }}{% else %}https://placehold.co/600x600?text={{ product.name|urlencode }}{% endif %}"
+                         class="card-img-top w-100 h-100 object-fit-contain p-4 product-main-image custom-cursor-zoom"
+                         alt="{{ product.name }}"
+                         id="mainProductImage">
+                </div>
             </div>
+
+            <!-- Thumbnail Gallery -->
+            {% if product.images.exists %}
+            <div class="d-flex gap-2 overflow-auto pb-2">
+                <!-- Primary image thumbnail -->
+                <button type="button" class="thumbnail-item active border-0 p-0 bg-transparent" onclick="changeMainImage(this)" aria-label="View main product image">
+                    <img src="{% if product.image %}{{ product.image.url }}{% else %}https://placehold.co/100x100?text=Main{% endif %}"
+                         alt="{{ product.name }}"
+                         class="rounded border thumbnail-img-sm">
+                </button>
+                {% for img in product.images.all %}
+                <button type="button" class="thumbnail-item border-0 p-0 bg-transparent" onclick="changeMainImage(this)" aria-label="View product image {{ forloop.counter }}">
+                    <img src="{{ img.image.url }}"
+                         alt="{{ img.alt_text|default:product.name }}"
+                         class="rounded border thumbnail-img-sm">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
-        
+
         <div class="col-md-6">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -31,7 +67,12 @@
                     <h1 class="display-5 fw-bold mb-2">{{ product.name }}</h1>
                     <p class="text-muted mb-4">Sold by <a href="{% url 'vendor_detail' product.vendor.slug %}" class="text-decoration-none text-success fw-bold">{{ product.vendor.name }}</a></p>
                 </div>
-                <div class="fs-2 fw-bold text-success">₹{{ product.price }}</div>
+                <div class="text-end">
+                    <div class="fs-2 fw-bold text-success">₹{{ product.price }}</div>
+                    {% if product.mrp and product.mrp > product.price %}
+                    <div class="text-muted text-decoration-line-through">₹{{ product.mrp }}</div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Product Meta -->
@@ -48,9 +89,9 @@
             </div>
 
             <p class="lead mb-4">{{ product.short_description }}</p>
-            
+
             <p class="mb-4">{{ product.description }}</p>
-            
+
             {% if product.usage_instructions %}
             <div class="alert alert-info border-0 shadow-sm" role="alert">
                 <h6 class="alert-heading fw-bold"><i class="bi bi-info-circle-fill me-2"></i>Usage Instructions</h6>
@@ -68,13 +109,13 @@
             <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
                 <form action="{% url 'cart_add' product.id %}" method="POST" class="add-to-cart-form d-flex w-100">
                     {% csrf_token %}
-                     <button class="btn btn-success btn-lg flex-grow-1" type="submit">
+                     <button class="btn btn-premium-success btn-magnetic btn-lg flex-grow-1" type="submit">
                         <i class="bi bi-cart-plus me-2"></i>Add to Cart
                     </button>
                     <!-- Wishlist button -->
                     {% if user.is_authenticated %}
-                    <button type="button" class="btn btn-outline-danger btn-lg ms-2 btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}" data-product-id="{{ product.id }}">
-                        <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill{% endif %}"></i>
+                    <button type="button" class="btn btn-premium-outline btn-lg ms-2 btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}" data-product-id="{{ product.id }}" title="Add to wishlist" aria-label="Add to wishlist">
+                        <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill text-danger{% endif %}"></i>
                     </button>
                     {% endif %}
                 </form>
@@ -116,16 +157,17 @@
     <!-- Reviews Section -->
     <div class="mt-5 pt-5 border-top">
         <div class="row">
+            <!-- Review Summary ... -->
             <div class="col-lg-4 mb-4">
-                <div class="reviews-summary bg-light rounded p-4">
+                <div class="reviews-summary p-4 h-100">
                     <h4 class="mb-3">Customer Reviews</h4>
 
                     {% if review_count > 0 %}
                     <div class="rating-overview mb-4">
                         <div class="d-flex align-items-center mb-2">
-                            <div class="rating-stars me-3">
+                            <div class="rating-stars me-3 text-warning">
                                 {% for i in "12345" %}
-                                <i class="bi bi-star{% if forloop.counter <= avg_rating|floatformat:0 %}-fill{% endif %} text-warning"></i>
+                                <i class="bi bi-star{% if forloop.counter <= avg_rating|floatformat:0 %}-fill{% endif %}"></i>
                                 {% endfor %}
                             </div>
                             <span class="fw-bold fs-5">{{ avg_rating|floatformat:1 }}</span>
@@ -137,20 +179,22 @@
                             {% for rating in "54321" %}
                             {% with rating_num=rating|add:0 %}
                             <div class="d-flex align-items-center mb-2">
-                                <span class="me-2">{{ rating_num }}</span>
-                                <i class="bi bi-star-fill text-warning me-2"></i>
-                                <div class="progress flex-grow-1" style="height: 8px;">
+                                <span class="me-2 small text-muted">{{ rating_num }}</span>
+                                <i class="bi bi-star-fill text-warning me-2 small"></i>
+                                <div class="progress flex-grow-1 progress-h-8">
                                     {% if review_count > 0 %}
                                     {% with count=rating_counts|get:rating_num|default:0 %}
                                     {% with pct=count|mul:100|div:review_count %}
-                                    <div class="progress-bar bg-warning" style="--rating-width: {{ pct|floatformat:0 }}%; width: var(--rating-width);"></div>
+                                    <div class="progress-bar bg-warning rating-progress-bar" data-width="{{ pct|floatformat:0 }}" aria-label="{{ rating_num }} stars"></div>
                                     {% endwith %}
                                     {% endwith %}
                                     {% else %}
-                                    <div class="progress-bar bg-warning" style="width: 0%"></div>
+                                    <div class="progress-bar bg-warning rating-progress-bar" data-width="0" aria-label="{{ rating_num }} stars"></div>
                                     {% endif %}
                                 </div>
-                                <span class="ms-2 small">{{ rating_counts|default:{}|get:rating_num|default:0 }}</span>
+                                <span class="ms-2 small text-muted min-w-20">
+                                    {% if rating_counts %}{{ rating_counts|get:rating_num|default:0 }}{% else %}0{% endif %}
+                                </span>
                             </div>
                             {% endwith %}
                             {% endfor %}
@@ -166,9 +210,9 @@
             </div>
 
             <div class="col-lg-8">
-                <!-- Write Review -->
+                <!-- Write Review ... -->
                 {% if user.is_authenticated and not user_review %}
-                <div class="write-review bg-white border rounded p-4 mb-4">
+                <div class="write-review bg-white border rounded p-4 mb-4 shadow-sm">
                     <h5 class="mb-3">Write a Review</h5>
                     <form method="post">
                         {% csrf_token %}
@@ -178,9 +222,9 @@
                             <legend class="form-label fw-semibold mb-2 h6">Rating</legend>
                             <div class="rating-input">
                                 {% for i in "12345" %}
-                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" {% if i == 5 %}checked{% endif %}>
-                                <label for="star{{ i }}" class="star-label">
-                                    <i class="bi bi-star"></i>
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" {% if i == 5 %}checked{% endif %} aria-label="{{ i }} Stars">
+                                <label for="star{{ i }}">
+                                    <i class="bi bi-star-fill"></i>
                                 </label>
                                 {% endfor %}
                             </div>
@@ -196,17 +240,17 @@
                             {{ review_form.comment }}
                         </div>
 
-                        <button type="submit" class="btn btn-success">Submit Review</button>
+                        <button type="submit" class="btn btn-premium-success px-4">Submit Review</button>
                     </form>
                 </div>
                 {% elif user.is_authenticated and user_review %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>You have already reviewed this product.
+                <div class="alert alert-info border-0 shadow-sm rounded-3">
+                    <i class="bi bi-info-circle-fill me-2"></i>You have already reviewed this product.
                 </div>
                 {% else %}
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <a href="{% url 'login' %}" class="alert-link">Login</a> to write a review.
+                <div class="alert alert-warning border-0 shadow-sm rounded-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <a href="{% url 'login' %}" class="fw-bold text-dark text-decoration-underline">Login</a> to write a review.
                 </div>
                 {% endif %}
 
@@ -216,32 +260,32 @@
                     <h5 class="mb-3">Customer Reviews ({{ review_count }})</h5>
 
                     {% for review in reviews %}
-                    <div class="review-item bg-white border rounded p-3 mb-3">
+                    <div class="review-item bg-white border rounded p-3 mb-3 hover-shadow transition-all">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
                                 <div class="d-flex align-items-center mb-1">
                                     <strong class="me-2">{{ review.user.get_full_name|default:review.user.username }}</strong>
                                     {% if review.is_verified_purchase %}
-                                    <span class="badge bg-success small">Verified Purchase</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success small border border-success border-opacity-25">Verified Purchase</span>
                                     {% endif %}
                                 </div>
-                                <div class="rating-stars small">
+                                <div class="rating-stars small text-warning">
                                     {% for i in "12345" %}
-                                    <i class="bi bi-star{% if forloop.counter <= review.rating %}-fill{% endif %} text-warning"></i>
+                                    <i class="bi bi-star{% if forloop.counter <= review.rating %}-fill{% endif %}"></i>
                                     {% endfor %}
-                                    <span class="text-muted ms-2">{{ review.created_at|date:"M d, Y" }}</span>
+                                    <span class="text-muted ms-2 small text-dark">{{ review.created_at|date:"M d, Y" }}</span>
                                 </div>
                             </div>
                         </div>
 
                         {% if review.title %}
-                        <h6 class="mt-2 mb-2">{{ review.title }}</h6>
+                        <h6 class="mt-2 mb-2 fw-bold text-dark">{{ review.title }}</h6>
                         {% endif %}
 
-                        <p class="mb-2">{{ review.comment }}</p>
+                        <p class="mb-2 text-secondary">{{ review.comment }}</p>
 
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-secondary me-2 helpful-btn" data-review-id="{{ review.id }}">
+                            <button class="btn btn-sm btn-outline-secondary me-2 helpful-btn rounded-pill px-3" data-review-id="{{ review.id }}">
                                 <i class="bi bi-hand-thumbs-up me-1"></i>Helpful ({{ review.helpful_count }})
                             </button>
                         </div>
@@ -256,24 +300,31 @@
     <!-- Related Products -->
     {% if related_products %}
     <div class="mt-5 pt-5 border-top">
-        <h3 class="mb-4">Related Products</h3>
+        <h3 class="mb-4 fw-bold">Related Products</h3>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
             {% for rel_product in related_products %}
             <div class="col">
-                <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
-                    <a href="{% url 'product_detail' rel_product.slug %}" class="text-decoration-none text-dark">
-                        <img src="{% if rel_product.image %}{{ rel_product.image.url }}{% else %}https://placehold.co/400x300?text={{ rel_product.name|urlencode }}{% endif %}"
-                              class="card-img-top"
-                              alt="{{ rel_product.name }}"
-                              style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h6 class="card-title mb-1">{{ rel_product.name }}</h6>
-                            <p class="text-muted small mb-2">{{ rel_product.category.name }}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-success">₹{{ rel_product.price }}</span>
+                <div class="card h-100 product-card-modern hover-3d-lift border-0">
+                    <div class="product-image-wrapper position-relative overflow-hidden bg-light" style="aspect-ratio: 4/3;">
+                        <a href="{% url 'product_detail' rel_product.slug %}" class="d-block h-100">
+                            {% if rel_product.image %}
+                            <img src="{{ rel_product.image.url }}" alt="{{ rel_product.name }}" class="img-fluid w-100 h-100 object-fit-cover loading" onload="this.classList.add('loaded')" loading="lazy">
+                            {% else %}
+                            <div class="image-placeholder d-flex align-items-center justify-content-center w-100 h-100 text-muted">
+                                <i class="bi bi-image fs-1 opacity-25"></i>
                             </div>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="card-body p-3">
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">{{ rel_product.category.name }}</small>
+                        <h6 class="card-title mt-1 mb-2 fw-bold text-truncate">
+                            <a href="{% url 'product_detail' rel_product.slug %}" class="text-dark text-decoration-none stretched-link">{{ rel_product.name }}</a>
+                        </h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-success">₹{{ rel_product.price }}</span>
                         </div>
-                    </a>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -282,79 +333,18 @@
     {% endif %}
 </div>
 
-<style>
-.hover-shadow:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-.transition-all {
-    transition: all 0.3s ease;
-}
 
-/* Review Styles */
-.rating-input {
-    display: flex;
-    gap: 0.5rem;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-}
 
-.star-label {
-    color: #ddd;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
 
-input[type="radio"] {
-    display: none;
-}
-
-/* Handle star rating interactions */
-.rating-input input[type="radio"]:checked ~ .star-label,
-.rating-input .star-label:hover,
-.rating-input .star-label:hover ~ .star-label {
-    color: #ffc107;
-}
-
-/* For the reverse order, we need to adjust the hover logic */
-.rating-input .star-label:has(~ input[type="radio"]:checked),
-.rating-input .star-label:has(~ .star-label:hover) {
-    color: #ffc107;
-}
-
-.reviews-summary {
-    border: 1px solid #e5e7eb;
-}
-
-.rating-stars .bi-star-fill {
-    color: #ffc107;
-}
-
-.review-item {
-    border: 1px solid #e5e7eb !important;
-}
-
-.wishlist-btn {
-    transition: all 0.3s ease;
-}
-
-.wishlist-btn:hover {
-    color: #dc3545 !important;
-    border-color: #dc3545 !important;
-}
-
-.helpful-btn:hover {
-    background: #f8f9fa;
-}
-
-.wishlist-btn.active {
-    background: #dc3545 !important;
-    border-color: #dc3545 !important;
-    color: white !important;
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.rating-progress-bar').forEach(function(bar) {
+        var width = bar.dataset.width || 0;
+        bar.style.width = width + '%';
+    });
+});
+</script>
 {% endblock %}

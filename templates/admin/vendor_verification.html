@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vendor Verification â€” Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Vendor Verification</h1>
+                    <p class="text-muted mb-0">Review and approve vendor KYC documents</p>
+                </div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status-filter" class="form-label">Status</label>
+                    <select name="status" id="status-filter" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Review</option>
+                        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="more_info" {% if status_filter == 'more_info' %}selected{% endif %}>More Info Required</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Verification List -->
+    <div class="row g-4">
+        {% for verification in verifications %}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">{{ verification.vendor.name }}</h5>
+                        <small class="text-muted">{{ verification.vendor.city }}</small>
+                    </div>
+                    <span class="badge {% if verification.status == 'pending' %}bg-warning{% elif verification.status == 'approved' %}bg-success{% elif verification.status == 'rejected' %}bg-danger{% else %}bg-info{% endif %}">
+                        {{ verification.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">GST Number</small>
+                            <strong>{{ verification.gst_number|default:"Not provided" }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">PAN Number</small>
+                            <strong>{{ verification.pan_number|default:"Not provided" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Trust Score</small>
+                            <div class="progress progress-h-10">
+                                <progress class="progress-bar bg-success" value="{{ verification.trust_score|default:0 }}" max="100" aria-label="Trust score"></progress>
+                            </div>
+                            <small>{{ verification.trust_score }}/100</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Premium Vendor</small>
+                            {% if verification.is_premium_vendor %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Premium</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Standard</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Documents -->
+                    <h6 class="fw-bold mb-2">Documents</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% if verification.business_registration %}
+                        <a href="{{ verification.business_registration.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-file-earmark-text me-1"></i>Business Reg
+                        </a>
+                        {% endif %}
+                        {% if verification.gst_certificate %}
+                        <a href="{{ verification.gst_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-file-earmark-text me-1"></i>GST Cert
+                        </a>
+                        {% endif %}
+                        {% if verification.pan_card %}
+                        <a href="{{ verification.pan_card.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-file-earmark-text me-1"></i>PAN Card
+                        </a>
+                        {% endif %}
+                        {% if verification.address_proof %}
+                        <a href="{{ verification.address_proof.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-file-earmark-text me-1"></i>Address Proof
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if verification.verification_notes %}
+                    <div class="alert alert-secondary mb-3">
+                        <small><strong>Notes:</strong> {{ verification.verification_notes }}</small>
+                    </div>
+                    {% endif %}
+
+                    {% if verification.verified_by %}
+                    <small class="text-muted">
+                        Verified by {{ verification.verified_by.username }} on {{ verification.verified_at|date:"M d, Y H:i" }}
+                    </small>
+                    {% endif %}
+                </div>
+                {% if verification.status == 'pending' %}
+                <div class="card-footer bg-white">
+                    <form method="post" action="{% url 'admin_verify_vendor' verification.id %}" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="text" name="notes" class="form-control form-control-sm" placeholder="Notes (optional)">
+                        <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">
+                            <i class="bi bi-check-lg"></i> Approve
+                        </button>
+                        <button type="submit" name="action" value="more_info" class="btn btn-warning btn-sm">
+                            <i class="bi bi-info-circle"></i> More Info
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">
+                            <i class="bi bi-x-lg"></i> Reject
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-shield-check display-3 mb-3"></i>
+                <h4>No verifications pending</h4>
+                <p>All vendor verifications have been processed.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Apply width to progress bars from data attribute
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+            bar.style.width = bar.dataset.width + '%';
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Compare Products — Agri B2B{% endblock %}
+
+{% block extra_css %}
+<style>
+    .compare-header {
+        background: linear-gradient(135deg, var(--light-gray), white);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .compare-grid {
+        display: grid;
+        grid-template-columns: 200px repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .compare-feature {
+        font-weight: 600;
+        color: #374151;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .compare-product {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .compare-product:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .compare-product-header {
+        padding: 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .compare-product-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border: 2px solid #f3f4f6;
+    }
+
+    .compare-product-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .compare-product-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        margin-bottom: 1rem;
+    }
+
+    .compare-feature-value {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60px;
+    }
+
+    .compare-feature-value:last-child {
+        border-bottom: none;
+    }
+
+    .feature-highlight {
+        background: rgba(34, 197, 94, 0.1);
+        border-left: 3px solid var(--primary-green);
+    }
+
+    .remove-compare-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc2626;
+        border: none;
+        color: #ffffff;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .remove-compare-btn:hover {
+        background: #dc2626;
+        transform: scale(1.1);
+    }
+
+    .empty-compare {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-compare i {
+        font-size: 5rem;
+        color: #d1d5db;
+        margin-bottom: 1.5rem;
+    }
+
+    .add-more-products {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+
+    .add-more-products:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .compare-grid {
+            grid-template-columns: 150px repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .compare-feature {
+            font-size: 0.875rem;
+            padding: 0.75rem;
+        }
+
+        .compare-product-image {
+            width: 100px;
+            height: 100px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Compare Header -->
+    <div class="compare-header">
+        <h1 class="fw-bold text-dark mb-2">
+            <i class="bi bi-arrow-left-right me-3 text-success"></i>Compare Products
+        </h1>
+        <p class="text-muted mb-0">Compare features and find the best product for your needs</p>
+    </div>
+
+    {% if products %}
+    <div class="compare-grid">
+        <!-- Features Column -->
+        <div class="compare-features">
+            <div class="compare-feature">Product</div>
+            <div class="compare-feature">Price</div>
+            <div class="compare-feature">Brand</div>
+            <div class="compare-feature">Category</div>
+            <div class="compare-feature">Rating</div>
+            <div class="compare-feature">Target Crops</div>
+            <div class="compare-feature">Usage Instructions</div>
+            <div class="compare-feature">Safety Guidelines</div>
+            <div class="compare-feature">Stock Status</div>
+            <div class="compare-feature">Actions</div>
+        </div>
+
+        <!-- Product Columns -->
+        {% for product in products %}
+        <div class="compare-product">
+            <div class="compare-product-header position-relative">
+                <button class="remove-compare-btn" data-product-id="{{ product.id }}" title="Remove from comparison">
+                    <i class="bi bi-x"></i>
+                </button>
+                <img src="{% if product.image %}{{ product.image.url }}{% else %}https://placehold.co/150x150?text={{ product.name|urlencode }}{% endif %}"
+                     alt="{{ product.name }}" class="compare-product-image">
+                <h5 class="compare-product-title">{{ product.name }}</h5>
+            </div>
+
+            <div class="compare-feature-value feature-highlight">
+                <span class="compare-product-price">₹{{ product.price }}</span>
+            </div>
+
+            <div class="compare-feature-value">
+                {{ product.brand|default:"N/A" }}
+            </div>
+
+            <div class="compare-feature-value">
+                {{ product.category.name }}
+            </div>
+
+            <div class="compare-feature-value">
+                {% if product.average_rating %}
+                    <div class="d-flex align-items-center justify-content-center">
+                        {% for i in "12345" %}
+                        <i class="bi bi-star{% if forloop.counter <= product.average_rating|floatformat:0 %}-fill{% endif %} text-warning"></i>
+                        {% endfor %}
+                        <span class="ms-2 small">({{ product.review_count }})</span>
+                    </div>
+                {% else %}
+                    <span class="text-muted">No reviews</span>
+                {% endif %}
+            </div>
+
+            <div class="compare-feature-value">
+                {{ product.target_crops|default:"N/A"|truncatechars:30 }}
+            </div>
+
+            <div class="compare-feature-value">
+                {% if product.usage_instructions %}
+                    <span class="text-muted small">{{ product.usage_instructions|truncatechars:50 }}</span>
+                {% else %}
+                    <span class="text-muted">N/A</span>
+                {% endif %}
+            </div>
+
+            <div class="compare-feature-value">
+                {% if product.safety_guidelines %}
+                    <span class="text-muted small">{{ product.safety_guidelines|truncatechars:50 }}</span>
+                {% else %}
+                    <span class="text-muted">N/A</span>
+                {% endif %}
+            </div>
+
+            <div class="compare-feature-value">
+                {% if product.is_in_stock %}
+                    <span class="badge bg-success">In Stock</span>
+                {% else %}
+                    <span class="badge bg-danger">Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="compare-feature-value">
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="{% url 'product_detail' product.slug %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>View
+                    </a>
+                    <form action="{% url 'cart_add' product.id %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="bi bi-cart-plus me-1"></i>Add
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Add More Products -->
+    <div class="text-center">
+        <a href="{% url 'shop' %}" class="add-more-products">
+            <i class="bi bi-plus-circle me-2"></i>Add More Products to Compare
+        </a>
+    </div>
+
+    {% else %}
+    <div class="empty-compare">
+        <i class="bi bi-arrow-left-right"></i>
+        <h3 class="fw-bold text-dark mb-3">No Products to Compare</h3>
+        <p class="text-muted mb-4">Add products to comparison to see their features side by side.</p>
+        <a href="{% url 'shop' %}" class="add-more-products">
+            <i class="bi bi-shop me-2"></i>Browse Products
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Remove product from comparison
+function removeFromComparison(productId) {
+    // Remove from localStorage
+    let comparedProducts = JSON.parse(localStorage.getItem('comparedProducts') || '[]');
+    comparedProducts = comparedProducts.filter(id => id !== productId);
+    localStorage.setItem('comparedProducts', JSON.stringify(comparedProducts));
+
+    // Reload page to update comparison
+    location.reload();
+}
+
+// Attach click handlers to remove buttons
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.remove-compare-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const productId = Number.parseInt(this.dataset.productId, 10);
+            removeFromComparison(productId);
+        });
+    });
+});
+
+// Add to comparison functionality (can be called from product cards)
+globalThis.addToComparison = function(productId) {
+    let comparedProducts = JSON.parse(localStorage.getItem('comparedProducts') || '[]');
+
+    if (comparedProducts.includes(productId)) {
+        Toastify({
+            text: "Product already in comparison",
+            duration: 3000,
+            backgroundColor: "linear-gradient(to right, #ff9a9e, #fecfef)",
+        }).showToast();
+    } else if (comparedProducts.length >= 4) {
+        Toastify({
+            text: "You can compare maximum 4 products at a time",
+            duration: 3000,
+            backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+        }).showToast();
+    } else {
+        comparedProducts.push(productId);
+        localStorage.setItem('comparedProducts', JSON.stringify(comparedProducts));
+
+        Toastify({
+            text: "Product added to comparison! 🔄",
+            duration: 3000,
+            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+        }).showToast();
+    }
+};
+</script>
+{% endblock %}

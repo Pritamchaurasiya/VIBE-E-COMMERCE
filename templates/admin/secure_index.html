@@ -1,0 +1,302 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_header|default:_('Django administration') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Security Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <strong>Secure Admin Dashboard</strong> |
+                Logged in as: <strong>{{ user.username }}</strong> |
+                Role: <strong>{{ user_role|title }}</strong> |
+                Last login: <strong>{{ user.last_login|date:"M d, Y H:i" }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Alerts -->
+    {% if security_alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-exclamation-triangle"></i> Security Alerts
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for alert in security_alerts %}
+                        <div class="list-group-item list-group-item-{{ alert.severity }}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ alert.title }}</h6>
+                                <small>{{ alert.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ alert.description }}</p>
+                            <small>Type: {{ alert.alert_type }} | Severity: {{ alert.severity }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dashboard Cards -->
+    <div class="row mb-4">
+        <!-- System Status -->
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">System Status</div>
+                <div class="card-body">
+                    <h5 class="card-title">Healthy</h5>
+                    <p class="card-text">
+                        <small>Database: {{ system_status.database }}</small><br>
+                        <small>Cache: {{ system_status.cache }}</small><br>
+                        <small>Storage: {{ system_status.storage }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Active Sessions</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ system_status.active_sessions }}</h5>
+                    <p class="card-text">
+                        <small>Last backup: {{ system_status.last_backup|timesince }} ago</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tracking Status -->
+        <div class="col-md-3">
+            <div class="card text-white bg-{{ tracking_enabled|yesno:'success,danger' }} mb-3">
+                <div class="card-header">Tracking System</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ tracking_enabled|yesno:'Active,Disabled' }}</h5>
+                    <p class="card-text">
+                        <small>{{ stats.file_operations_24h }} file operations</small><br>
+                        <small>{{ stats.user_actions_24h }} user actions</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Actions -->
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Recent Actions</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ recent_actions|length }}</h5>
+                    <p class="card-text">
+                        <small>Last: {% if recent_actions %}{{ recent_actions|first|action_timestamp|timesince }} ago{% endif %}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role-Based Sections -->
+    {% if show_tracking_section %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-chart-line"></i> Tracking Dashboard
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Tracking Statistics (Last 24h)</h5>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    File Operations
+                                    <span class="badge bg-primary rounded-pill">{{ stats.file_operations_24h }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    User Actions
+                                    <span class="badge bg-primary rounded-pill">{{ stats.user_actions_24h }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    System Access
+                                    <span class="badge bg-primary rounded-pill">{{ stats.system_access_24h }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Active Sessions
+                                    <span class="badge bg-primary rounded-pill">{{ stats.active_sessions }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Active Alerts
+                                    <span class="badge bg-warning rounded-pill">{{ stats.active_alerts }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Quick Actions</h5>
+                            <div class="btn-group-vertical" role="group">
+                                <a href="{% url 'admin:tracking_dashboard' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-chart-bar"></i> View Full Dashboard
+                                </a>
+                                <a href="{% url 'admin:tracking_config' %}" class="btn btn-outline-success">
+                                    <i class="fas fa-cog"></i> Configure Tracking
+                                </a>
+                                <a href="{% url 'admin:tracking_alerts' %}" class="btn btn-outline-warning">
+                                    <i class="fas fa-bell"></i> Manage Alerts
+                                </a>
+                                <a href="{% url 'admin:tracking_stats_api' %}" class="btn btn-outline-info">
+                                    <i class="fas fa-download"></i> Export Data
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if show_content_section %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-box-open"></i> Content Management
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'admin:store_product_changelist' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                        <a href="{% url 'admin:store_category_changelist' %}" class="btn btn-outline-success">
+                            <i class="fas fa-tags"></i> Categories
+                        </a>
+                        <a href="{% url 'admin:store_vendor_changelist' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-store"></i> Vendors
+                        </a>
+                        <a href="{% url 'admin:store_flashsale_changelist' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-bolt"></i> Flash Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if show_order_section %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-shopping-cart"></i> Order Management
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'admin:store_order_changelist' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-receipt"></i> Orders
+                        </a>
+                        <a href="{% url 'admin:store_profile_changelist' %}" class="btn btn-outline-success">
+                            <i class="fas fa-users"></i> Customers
+                        </a>
+                        <a href="{% url 'admin:store_contact_changelist' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-envelope"></i> Contacts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if show_security_section %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-shield-alt"></i> Security Center
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'admin:admin_audit' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-history"></i> Audit Trail
+                        </a>
+                        <a href="{% url 'admin:security_settings' %}" class="btn btn-outline-success">
+                            <i class="fas fa-cogs"></i> Security Settings
+                        </a>
+                        <a href="{% url 'admin:admin_permissions' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-key"></i> Permissions
+                        </a>
+                        <a href="{% url 'admin:admin_roles' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-users-cog"></i> Roles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Admin Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-history"></i> Recent Admin Actions
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Target</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for action in recent_actions %}
+                                <tr>
+                                    <td>{{ action.action_timestamp|timesince }} ago</td>
+                                    <td>{{ action.admin_user.username }}</td>
+                                    <td>{{ action.action }}</td>
+                                    <td>{{ action.target_type }}: {{ action.object_repr|truncatechars:30 }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ action.is_successful|yesno:'success,danger' }}">
+                                            {{ action.is_successful|yesno:'Success,Failed' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No recent actions</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .list-group-item-high { background-color: #f8d7da; }
+    .list-group-item-medium { background-color: #fff3cd; }
+    .badge-success { background-color: #28a745; }
+    .badge-danger { background-color: #dc3545; }
+    .badge-warning { background-color: #ffc107; }
+    .badge-primary { background-color: #007bff; }
+</style>
+{% endblock %}

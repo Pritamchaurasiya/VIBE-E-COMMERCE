@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Credit & Billing | Agri B2B{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="dashboard-sidebar p-3 bg-white rounded-3 shadow-sm h-100">
+                <div class="d-flex align-items-center mb-4 px-3">
+                    <div class="bg-success bg-opacity-10 p-2 rounded-circle me-3">
+                        <i class="bi bi-person-circle fs-4 text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">{{ user.first_name }} {{ user.last_name }}</h6>
+                        <small class="text-muted">Member since {{ user.date_joined|date:"M Y" }}</small>
+                    </div>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-speedometer2 me-3"></i> Dashboard
+                    </a>
+                    <a href="{% url 'dashboard' %}#orders" class="list-group-item list-group-item-action">
+                        <i class="bi bi-box-seam me-3"></i> My Orders
+                    </a>
+                    <a href="{% url 'profile_settings' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person-gear me-3"></i> Profile Settings
+                    </a>
+                    <a href="{% url 'credit_billing' %}" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-credit-card me-3"></i> Credit & Billing
+                    </a>
+                    <a href="{% url 'invoices' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-receipt me-3"></i> Invoices
+                    </a>
+                    <a href="{% url 'wishlist_view' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-heart me-3"></i> Wishlist
+                    </a>
+                    <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger mt-3">
+                        <i class="bi bi-box-arrow-right me-3"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">Credit & Billing</h4>
+                <button class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-download me-2"></i>Statement
+                </button>
+            </div>
+
+            <!-- Credit Cards Section -->
+            <div class="row g-4 mb-5">
+                <!-- Virtual Credit Card -->
+                <div class="col-md-6">
+                    <div class="virtual-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="fw-bold fst-italic fs-5">VibePay Business</div>
+                            <i class="bi bi-wifi fs-3"></i>
+                        </div>
+
+                        <div class="card-chip"></div>
+
+                        <div class="card-number">
+                            **** **** **** {{ user.id|stringformat:"04d" }}
+                        </div>
+
+                        <div class="card-details">
+                            <div class="card-holder">
+                                <h6>Card Holder</h6>
+                                <div>{{ user.first_name|default:'VALUED'|upper }} {{ user.last_name|default:'MEMBER'|upper }}</div>
+                            </div>
+                            <div class="card-expires">
+                                <h6>Expires</h6>
+                                <div>12/28</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="col-md-6">
+                    <div class="row g-4 h-100">
+                        <div class="col-12">
+                            <div class="stats-card d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h6 class="text-muted text-uppercase mb-2">Available Credit</h6>
+                                    <h2 class="fw-bold mb-0 text-success">â‚¹{{ profile.credit_limit|floatformat:0 }}</h2>
+                                    <small class="text-muted">Total Limit</small>
+                                </div>
+                                <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                    <i class="bi bi-wallet2 fs-2 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stats-card d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h6 class="text-muted text-uppercase mb-2">Used Credit</h6>
+                                    <h2 class="fw-bold mb-0 text-danger">â‚¹{{ profile.credit_used|floatformat:0 }}</h2>
+                                    <progress class="progress-compact mt-2" value="{{ credit_percentage|default:0 }}" max="100" title="Credit Usage"></progress>
+                                </div>
+                                <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                                    <i class="bi bi-graph-up-arrow fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center px-4">
+                    <h5 class="mb-0 fw-bold">Transaction History</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            This Month
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">This Month</a></li>
+                            <li><a class="dropdown-item" href="#">Last 3 Months</a></li>
+                            <li><a class="dropdown-item" href="#">Last 6 Months</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table premium-table mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Transaction Details</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold">{{ tx.date|date:"d M" }}</div>
+                                    <small class="text-muted">{{ tx.date|date:"Y" }}</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light p-2 rounded-circle me-3">
+                                            {% if tx.type == 'debit' %}
+                                            <i class="bi bi-arrow-up-right text-danger"></i>
+                                            {% else %}
+                                            <i class="bi bi-arrow-down-left text-success"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ tx.description }}</div>
+                                            <small class="text-muted">Ref: #{{ tx.ref_id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge {% if tx.status == 'completed' %}status-success{% else %}status-warning{% endif %}">
+                                        {{ tx.status|title }}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="fw-bold {% if tx.type == 'debit' %}text-danger{% else %}text-success{% endif %}">
+                                        {% if tx.type == 'debit' %}-{% else %}+{% endif %}
+                                        â‚¹{{ tx.amount|floatformat:2 }}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="bg-light p-4 rounded-circle mb-3">
+                                            <i class="bi bi-receipt text-muted fs-1"></i>
+                                        </div>
+                                        <h6 class="text-muted">No transactions found</h6>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Animate progress bars on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const statsCards = document.querySelectorAll('.stats-card');
+        statsCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+
+        const virtualCard = document.querySelector('.virtual-card');
+        virtualCard.style.opacity = '0';
+        virtualCard.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            virtualCard.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            virtualCard.style.opacity = '1';
+            virtualCard.style.transform = 'scale(1)';
+        }, 300);
+    });
+</script>
+{% endblock %}

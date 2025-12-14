@@ -3,262 +3,6 @@
 
 {% block title %}Dashboard | Agri B2B{% endblock %}
 
-{% block extra_css %}
-<style>
-    .dashboard-header {
-        background: linear-gradient(135deg, var(--light-gray), white);
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 auto 1rem;
-        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
-    }
-
-    .sidebar {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        position: sticky;
-        top: 20px;
-    }
-
-    .sidebar-header {
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-        color: white;
-        padding: 2rem 1.5rem;
-        text-align: center;
-    }
-
-    .sidebar-avatar {
-        width: 60px;
-        height: 60px;
-        background: white;
-        color: var(--primary-green);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0 auto 1rem;
-    }
-
-    .sidebar-menu {
-        padding: 0;
-    }
-
-    .sidebar-menu .list-group-item {
-        border: none;
-        padding: 1rem 1.5rem;
-        color: #374151;
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-menu .list-group-item:hover {
-        background: #f8fafc;
-        color: var(--primary-green);
-        transform: translateX(5px);
-    }
-
-    .sidebar-menu .list-group-item.active {
-        background: var(--primary-green);
-        color: white;
-        border-color: var(--primary-green);
-    }
-
-    .sidebar-menu .list-group-item i {
-        width: 20px;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin: 0 auto 1rem;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-label {
-        color: #6b7280;
-        font-weight: 500;
-        margin-bottom: 0;
-    }
-
-    .orders-table {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-    }
-
-    .orders-header {
-        background: #f8fafc;
-        padding: 1.5rem 2rem;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .orders-header h4 {
-        margin: 0;
-        color: #1f2937;
-        font-weight: 700;
-    }
-
-    .order-row {
-        padding: 1.5rem 2rem;
-        border-bottom: 1px solid #f3f4f6;
-        transition: all 0.3s ease;
-    }
-
-    .order-row:hover {
-        background: #f8fafc;
-    }
-
-    .order-row:last-child {
-        border-bottom: none;
-    }
-
-    .order-id {
-        font-weight: 600;
-        color: var(--primary-green);
-    }
-
-    .order-date {
-        color: #6b7280;
-        font-size: 0.875rem;
-    }
-
-    .order-amount {
-        font-weight: 700;
-        color: #1f2937;
-    }
-
-    .order-status {
-        padding: 0.375rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .status-delivered {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-shipped {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-
-    .status-pending {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .status-cancelled {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .track-btn {
-        background: var(--primary-green);
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .track-btn:hover {
-        background: var(--dark-green);
-        transform: translateY(-1px);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: #6b7280;
-    }
-
-    .empty-state i {
-        font-size: 4rem;
-        color: #d1d5db;
-        margin-bottom: 1.5rem;
-    }
-
-    .empty-state h5 {
-        color: #1f2937;
-        margin-bottom: 1rem;
-    }
-
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .sidebar {
-            position: static;
-            margin-bottom: 2rem;
-        }
-
-        .order-row {
-            padding: 1rem;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block extra_js %}
 <script>
 function trackOrder(orderId) {
@@ -268,6 +12,18 @@ function trackOrder(orderId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Animate stats cards
+    const statsCards = document.querySelectorAll('.stats-card');
+    statsCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
     // Track order buttons
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('track-btn') || e.target.closest('.track-btn')) {
@@ -276,95 +32,52 @@ document.addEventListener('DOMContentLoaded', function() {
             trackOrder(orderId);
         }
     });
-
-    // Add smooth scrolling for sidebar links
-    const sidebarLinks = document.querySelectorAll('.sidebar-menu .list-group-item[href^="#"]');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href').substring(1);
-            const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    });
-
-    // Add active class to current section
-    const observerOptions = {
-        threshold: 0.5,
-        rootMargin: '-50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const id = entry.target.id;
-            const link = document.querySelector(`.sidebar-menu .list-group-item[href="#${id}"]`);
-            if (link) {
-                if (entry.isIntersecting) {
-                    document.querySelectorAll('.sidebar-menu .list-group-item').forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
-                }
-            }
-        });
-    }, observerOptions);
-
-    // Observe sections
-    document.querySelectorAll('div[id]').forEach(section => {
-        observer.observe(section);
-    });
 });
 </script>
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <div class="profile-avatar">
-            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-5">
+        <div class="bg-gradient-primary rounded-circle p-1 me-3 d-none d-md-block">
+            <div class="bg-white rounded-circle p-2">
+                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-4 avatar-circle-60">
+                    {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                </div>
+            </div>
         </div>
-        <h1 class="fw-bold text-dark mb-2">Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
-        <p class="text-muted mb-0">Manage your account and track your orders</p>
+        <div>
+            <h2 class="fw-bold mb-1">Welcome back, {{ request.user.first_name|default:request.user.username }}!</h2>
+            <p class="text-muted mb-0">Here's what's happening with your store today.</p>
+        </div>
     </div>
 
     <div class="row">
         <!-- Sidebar -->
         <div class="col-lg-3 mb-4">
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <div class="sidebar-avatar">
-                        {{ request.user.first_name|first|default:request.user.username|first|upper }}
-                    </div>
-                    <h6 class="fw-bold mb-1">{{ request.user.get_full_name|default:request.user.username }}</h6>
-                    <p class="small mb-2 opacity-75">{{ request.user.email }}</p>
-                    {% if request.user.profile.is_kyc_verified %}
-                    <span class="badge bg-light text-success">✓ KYC Verified</span>
-                    {% else %}
-                    <span class="badge bg-warning text-dark">KYC Pending</span>
-                    {% endif %}
-                </div>
-                <div class="sidebar-menu">
-                    <a href="#" class="list-group-item active">
-                        <i class="bi bi-speedometer2"></i> Dashboard
+            <div class="dashboard-sidebar p-3 bg-white rounded-3 shadow-sm h-100">
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-speedometer2 me-3"></i> Dashboard
                     </a>
-                    <a href="#orders" class="list-group-item">
-                        <i class="bi bi-box-seam"></i> My Orders
+                    <a href="#orders" class="list-group-item list-group-item-action">
+                        <i class="bi bi-box-seam me-3"></i> My Orders
                     </a>
-                    <a href="#" class="list-group-item">
-                        <i class="bi bi-person"></i> Profile Settings
+                    <a href="{% url 'profile_settings' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person-gear me-3"></i> Profile Settings
                     </a>
-                    <a href="#" class="list-group-item">
-                        <i class="bi bi-wallet2"></i> Credit & Billing
+                    <a href="{% url 'credit_billing' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-credit-card me-3"></i> Credit & Billing
                     </a>
-                    <a href="#" class="list-group-item">
-                        <i class="bi bi-file-earmark-text"></i> Invoices
+                    <a href="{% url 'invoices' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-receipt me-3"></i> Invoices
                     </a>
-                    <a href="#" class="list-group-item">
-                        <i class="bi bi-heart"></i> Wishlist
+                    <a href="{% url 'wishlist_view' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-heart me-3"></i> Wishlist
                     </a>
-                    <a href="{% url 'logout' %}" class="list-group-item text-danger">
-                        <i class="bi bi-box-arrow-right"></i> Logout
+                    <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger mt-3">
+                        <i class="bi bi-box-arrow-right me-3"></i> Logout
                     </a>
                 </div>
             </div>
@@ -373,114 +86,128 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- Main Content -->
         <div class="col-lg-9">
             <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-wallet2"></i>
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="stats-card h-100 position-relative overflow-hidden">
+                        <div class="position-relative z-1">
+                            <h6 class="text-muted text-uppercase mb-2">Available Credit</h6>
+                            <h2 class="fw-bold text-dark mb-0">₹{{ request.user.profile.credit_limit|default:"0"|floatformat:0 }}</h2>
+                            <small class="text-success fw-semibold"><i class="bi bi-check-circle me-1"></i>Active</small>
+                        </div>
+                        <i class="bi bi-wallet2 position-absolute bottom-0 end-0 text-success opacity-10 decorative-icon-xl"></i>
                     </div>
-                    <div class="stat-value">₹{{ request.user.profile.credit_limit|default:"0.00"|floatformat:0 }}</div>
-                    <div class="stat-label">Available Credit</div>
-                    <small class="text-muted">Collateral-free credit limit</small>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-receipt"></i>
+                <div class="col-md-4">
+                    <div class="stats-card h-100 position-relative overflow-hidden">
+                        <div class="position-relative z-1">
+                            <h6 class="text-muted text-uppercase mb-2">Total Orders</h6>
+                            <h2 class="fw-bold text-dark mb-0">{{ orders.count }}</h2>
+                            <small class="text-muted">Lifetime purchases</small>
+                        </div>
+                        <i class="bi bi-bag-check position-absolute bottom-0 end-0 text-primary opacity-10 decorative-icon-xl"></i>
                     </div>
-                    <div class="stat-value">{{ orders.count }}</div>
-                    <div class="stat-label">Total Orders</div>
-                    <small class="text-muted">All time purchases</small>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-truck"></i>
+                <div class="col-md-4">
+                    <div class="stats-card h-100 position-relative overflow-hidden">
+                        <div class="position-relative z-1">
+                            <h6 class="text-muted text-uppercase mb-2">Pending Delivery</h6>
+                            <h2 class="fw-bold text-dark mb-0">{{ pending_orders_count }}</h2>
+                            <small class="text-warning fw-semibold"><i class="bi bi-clock me-1"></i>In Transit</small>
+                        </div>
+                        <i class="bi bi-truck position-absolute bottom-0 end-0 text-warning opacity-10 decorative-icon-xl"></i>
                     </div>
-                    <div class="stat-value">{{ pending_orders_count }}</div>
-                    <div class="stat-label">Pending Delivery</div>
-                    <small class="text-muted">Orders in transit</small>
                 </div>
             </div>
 
             <!-- Recent Orders -->
-            <div class="orders-table" id="orders">
-                <div class="orders-header">
-                    <h4><i class="bi bi-box-seam me-2"></i>Recent Orders</h4>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5" id="orders">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center px-4">
+                    <h5 class="mb-0 fw-bold">Recent Orders</h5>
+                    <a href="#" class="btn btn-light btn-sm rounded-pill px-3">View All</a>
                 </div>
 
-                {% if orders %}
-                {% for order in orders %}
-                <div class="order-row">
-                    <div class="row align-items-center">
-                        <div class="col-md-2">
-                            <div class="order-id">#{{ order.id }}</div>
-                            <div class="order-date">{{ order.created_at|date:"M d, Y" }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="order-amount">₹{{ order.paid_amount|floatformat:0 }}</div>
-                            <small class="text-muted">{{ order.items.count }} item{{ order.items.count|pluralize }}</small>
-                        </div>
-                        <div class="col-md-3">
-                            {% if order.status == 'delivered' %}
-                            <span class="order-status status-delivered">Delivered</span>
-                            {% elif order.status == 'shipped' %}
-                            <span class="order-status status-shipped">Shipped</span>
-                            {% elif order.status == 'cancelled' %}
-                            <span class="order-status status-cancelled">Cancelled</span>
-                            {% else %}
-                            <span class="order-status status-pending">{{ order.get_status_display }}</span>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <button class="track-btn" data-order-id="{{ order.id }}">
-                                <i class="bi bi-geo-alt me-1"></i>Track Order
-                            </button>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table premium-table mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Order ID</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td class="ps-4 fw-semibold">#{{ order.id }}</td>
+                                <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                <td>₹{{ order.paid_amount|floatformat:0 }}</td>
+                                <td>
+                                    {% if order.status == 'delivered' %}
+                                    <span class="status-badge status-success">Delivered</span>
+                                    {% elif order.status == 'shipped' %}
+                                    <span class="status-badge bg-info bg-opacity-10 text-info">Shipped</span>
+                                    {% elif order.status == 'cancelled' %}
+                                    <span class="status-badge status-danger">Cancelled</span>
+                                    {% else %}
+                                    <span class="status-badge status-warning">{{ order.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-dark rounded-pill track-btn" data-order-id="{{ order.id }}">
+                                        Track
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="py-4">
+                                        <div class="bg-light d-inline-block rounded-circle p-4 mb-3">
+                                            <i class="bi bi-cart-x text-muted fs-1"></i>
+                                        </div>
+                                        <h6 class="text-muted">No orders found</h6>
+                                        <a href="{% url 'shop' %}" class="btn btn-success rounded-pill px-4 mt-3">Start Shopping</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                {% endfor %}
-                {% else %}
-                <div class="empty-state">
-                    <i class="bi bi-receipt"></i>
-                    <h5>No orders yet</h5>
-                    <p>You haven't placed any orders yet. Start shopping to see your order history here.</p>
-                    <a href="{% url 'shop' %}" class="btn btn-success">
-                        <i class="bi bi-shop me-2"></i>Start Shopping
-                    </a>
-                </div>
-                {% endif %}
             </div>
 
-            <!-- Quick Actions -->
-            <div class="row mt-4 g-3">
+            <!-- Quick Actions Grid -->
+            <h5 class="fw-bold mb-3">Quick Actions</h5>
+            <div class="row g-3">
                 <div class="col-md-6">
-                    <div class="stat-card">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon me-3">
-                                <i class="bi bi-heart"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Wishlist</h6>
-                                <p class="text-muted small mb-0">View saved products</p>
-                            </div>
+                    <a href="{% url 'wishlist_view' %}" class="stats-card h-100 p-3 d-flex align-items-center quick-action-card text-decoration-none">
+                        <div class="bg-danger bg-opacity-10 col-auto rounded-3 p-3 me-3">
+                            <i class="bi bi-heart text-danger fs-4"></i>
                         </div>
-                        <a href="#" class="btn btn-outline-success btn-sm mt-3">View Wishlist</a>
-                    </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">My Wishlist</h6>
+                            <p class="text-muted small mb-0">View your saved items</p>
+                        </div>
+                        <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                    </a>
                 </div>
                 <div class="col-md-6">
-                    <div class="stat-card">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon me-3">
-                                <i class="bi bi-person"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Profile Settings</h6>
-                                <p class="text-muted small mb-0">Update your information</p>
-                            </div>
+                    <a href="{% url 'profile_settings' %}" class="stats-card h-100 p-3 d-flex align-items-center quick-action-card text-decoration-none">
+                        <div class="bg-primary bg-opacity-10 col-auto rounded-3 p-3 me-3">
+                            <i class="bi bi-person-gear text-primary fs-4"></i>
                         </div>
-                        <a href="#" class="btn btn-outline-success btn-sm mt-3">Edit Profile</a>
-                    </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Profile Settings</h6>
+                            <p class="text-muted small mb-0">Edit your personal details</p>
+                        </div>
+                        <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

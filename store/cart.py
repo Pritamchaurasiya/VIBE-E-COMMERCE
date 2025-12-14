@@ -1,54 +1,100 @@
 """
 Cart management module.
 """
+# pylint: disable=no-member
 from django.conf import settings
+from .models import Product, CartItem
 
-from .models import Product
 
-class Cart(object):
+class Cart:
     """
-    Cart class to manage the shopping cart in the session.
+    Cart class to manage the shopping cart in the session or database.
     """
+
     def __init__(self, request):
         self.session = request.session
-        cart_session = self.session.get(settings.CART_SESSION_ID)
+        self.request = request
+        # Check if user is authenticated (works for Session and Token auth)
+        self.user = (
+            request.user if request.user and request.user.is_authenticated else None
+        )
 
-        if not cart_session:
-            cart_session = self.session[settings.CART_SESSION_ID] = {}
-        
-        self.cart_data = cart_session
+        if self.user:
+            # DB-backed cart for logged-in users
+            self.cart_data = {}
+            items = CartItem.objects.filter(
+                cart_id=str(self.user.id)
+            ).select_related('product')
+            for item in items:
+                self.cart_data[str(item.product.id)] = {
+                    'quantity': item.quantity,
+                    'id': str(item.product.id)
+                }
+        else:
+            # Session-backed cart for anonymous users
+            cart_session = self.session.get(settings.CART_SESSION_ID)
+            if not cart_session:
+                cart_session = self.session[settings.CART_SESSION_ID] = {}
+            self.cart_data = cart_session
 
+        # Ensure consistency
         if any(not isinstance(value, dict) for value in self.cart_data.values()):
             self.cart_data = {
-                key: ({'quantity': value, 'id': key} if not isinstance(value, dict) else value)
+                key: (
+                    {'quantity': value, 'id': key}
+                    if not isinstance(value, dict)
+                    else value
+                )
                 for key, value in self.cart_data.items()
             }
-            self.save()
-    
+            if not self.user:
+                self.save()
+
     def __iter__(self):
         product_ids = self.cart_data.keys()
         products = Product.objects.filter(id__in=product_ids)
-        
+
         cart_data_copy = self.cart_data.copy()
 
         for product in products:
             cart_data_copy[str(product.id)]['product'] = product
-        
+
         for item in cart_data_copy.values():
             if 'product' in item:
-                item['total_price'] = item['product'].price * item['quantity']
+                item['price'] = self._calculate_unit_price(
+                    item['product'], item['quantity']
+                )
+                item['total_price'] = item['price'] * item['quantity']
                 yield item
-    
+
     def __len__(self):
         return sum(item['quantity'] for item in self.cart_data.values())
-    
+
     def save(self):
         """
-        Mark the session as modified to ensure it gets saved.
+        Mark the session as modified or save to DB.
         """
-        self.session[settings.CART_SESSION_ID] = self.cart_data
-        self.session.modified = True
-    
+        if self.user:
+            # DB Save
+            current_ids = [int(pid) for pid in self.cart_data.keys()]
+
+            # Remove items not in cart anymore
+            CartItem.objects.filter(
+                cart_id=str(self.user.id)
+            ).exclude(product__id__in=current_ids).delete()
+
+            # Update/Create items
+            for product_id, item_data in self.cart_data.items():
+                CartItem.objects.update_or_create(
+                    cart_id=str(self.user.id),
+                    product_id=product_id,
+                    defaults={'quantity': item_data['quantity']}
+                )
+        else:
+            # Session Save
+            self.session[settings.CART_SESSION_ID] = self.cart_data
+            self.session.modified = True
+
     def add(self, product_id, quantity=1, update_quantity=False):
         """
         Add a product to the cart or update its quantity.
@@ -57,37 +103,59 @@ class Cart(object):
 
         if product_id not in self.cart_data:
             self.cart_data[product_id] = {'quantity': 0, 'id': product_id}
-        
-        if update_quantity:
-            self.cart_data[product_id]['quantity'] += int(quantity)
-        else:
-            self.cart_data[product_id]['quantity'] += 1
 
-        if self.cart_data[product_id]['quantity'] == 0:
+        if update_quantity:
+            self.cart_data[product_id]['quantity'] = int(quantity)
+        else:
+            self.cart_data[product_id]['quantity'] += int(quantity)
+
+        if self.cart_data[product_id]['quantity'] <= 0:
             self.remove(product_id)
-        
-        self.save()
-    
+        else:
+            self.save()
+
     def remove(self, product_id):
         """
         Remove a product from the cart.
         """
+        product_id = str(product_id)
         if product_id in self.cart_data:
             del self.cart_data[product_id]
             self.save()
-    
+
     def clear(self):
         """
-        Remove the cart from the session.
+        Remove the cart from the session or DB.
         """
-        del self.session[settings.CART_SESSION_ID]
-        self.session.modified = True
-    
+        if self.user:
+            CartItem.objects.filter(cart_id=str(self.user.id)).delete()
+            self.cart_data = {}
+        else:
+            del self.session[settings.CART_SESSION_ID]
+            self.session.modified = True
+
+    def _calculate_unit_price(self, product, quantity):
+        """
+        Calculate unit price based on quantity (Bulk Pricing).
+        """
+        has_bulk = (
+            product.bulk_price and
+            product.bulk_min_quantity and
+            quantity >= product.bulk_min_quantity
+        )
+        if has_bulk:
+            return product.bulk_price
+        return product.price
+
     def get_total_cost(self):
         """
         Calculate the total cost of items in the cart.
         """
         product_ids = self.cart_data.keys()
         products = Product.objects.filter(id__in=product_ids)
-
-        return sum(product.price * self.cart_data[str(product.id)]['quantity'] for product in products)
+        total = 0
+        for product in products:
+            quantity = self.cart_data[str(product.id)]['quantity']
+            unit_price = self._calculate_unit_price(product, quantity)
+            total += unit_price * quantity
+        return total

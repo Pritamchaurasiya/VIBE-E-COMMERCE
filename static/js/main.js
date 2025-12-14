@@ -1,508 +1,499 @@
-// Helper function for star rating glow effect
-function handleStarChange(e) {
-    const input = e.currentTarget;
-    const stars = input.closest('.rating-input').querySelectorAll('label');
-    const index = Array.from(stars).indexOf(input.nextElementSibling);
-    
-    stars.forEach((star, i) => {
-        if (i <= index) {
-            star.style.color = '#ffc107';
-            star.classList.add('star-glow');
-            setTimeout(() => star.classList.remove('star-glow'), 300);
-        } else {
-            star.style.color = '#ddd';
-        }
-    });
-}
+/**
+ * Vibe E-Commerce Main JavaScript
+ * Handles global UI interactions, animations, and common functionality.
+ */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Add to Cart functionality with enhanced animations
-    const addToCartForms = document.querySelectorAll('.add-to-cart-form');
+const VibeApp = {
+  init() {
+    this.initTheme();
+    this.initSearch();
+    this.initCart();
+    this.initWishlist();
+    this.initAnimations();
+    this.initProductInteractions();
+    this.initScrollFeatures();
+    this.initHomeFeatures();
+  },
 
-    addToCartForms.forEach(form => {
-        form.addEventListener('submit', handleAddToCartSubmit);
-    });
-
-    function handleAddToCartSubmit(e) {
-        e.preventDefault();
-        const form = e.currentTarget;
-        const action = form.action;
-        const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-        const button = form.querySelector('button[type="submit"]');
-        const originalText = button.innerHTML;
-
-        // Add loading animation
-        button.innerHTML = '<span class="loading-spinner me-2"></span>Adding...';
-        button.disabled = true;
-        button.classList.add('loading');
-
-        // Add ripple effect
-        const ripple = document.createElement('div');
-        ripple.className = 'ripple-effect';
-        button.appendChild(ripple);
-
-        setTimeout(() => ripple.remove(), 600);
-
-        fetch(action, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Enhanced toast with animation
-                Toastify({
-                    text: "Product added to cart! 🛒",
-                    duration: 3000,
-                    close: true,
-                    gravity: "bottom",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    className: "cart-toast",
-                    onClick: () => globalThis.location.href = '/cart/',
-                    stopOnFocus: true
-                }).showToast();
-
-                // Update Cart badge with animation
-                if(data.cart_count !== undefined) {
-                    const cartCount = document.querySelector('.floating-cart .fw-bold');
-                    if(cartCount) {
-                        cartCount.innerHTML = data.cart_count + " Items";
-                        cartCount.classList.add('pulse-animation');
-                        setTimeout(() => cartCount.classList.remove('pulse-animation'), 1000);
-                    }
-
-                    const cartTotal = document.querySelector('.floating-cart .text-success');
-                    if(cartTotal) {
-                        cartTotal.innerHTML = "₹" + data.cart_total_cost;
-                        cartTotal.classList.add('glow-animation');
-                        setTimeout(() => cartTotal.classList.remove('glow-animation'), 1000);
-                    }
-                }
-
-                // Add success animation to button
-                button.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Added!';
-                button.classList.add('btn-success-animation');
-                setTimeout(() => {
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                    button.classList.remove('loading', 'btn-success-animation');
-                }, 2000);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            button.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Failed';
-            button.classList.add('btn-error-animation');
-            setTimeout(() => {
-                button.innerHTML = originalText;
-                button.disabled = false;
-                button.classList.remove('loading', 'btn-error-animation');
-            }, 2000);
-        });
-    }
-
-    // Enhanced Wishlist functionality with pulse animation
-    document.body.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-wishlist');
-        if (btn) {
-            e.preventDefault();
-
-            const productId = btn.dataset.productId;
-            const icon = btn.querySelector('i');
-            const isActive = btn.classList.contains('active');
-            const url = isActive ? `/wishlist/remove/${productId}/` : `/wishlist/add/${productId}/`;
-
-            // Add click animation
-            btn.classList.add('heart-click');
-            setTimeout(() => btn.classList.remove('heart-click'), 300);
-
-            // Get CSRF token
-            let csrfToken = '';
-            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
-            if (csrfInput) {
-                csrfToken = csrfInput.value;
-            } else {
-                const value = `; ${document.cookie}`;
-                const parts = value.split(`; csrftoken=`);
-                if (parts.length === 2) csrfToken = parts.pop().split(';').shift();
-            }
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update UI with enhanced animations
-                    if(isActive) {
-                        btn.classList.remove('active');
-                        if(icon) icon.className = 'bi bi-heart';
-                        // Add break animation
-                        btn.classList.add('heart-break');
-                        setTimeout(() => btn.classList.remove('heart-break'), 500);
-                    } else {
-                        btn.classList.add('active');
-                        if(icon) icon.className = 'bi bi-heart-fill';
-                        // Add pulse animation
-                        btn.classList.add('heart-pulse');
-                        setTimeout(() => btn.classList.remove('heart-pulse'), 1000);
-                    }
-
-                    // Enhanced notification
-                    const message = data.message || (isActive ? "Removed from wishlist 💔" : "Added to wishlist ❤️");
-                    const color = isActive ? "linear-gradient(to right, #ff6b6b, #ee5a52)" : "linear-gradient(to right, #ff6b6b, #ffb347)";
-
-                    Toastify({
-                        text: message,
-                        duration: 3000,
-                        close: true,
-                        gravity: "bottom",
-                        position: "right",
-                        style: { background: color },
-                        className: "wishlist-toast"
-                    }).showToast();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    });
-
-    // Product image zoom on hover
-    const detailImages = document.querySelectorAll('.product-image');
-    detailImages.forEach(img => {
-        img.addEventListener('mouseenter', function() {
-            const image = this.querySelector('img');
-            image.classList.add('image-zoom');
-        });
-
-        img.addEventListener('mouseleave', function() {
-            const image = this.querySelector('img');
-            image.classList.remove('image-zoom');
-        });
-    });
-
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-
-    // Enhanced form interactions
-    const formControls = document.querySelectorAll('.form-control');
-    formControls.forEach(control => {
-        control.addEventListener('focus', function() {
-            this.parentElement.classList.add('form-group-focus');
-        });
-
-        control.addEventListener('blur', function() {
-            this.parentElement.classList.remove('form-group-focus');
-        });
-    });
-
-    // Star rating interaction enhancement
-    const starLabels = document.querySelectorAll('.star-label');
-    starLabels.forEach((star, index) => {
-        star.addEventListener('mouseenter', function() {
-            // Add glow effect to hovered stars
-            for (let i = 0; i <= index; i++) {
-                starLabels[i].classList.add('star-glow');
-            }
-        });
-
-        star.addEventListener('mouseleave', function() {
-            starLabels.forEach(s => s.classList.remove('star-glow'));
-        });
-    });
-
-    // Progress bar animations
-    const progressBars = document.querySelectorAll('.progress-bar');
-    progressBars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0%';
-        setTimeout(() => {
-            bar.style.width = width;
-        }, 500);
-    });
-
-    // Intersection Observer for scroll animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-            }
-        });
-    }, observerOptions);
-
-    // Observe elements for animation
-    document.querySelectorAll('.card, .feature-card, .stat-card').forEach(el => {
-        observer.observe(el);
-    });
-
-    // Enhanced dropdown animations
-    const dropdowns = document.querySelectorAll('.dropdown');
-    dropdowns.forEach(dropdown => {
-        const toggle = dropdown.querySelector('.dropdown-toggle');
-        const menu = dropdown.querySelector('.dropdown-menu');
-
-        if (toggle && menu) {
-            toggle.addEventListener('click', function() {
-                menu.classList.add('dropdown-animate');
-            });
-
-            dropdown.addEventListener('hidden.bs.dropdown', function() {
-                menu.classList.remove('dropdown-animate');
-            });
-        }
-    });
-
-    // Cart item removal animation
-    document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            const cartItem = this.closest('.cart-item');
-            if (cartItem) {
-                cartItem.classList.add('removing');
-                setTimeout(() => {
-                    cartItem.style.display = 'none';
-                }, 300);
-            }
-        });
-    });
-
-    // Loading states for async operations
-    const asyncButtons = document.querySelectorAll('[data-async]');
-    asyncButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.classList.add('loading');
-            this.innerHTML = '<span class="loading-spinner me-2"></span>Loading...';
-        });
-    });
-
-    // Enhanced search with debouncing
-    let searchTimeout;
-    const searchInputs = document.querySelectorAll('input[name="q"]');
-    searchInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            const searchIcon = this.previousElementSibling;
-            if (searchIcon) {
-                searchIcon.classList.add('searching');
-            }
-
-            searchTimeout = setTimeout(() => {
-                if (searchIcon) {
-                    searchIcon.classList.remove('searching');
-                }
-                // Trigger search here if needed
-            }, 500);
-        });
-    });
-
-    // Keyboard navigation enhancements
-    document.addEventListener('keydown', function(e) {
-        // ESC to close modals/dropdowns
-        if (e.key === 'Escape') {
-            const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
-            openDropdowns.forEach(dropdown => {
-                dropdown.classList.remove('show');
-            });
-        }
-
-        // Ctrl+K for search focus
-        if (e.ctrlKey && e.key === 'k') {
-            e.preventDefault();
-            const searchInput = document.querySelector('input[name="q"]');
-            if (searchInput) {
-                searchInput.focus();
-                searchInput.select();
-            }
-        }
-    });
-
-    // Performance optimization: Lazy load images
-    const lazyImages = document.querySelectorAll('img[data-src]');
-    if ('IntersectionObserver' in globalThis) {
-        const imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove('lazy');
-                    imageObserver.unobserve(img);
-                }
-            });
-        });
-
-        lazyImages.forEach(img => imageObserver.observe(img));
-    }
-
-    // Enhanced tooltips
-    const tooltipElements = document.querySelectorAll('[data-tooltip]');
-    tooltipElements.forEach(el => {
-        el.addEventListener('mouseenter', function(e) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'custom-tooltip';
-            tooltip.textContent = this.dataset.tooltip;
-            document.body.appendChild(tooltip);
-
-            const rect = this.getBoundingClientRect();
-            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-            tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
-
-            setTimeout(() => tooltip.classList.add('visible'), 10);
-        });
-
-        el.addEventListener('mouseleave', function() {
-            const tooltip = document.querySelector('.custom-tooltip');
-            if (tooltip) {
-                tooltip.classList.remove('visible');
-                setTimeout(() => tooltip.remove(), 300);
-            }
-        });
-    });
-
-    // Parallax effect for hero sections
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const heroBg = document.querySelector('.hero-section');
-        if (heroBg) {
-            heroBg.style.transform = `translateY(${scrolled * 0.5}px)`;
-        }
-    });
-
-    // Auto-hide floating cart on scroll
-    let scrollTimeout;
-    window.addEventListener('scroll', function() {
-        const floatingCart = document.querySelector('.floating-cart');
-        if (floatingCart) {
-            floatingCart.classList.add('hidden');
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                floatingCart.classList.remove('hidden');
-            }, 1000);
-        }
-    });
-
-    // Dark Mode Toggle Logic
-    const darkModeToggle = document.getElementById('darkModeToggle');
+  // --- Theme Management ---
+  initTheme() {
+    const darkModeToggle = document.getElementById("darkModeToggle");
     const body = document.body;
-    
+
     // Check local storage
-    if (globalThis.localStorage.getItem('darkMode') === 'enabled') {
-        body.classList.add('dark-mode');
-        if(darkModeToggle) darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+    if (localStorage.getItem("darkMode") === "enabled") {
+      body.classList.add("dark-mode");
+      if (darkModeToggle)
+        darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
     }
 
     if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDark = body.classList.contains('dark-mode');
-            
-            // Update icon
-            darkModeToggle.innerHTML = isDark ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-fill"></i>';
-            
-            // Save preference
-            globalThis.localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-        });
+      darkModeToggle.addEventListener("click", () => {
+        body.classList.toggle("dark-mode");
+        const isDark = body.classList.contains("dark-mode");
+
+        // Update icon
+        darkModeToggle.innerHTML = isDark
+          ? '<i class="bi bi-sun-fill"></i>'
+          : '<i class="bi bi-moon-fill"></i>';
+        localStorage.setItem("darkMode", isDark ? "enabled" : "disabled");
+      });
     }
+  },
 
-    // --- Interactive Enhancements ---
+  // --- Search Functionality ---
+  initSearch() {
+    const searchInput = document.getElementById("liveSearchInput");
+    const searchResults = document.getElementById("searchResults");
 
-    // 1. Universal Ripple Effect for Buttons
-    document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple-effect');
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
-            
-            this.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
+    if (!searchInput || !searchResults) return;
+
+    let searchTimeout;
+    const RECENT_KEY = "agri_recent_searches";
+
+    const getRecent = () => {
+      try {
+        return JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+      } catch {
+        return [];
+      }
+    };
+
+    const saveRecent = (term) => {
+      if (!term || term.length < 2) return;
+      let recent = getRecent().filter(
+        (s) => s.toLowerCase() !== term.toLowerCase(),
+      );
+      recent.unshift(term);
+      localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, 5)));
+    };
+
+    const renderResults = (data) => {
+      searchResults.innerHTML = "";
+      if (data.results.length === 0) {
+        searchResults.innerHTML =
+          '<div class="p-3 text-muted text-center">No products found</div>';
+      } else {
+        data.results.forEach((p) => {
+          const html = `
+                        <a href="/product/${p.slug}/" class="d-flex align-items-center p-3 text-decoration-none text-dark border-bottom search-result-item">
+                            ${p.image ? `<img src="${p.image}" class="rounded me-3" style="width:50px;height:50px;object-fit:cover;">` : '<div class="bg-light rounded me-3" style="width:50px;height:50px;"></div>'}
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">${this.escapeHtml(p.name)}</div>
+                                <small class="text-muted">${this.escapeHtml(p.category || "")}</small>
+                            </div>
+                            <div class="text-success fw-bold">₹${p.price}</div>
+                        </a>`;
+          searchResults.insertAdjacentHTML("beforeend", html);
         });
+      }
+      searchResults.classList.remove("d-none");
+    };
+
+    const renderRecent = () => {
+      const recent = getRecent();
+      if (!recent.length) {
+        searchResults.classList.add("d-none");
+        return;
+      }
+      searchResults.innerHTML =
+        '<div class="p-2 bg-light border-bottom"><small class="fw-bold">Recent Searches</small></div>';
+      recent.forEach((term) => {
+        const div = document.createElement("div");
+        div.className = "p-2 px-3 search-result-item pointer";
+        // Use safe DOM methods instead of innerHTML to prevent XSS
+        const icon = document.createElement("i");
+        icon.className = "bi bi-clock-history me-2";
+        div.appendChild(icon);
+        div.appendChild(document.createTextNode(term));
+        div.onclick = () => {
+          searchInput.value = term;
+          searchInput.dispatchEvent(new Event("input"));
+        };
+        searchResults.appendChild(div);
+      });
+      searchResults.classList.remove("d-none");
+    };
+
+    searchInput.addEventListener("focus", () => {
+      if (searchInput.value.trim().length < 2) renderRecent();
     });
 
-    // 2. Product Card Tilt & Glow Effect
-    const productCards = document.querySelectorAll('.product-card');
-    productCards.forEach(card => {
-        card.addEventListener('mousemove', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Subtle tilt
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -5;
-            const rotateY = ((x - centerX) / centerX) * 5;
-            
-            this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
-            
-            // Dynamic glow/shine
-            this.style.setProperty('--mouse-x', `${x}px`);
-            this.style.setProperty('--mouse-y', `${y}px`);
-        });
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+      clearTimeout(searchTimeout);
 
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
-        });
+      if (query.length < 2) {
+        renderRecent();
+        return;
+      }
+
+      searchTimeout = setTimeout(() => {
+        fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+          .then((r) => r.json())
+          .then((data) => {
+            renderResults(data);
+            if (data.results.length) saveRecent(query);
+          });
+      }, 300);
     });
 
-    // 3. Image Zoom on Quick View Hover
-    const quickViewImages = document.querySelectorAll('.card-img-top');
-    quickViewImages.forEach(img => {
-        img.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.1)';
-            this.style.transition = 'transform 0.5s ease';
-        });
-        img.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
+    document.addEventListener("click", (e) => {
+      if (
+        !searchInput.contains(e.target) &&
+        !searchResults.contains(e.target)
+      ) {
+        searchResults.classList.add("d-none");
+      }
+    });
+  },
+
+  // --- Cart Interactions ---
+  initCart() {
+    document.querySelectorAll(".add-to-cart-form").forEach((form) => {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]');
+        const originalContent = btn.innerHTML;
+
+        this.setLoading(btn, true);
+
+        try {
+          const csrf = form.querySelector("[name=csrfmiddlewaretoken]").value;
+          const res = await fetch(form.action, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": csrf,
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            this.showToast("Product added to cart! 🛒", "success");
+            this.updateCartBadge(data.cart_count, data.cart_total_cost);
+            this.setSuccess(btn, "Added!");
+            setTimeout(() => this.resetButton(btn, originalContent), 2000);
+          }
+        } catch (err) {
+          console.error(err);
+          this.showToast("Failed to add to cart", "error");
+          this.resetButton(btn, originalContent);
+        }
+      });
     });
 
-    // 4. Star Rating Interactive Glow
-    const ratingInputs = document.querySelectorAll('.rating-input input');
-    ratingInputs.forEach(input => {
-        input.addEventListener('change', handleStarChange);
+    // Cart Item Removal
+    document.querySelectorAll(".remove-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        this.closest(".cart-item")?.classList.add("removing");
+      });
+    });
+  },
+
+  // --- Wishlist Interactions ---
+  initWishlist() {
+    document.body.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".btn-wishlist");
+      if (!btn) return;
+
+      e.preventDefault();
+      const productId = btn.dataset.productId;
+      const isActive = btn.classList.contains("active");
+      const url = isActive
+        ? `/wishlist/remove/${productId}/`
+        : `/wishlist/add/${productId}/`;
+
+      // Optimistic update
+      btn.classList.toggle("active");
+      const icon = btn.querySelector("i");
+      if (icon) icon.className = isActive ? "bi bi-heart" : "bi bi-heart-fill";
+
+      try {
+        const csrf = this.getCsrfToken();
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrf,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.showToast(
+            data.message ||
+              (isActive ? "Removed from wishlist" : "Added to wishlist"),
+            isActive ? "info" : "success",
+          );
+        } else {
+          // Revert on failure
+          btn.classList.toggle("active");
+        }
+      } catch (err) {
+        console.error("Wishlist toggle failed:", err);
+        btn.classList.toggle("active");
+      }
+    });
+  },
+
+  // --- Animations & UI ---
+  initAnimations() {
+    // Universal Ripple
+    document.addEventListener("click", (e) => {
+      if (e.target.matches(".btn, .btn *")) {
+        const btn = e.target.closest(".btn");
+        const ripple = document.createElement("span");
+        ripple.className = "ripple-effect";
+        const rect = btn.getBoundingClientRect();
+        ripple.style.left = `${e.clientX - rect.left}px`;
+        ripple.style.top = `${e.clientY - rect.top}px`;
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+      }
     });
 
-    // 5. Navbar Scroll Glass Effect Optimization
-    const navbar = document.querySelector('.navbar');
+    // Scroll Animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("animate-in");
+        });
+      },
+      { threshold: 0.1 },
+    );
+
+    document
+      .querySelectorAll(".card, .feature-card, .stat-card")
+      .forEach((el) => observer.observe(el));
+  },
+
+  initProductInteractions() {
+    // Image Zoom
+    document.querySelectorAll(".product-image").forEach((div) => {
+      div.addEventListener("mouseenter", () =>
+        div.querySelector("img")?.classList.add("image-zoom"),
+      );
+      div.addEventListener("mouseleave", () =>
+        div.querySelector("img")?.classList.remove("image-zoom"),
+      );
+    });
+
+    // Star Rating
+    document.querySelectorAll(".rating-input input").forEach((input) => {
+      input.addEventListener("change", (e) => this.handleStarRating(e.target));
+    });
+  },
+
+  initScrollFeatures() {
+    // Navbar Glass Effect
+    const navbar = document.querySelector(".navbar");
     if (navbar) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('glass-navbar', 'shadow-lg');
-                navbar.style.background = 'rgba(31, 41, 55, 0.95)';
-            } else {
-                navbar.classList.remove('glass-navbar', 'shadow-lg');
-                navbar.style.background = 'linear-gradient(135deg, #1f2937 0%, #374151 100%)';
-            }
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50)
+          navbar.classList.add("glass-navbar", "shadow-lg");
+        else navbar.classList.remove("glass-navbar", "shadow-lg");
+      });
+    }
+
+    // Scroll to Top
+    const scrollBtn = document.createElement("button");
+    scrollBtn.className = "scroll-to-top";
+    scrollBtn.innerHTML = '<i class="bi bi-arrow-up"></i>';
+    document.body.appendChild(scrollBtn);
+
+    scrollBtn.addEventListener("click", () =>
+      window.scrollTo({ top: 0, behavior: "smooth" }),
+    );
+    window.addEventListener("scroll", () => {
+      scrollBtn.classList.toggle("visible", window.scrollY > 300);
+    });
+  },
+
+  // --- Homepage Features ---
+  initHomeFeatures() {
+    // Dynamic Countdown Timer
+    const updateCountdown = () => {
+        const timerContainer = document.querySelector('.countdown-timer');
+        if (!timerContainer) return;
+
+        const endTimeStr = timerContainer.dataset.endTime;
+        if (!endTimeStr) return;
+
+        const endTime = new Date(endTimeStr).getTime();
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        const hoursElem = document.getElementById('hours');
+        const minutesElem = document.getElementById('minutes');
+        const secondsElem = document.getElementById('seconds');
+
+        if (distance < 0) {
+            if (hoursElem) hoursElem.textContent = "00";
+            if (minutesElem) minutesElem.textContent = "00";
+            if (secondsElem) secondsElem.textContent = "00";
+            return;
+        }
+
+        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+        if (hoursElem) hoursElem.textContent = h.toString().padStart(2, '0');
+        if (minutesElem) minutesElem.textContent = m.toString().padStart(2, '0');
+        if (secondsElem) secondsElem.textContent = s.toString().padStart(2, '0');
+    };
+
+    // Initial call and interval if timer exists
+    if (document.querySelector('.countdown-timer')) {
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
+    // Search Tab Switching
+    const searchTabs = document.querySelectorAll('.search-tab');
+    const searchForm = document.querySelector('.mega-search form');
+    
+    if (searchTabs.length > 0 && searchForm) {
+        const searchInput = searchForm.querySelector('input[name="q"]');
+        let onSaleInput = null;
+
+        // Create hidden input if not exists
+        if (!searchForm.querySelector('input[name="on_sale"]')) {
+            onSaleInput = document.createElement('input');
+            onSaleInput.type = 'hidden';
+            onSaleInput.name = 'on_sale';
+            onSaleInput.disabled = true; // Disabled by default
+            searchForm.appendChild(onSaleInput);
+        } else {
+            onSaleInput = searchForm.querySelector('input[name="on_sale"]');
+        }
+
+        searchTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update Active State
+                searchTabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+
+                // Update Search Behavior
+                if (!searchInput) return;
+
+                const tabId = this.id;
+                const urls = window.VIBE_CONFIG ? window.VIBE_CONFIG.urls : {};
+
+                if (tabId === 'tab-products') {
+                    if (urls.shop) searchForm.action = urls.shop;
+                    searchInput.placeholder = "Search products, categories...";
+                    if (onSaleInput) onSaleInput.disabled = true;
+                } else if (tabId === 'tab-vendors') {
+                    if (urls.vendor_list) searchForm.action = urls.vendor_list;
+                    searchInput.placeholder = "Search trusted vendors...";
+                    if (onSaleInput) onSaleInput.disabled = true;
+                } else if (tabId === 'tab-deals') {
+                    if (urls.shop) searchForm.action = urls.shop;
+                    searchInput.placeholder = "Search hot deals...";
+                    if (onSaleInput) {
+                        onSaleInput.disabled = false;
+                        onSaleInput.value = '1';
+                    }
+                }
+            });
         });
     }
-});
+  },
+
+  // --- Helpers ---
+  getCsrfToken() {
+    const input = document.querySelector("[name=csrfmiddlewaretoken]");
+    if (input) return input.value;
+    const csrfRegex = /csrftoken=([^;]+)/;
+    const match = csrfRegex.exec(document.cookie);
+    return match ? match[1] : "";
+  },
+
+  escapeHtml(str) {
+    if (!str) return "";
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  },
+
+  setLoading(btn, isLoading) {
+    if (isLoading) {
+      btn.dataset.original = btn.innerHTML;
+      btn.innerHTML = '<span class="loading-spinner me-2"></span>Loading...';
+      btn.disabled = true;
+    } else {
+      btn.innerHTML = btn.dataset.original;
+      btn.disabled = false;
+    }
+  },
+
+  setSuccess(btn, msg) {
+    btn.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${msg}`;
+    btn.classList.add("btn-success-animation");
+  },
+
+  resetButton(btn, content) {
+    btn.innerHTML = content;
+    btn.disabled = false;
+    btn.classList.remove("btn-success-animation");
+  },
+
+  updateCartBadge(count, total) {
+    const badge = document.querySelector(".floating-cart .fw-bold");
+    if (badge) badge.textContent = `${count} Items`;
+    const cost = document.querySelector(".floating-cart .text-success");
+    if (cost) cost.textContent = `₹${total}`;
+  },
+
+  showToast(msg, type = "success") {
+    let bg;
+    if (type === "success") {
+      bg = "linear-gradient(to right, #00b09b, #96c93d)";
+    } else if (type === "error") {
+      bg = "linear-gradient(to right, #ff5f6d, #ffc371)";
+    } else {
+      bg = "linear-gradient(to right, #2193b0, #6dd5ed)";
+    }
+
+    if (typeof Toastify === "undefined") {
+      // Fallback
+      alert(msg);
+      return;
+    }
+
+    Toastify({
+      text: msg,
+      duration: 3000,
+      gravity: "bottom",
+      position: "right",
+      style: { background: bg },
+      stopOnFocus: true,
+    }).showToast();
+  },
+
+  handleStarRating(input) {
+    const labels = input.closest(".rating-input").querySelectorAll("label");
+    const index = Array.from(labels).indexOf(input.nextElementSibling);
+    labels.forEach((l, i) => {
+      l.style.color = i <= index ? "#ffc107" : "#ddd";
+    });
+  },
+};
+
+document.addEventListener("DOMContentLoaded", () => VibeApp.init());
+
+// Keep helper functions global if needed by inline scripts (though strict CSP would prevent inline scripts)
+globalThis.changeMainImage = function (el) {
+  const main = document.getElementById("mainProductImage");
+  const img = el.querySelector("img");
+  if (main && img) main.src = img.src;
+  document
+    .querySelectorAll(".thumbnail-item")
+    .forEach((i) => i.classList.remove("active"));
+  el.classList.add("active");
+};

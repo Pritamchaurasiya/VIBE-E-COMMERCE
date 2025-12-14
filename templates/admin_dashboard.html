@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | VIBE E-Commerce{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 1.5rem;
+        color: #ffffff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    }
+    .stat-card.green { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+    .stat-card.orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+    .stat-card.blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .stat-card.purple { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .quick-action {
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+    }
+    .quick-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .activity-item {
+        padding: 1rem;
+        border-left: 3px solid var(--primary-green);
+        margin-bottom: 0.5rem;
+        background: #f8fafc;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold mb-1">Admin Dashboard</h1>
+                    <p class="text-muted mb-0">Welcome back! Here's what's happening with your store.</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin:index' %}" class="btn btn-dark btn-lg rounded-pill">
+                        <i class="bi bi-gear me-2"></i>Django Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card green">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 opacity-75">Total Revenue</p>
+                        <h2 class="mb-0 fw-bold">â‚¹{{ total_revenue|default:"0" }}</h2>
+                        <small class="opacity-75"><i class="bi bi-arrow-up"></i> 12% from last month</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card blue">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 opacity-75">Total Orders</p>
+                        <h2 class="mb-0 fw-bold">{{ total_orders|default:"0" }}</h2>
+                        <small class="opacity-75"><i class="bi bi-arrow-up"></i> 8% from last week</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="bi bi-bag-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card orange">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 opacity-75">Total Products</p>
+                        <h2 class="mb-0 fw-bold">{{ total_products|default:"0" }}</h2>
+                        <small class="opacity-75">{{ low_stock_count|default:"0" }} low stock</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card purple">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-1 opacity-75">Total Customers</p>
+                        <h2 class="mb-0 fw-bold">{{ total_users|default:"0" }}</h2>
+                        <small class="opacity-75"><i class="bi bi-arrow-up"></i> 5 new today</small>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-lightning-charge me-2 text-warning"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="{% url 'admin:store_product_add' %}" class="quick-action bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-plus-circle fs-3 mb-2 d-block"></i>
+                                <span class="fw-bold">Add Product</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'admin:store_order_changelist' %}" class="quick-action bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-list-check fs-3 mb-2 d-block"></i>
+                                <span class="fw-bold">View Orders</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'admin:store_coupon_add' %}" class="quick-action bg-warning bg-opacity-10 text-warning">
+                                <i class="bi bi-ticket-perforated fs-3 mb-2 d-block"></i>
+                                <span class="fw-bold">Add Coupon</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'admin:auth_user_changelist' %}" class="quick-action bg-danger bg-opacity-10 text-danger">
+                                <i class="bi bi-people fs-3 mb-2 d-block"></i>
+                                <span class="fw-bold">Manage Users</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Orders</h5>
+                    <a href="{% url 'admin:store_order_changelist' %}" class="btn btn-sm btn-outline-primary rounded-pill">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td><strong>#{{ order.id }}</strong></td>
+                                    <td>{{ order.first_name }} {{ order.last_name }}</td>
+                                    <td class="text-success fw-bold">â‚¹{{ order.paid_amount|default:"0" }}</td>
+                                    <td>
+                                        {% if order.status == 'delivered' %}
+                                        <span class="badge bg-success">Delivered</span>
+                                        {% elif order.status == 'shipped' %}
+                                        <span class="badge bg-info">Shipped</span>
+                                        {% elif order.status == 'confirmed' %}
+                                        <span class="badge bg-primary">Confirmed</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted">{{ order.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No orders yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    {% if low_stock_products %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 border-start border-4 border-warning">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Low Stock Alert</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for product in low_stock_products %}
+                        <div class="col-md-4 col-lg-3">
+                            <div class="d-flex align-items-center p-3 bg-warning bg-opacity-10 rounded-3">
+                                <div class="me-3">
+                                    {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded low-stock-img">
+                                    {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center low-stock-placeholder">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ product.name|truncatechars:20 }}</div>
+                                    <small class="text-danger fw-bold">{{ product.stock_quantity }} left</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

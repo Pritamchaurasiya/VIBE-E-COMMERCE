@@ -1,0 +1,226 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}Tracking Dashboard | {{ site_header|default:_('Django administration') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-graph-up"></i> Tracking Dashboard</h2>
+            <p class="text-muted">Real-time monitoring and analytics of system tracking</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">File Operations (24h)</div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ stats.file_operations_24h|default:"0" }}</h3>
+                    <p class="card-text">Total file tracking records</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">User Actions (24h)</div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ stats.user_actions_24h|default:"0" }}</h3>
+                    <p class="card-text">User interactions tracked</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">System Access (24h)</div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ stats.system_access_24h|default:"0" }}</h3>
+                    <p class="card-text">Access attempts recorded</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">High Risk Events (24h)</div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ stats.high_risk_events_24h|default:"0" }}</h3>
+                    <p class="card-text">Security events detected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Configurations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-gear-wide-connected"></i> Tracking Configurations
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Records (24h)</th>
+                                    <th>Retention</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for config in configs %}
+                                <tr>
+                                    <td>{{ config.get_category_display }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ config.is_enabled|yesno:'success,danger' }}">
+                                            {{ config.is_enabled|yesno:'Enabled,Disabled' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ config.record_count }}</td>
+                                    <td>{{ config.retention_days }} days</td>
+                                    <td>
+                                        {% if can_edit %}
+                                        <button class="btn btn-sm btn-{{ config.is_enabled|yesno:'danger,success' }}"
+                                                data-config-id="{{ config.id }}"
+                                                data-current-status="{{ config.is_enabled }}">
+                                            {{ config.is_enabled|yesno:'Disable,Enable' }}
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted">View Only</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No tracking configurations found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Alerts -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <i class="bi bi-bell"></i> Recent Alerts
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for alert in recent_alerts %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <span class="badge bg-{{ alert.severity }}">{{ alert.severity|upper }}</span>
+                                    {{ alert.title }}
+                                </h6>
+                                <small>{{ alert.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ alert.description }}</p>
+                            <small class="text-muted">
+                                Type: {{ alert.alert_type }} |
+                                Status: <span class="badge bg-{{ alert.status }}">{{ alert.status }}</span>
+                            </small>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted">
+                            No active alerts
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-lightning-charge"></i> Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'secure_admin:tracking_config' %}" class="btn btn-primary">
+                            <i class="bi bi-gear"></i> Configure Tracking
+                        </a>
+                        <a href="{% url 'secure_admin:tracking_alerts' %}" class="btn btn-warning">
+                            <i class="bi bi-bell"></i> Manage Alerts
+                        </a>
+                        <a href="{% url 'secure_admin:tracking_stats_api' %}" class="btn btn-info">
+                            <i class="bi bi-download"></i> Export Data
+                        </a>
+                        <a href="{% url 'secure_admin:admin_audit' %}" class="btn btn-secondary">
+                            <i class="bi bi-clock-history"></i> View Audit Log
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .badge-high { background-color: #dc3545; }
+    .badge-medium { background-color: #ffc107; color: #212529; }
+    .badge-low { background-color: #28a745; }
+    .badge-critical { background-color: #6f42c1; }
+</style>
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle configuration toggle buttons
+    document.querySelectorAll('[data-config-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const configId = this.getAttribute('data-config-id');
+            const currentStatus = this.getAttribute('data-current-status') === 'True';
+
+            if (confirm(`Are you sure you want to ${currentStatus ? 'disable' : 'enable'} this tracking category?`)) {
+                fetch("{% url 'secure_admin:tracking_config' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        id: configId,
+                        is_enabled: !currentStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the configuration.');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

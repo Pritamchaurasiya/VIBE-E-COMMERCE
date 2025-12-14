@@ -1,0 +1,251 @@
+/* Dashboard Premium Styles */
+:root {
+    --dash-primary: #10b981;
+    --dash-secondary: #059669;
+    --dash-dark: #0f172a;
+    --dash-light: #f8fafc;
+    --dash-glass: rgba(255, 255, 255, 0.95);
+    --dash-glass-dark: rgba(15, 23, 42, 0.8);
+    --card-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --card-shine: rgba(255, 255, 255, 0.2);
+}
+
+/* Sidebar Styles */
+.dashboard-sidebar .list-group-item {
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    color: #64748b;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-sidebar .list-group-item i {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-sidebar .list-group-item:hover {
+    background: #f1f5f9;
+    color: var(--dash-primary);
+    transform: translateX(5px);
+}
+
+.dashboard-sidebar .list-group-item:hover i {
+    transform: scale(1.1);
+}
+
+.dashboard-sidebar .list-group-item.active {
+    background: var(--card-gradient);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+}
+
+/* Virtual Credit Card */
+.virtual-card {
+    background: var(--card-gradient);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.4);
+    transition: transform 0.5s ease;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.virtual-card:hover {
+    transform: translateY(-5px) rotateX(2deg);
+}
+
+.virtual-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--card-shine) 0%, transparent 60%);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.card-chip {
+    width: 50px;
+    height: 35px;
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    border-radius: 6px;
+    position: relative;
+    margin-bottom: 2rem;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.4);
+}
+
+.card-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.card-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.card-holder h6, .card-expires h6 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 0.2rem;
+}
+
+.card-holder div, .card-expires div {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.stats-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress Circle */
+.progress-ring {
+    width: 120px;
+    height: 120px;
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 1s ease-in-out;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+/* Tables */
+.premium-table thead th {
+    background: #f8fafc;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.premium-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.premium-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.status-badge {
+    padding: 0.35em 0.8em;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-success { background: #d1fae5; color: #065f46; }
+.status-danger { background: #fee2e2; color: #991b1b; }
+.status-warning { background: #fef3c7; color: #92400e; }
+
+/* Dark Mode Support */
+[data-bs-theme="dark"] .dashboard-sidebar .list-group-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+[data-bs-theme="dark"] .stats-card {
+    background: #1e293b;
+    border-color: rgba(255,255,255,0.05);
+}
+
+[data-bs-theme="dark"] .premium-table tbody td {
+    color: #cbd5e1;
+    border-color: rgba(255,255,255,0.05);
+}
+
+[data-bs-theme="dark"] .premium-table tbody tr:hover td {
+    background: rgba(255,255,255,0.02);
+}
+
+[data-bs-theme="dark"] .premium-table thead th {
+    background: #1e293b;
+    color: #94a3b8;
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* Avatar Circle */
+.avatar-circle-60 {
+    width: 60px;
+    height: 60px;
+}
+
+/* Decorative Icons */
+.decorative-icon-xl {
+    font-size: 5rem;
+    transform: translate(10%, 10%);
+}
+
+/* Progress Bar Compact */
+.progress-compact {
+    height: 6px;
+    width: 150px;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    border-radius: 3px;
+    overflow: hidden;
+    display: block;
+}
+
+.progress-compact::-webkit-progress-bar {
+    background-color: #e2e8f0;
+    border-radius: 3px;
+}
+
+.progress-compact::-webkit-progress-value {
+    background-color: #ef4444;
+    border-radius: 3px;
+}
+
+.progress-compact::-moz-progress-bar {
+    background-color: #ef4444;
+    border-radius: 3px;
+}
+
+/* Quick Action Cards */
+.quick-action-card {
+    cursor: pointer;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: var(--dash-primary);
+}
+

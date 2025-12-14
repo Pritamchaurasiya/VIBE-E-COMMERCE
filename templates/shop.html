@@ -1,274 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Shop — Agri B2B{% endblock %}
-
-{% block extra_css %}
-<style>
-    .filter-section {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        overflow: hidden;
-    }
-
-    .filter-header {
-        background: linear-gradient(135deg, var(--light-gray), white);
-        padding: 1.5rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .filter-body {
-        padding: 1.5rem;
-    }
-
-    .filter-group {
-        margin-bottom: 2rem;
-    }
-
-    .filter-group:last-child {
-        margin-bottom: 0;
-    }
-
-    .filter-title {
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .filter-title i {
-        color: var(--primary-green);
-        margin-right: 0.5rem;
-    }
-
-    .price-slider {
-        position: relative;
-        margin: 1rem 0;
-    }
-
-    .price-range {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-bottom: 0.5rem;
-    }
-
-    .sort-dropdown .dropdown-toggle {
-        background: white;
-        border: 2px solid #e5e7eb;
-        color: #374151;
-        font-weight: 500;
-    }
-
-    .sort-dropdown .dropdown-toggle:hover {
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-    }
-
-    .product-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .product-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .product-image {
-        position: relative;
-        overflow: hidden;
-        height: 200px;
-    }
-
-    .product-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .product-card:hover .product-image img {
-        transform: scale(1.05);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: var(--primary-green);
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .product-info {
-        padding: 1.5rem;
-    }
-
-    .product-vendor {
-        color: #6b7280;
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .product-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .product-category {
-        color: var(--primary-green);
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 1rem;
-    }
-    .product-price {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--primary-green);
-        margin-bottom: 1rem;
-    }
-
-    .product-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .btn-wishlist {
-        border: 2px solid #e5e7eb;
-        background: white;
-        color: #6b7280;
-        padding: 0.5rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-
-    .btn-wishlist:hover {
-        border-color: #ef4444;
-        color: #ef4444;
-        transform: scale(1.1);
-    }
-
-    .btn-wishlist.active {
-        border-color: #ef4444;
-        color: #b91c1c;
-        background: #fef2f2;
-    }
-
-    .btn-add-cart {
-        flex: 1;
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-add-cart:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
-    }
-
-    .no-products {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: #6b7280;
-    }
-
-    .no-products i {
-        font-size: 4rem;
-        color: #d1d5db;
-        margin-bottom: 1rem;
-    }
-
-    @media (max-width: 768px) {
-        .product-grid {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .filter-section {
-            margin-bottom: 2rem;
-        }
-    }
-
-    /* List view styles */
-    .product-grid.list-view {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .product-grid.list-view .product-card {
-        display: flex;
-        flex-direction: row;
-        height: auto;
-        min-height: 150px;
-    }
-
-    .product-grid.list-view .product-image {
-        width: 150px;
-        height: 150px;
-        flex-shrink: 0;
-    }
-
-    .product-grid.list-view .product-info {
-        flex: 1;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .product-grid.list-view .product-actions {
-        flex-direction: row;
-        justify-content: flex-end;
-        margin-top: auto;
-    }
-
-    .product-grid.list-view .btn-add-cart {
-        width: auto;
-        padding: 0.5rem 1rem;
-    }
-
-    @media (max-width: 576px) {
-        .product-grid.list-view .product-card {
-            flex-direction: column;
-            height: auto;
-        }
-
-        .product-grid.list-view .product-image {
-            width: 100%;
-            height: 200px;
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}Shop â€” Agri B2B{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -324,10 +57,51 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="container py-5">
     <div class="row g-4">
         <div class="col-lg-3">
-            <div class="filter-section">
+            <div class="filter-section glass-panel p-4 rounded-4 mb-4">
+                <div class="filter-header border-bottom mb-3 pb-2">
+                    <h5 class="mb-0 fw-bold d-flex align-items-center"><i class="bi bi-funnel-fill text-success me-2"></i>Filters</h5>
+                </div>
                 <div class="filter-body">
-                    <!-- Price Range -->
+                    <!-- Categories -->
                     <fieldset class="filter-group border-0 p-0">
+                        <legend class="filter-title h6 bg-transparent border-0 w-100 mb-2 p-0">
+                            <i class="bi bi-grid"></i>Categories
+                        </legend>
+                        <div class="category-list max-h-200 overflow-auto">
+                            {% for cat in categories %}
+                            <a href="{% url 'shop' %}?category={{ cat.slug }}{% if query %}&q={{ query }}{% endif %}"
+                               class="d-flex justify-content-between align-items-center py-2 px-2 text-decoration-none rounded mb-1 {% if cat.slug == category_slug %}bg-success text-white{% else %}text-dark hover-bg-light{% endif %}">
+                                <span>{{ cat.name }}</span>
+                                <span class="badge {% if cat.slug == category_slug %}bg-white text-success{% else %}bg-light text-muted{% endif %}">{{ cat.product_count }}</span>
+                            </a>
+                            {% empty %}
+                            <p class="text-muted small mb-0">No categories available</p>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Vendors -->
+                    <fieldset class="filter-group border-0 p-0 mt-4">
+                        <legend class="filter-title h6 bg-transparent border-0 w-100 mb-2 p-0">
+                            <i class="bi bi-shop"></i>Vendors
+                        </legend>
+                        <div class="vendor-list max-h-180 overflow-auto">
+                            {% for ven in vendors %}
+                            <a href="{% url 'shop' %}?vendor={{ ven.slug }}{% if query %}&q={{ query }}{% endif %}"
+                               class="d-flex justify-content-between align-items-center py-2 px-2 text-decoration-none rounded mb-1 {% if ven.slug == vendor_slug %}bg-success text-white{% else %}text-dark{% endif %}">
+                                <span>{{ ven.name }}</span>
+                                {% if ven.is_verified %}
+                                <i class="bi bi-patch-check-fill text-primary"></i>
+                                {% endif %}
+                            </a>
+                            {% empty %}
+                            <p class="text-muted small mb-0">No vendors available</p>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Price Range -->
+                    <fieldset class="filter-group border-0 p-0 mt-4">
                         <legend class="filter-title h6 bg-transparent border-0 w-100 mb-2 p-0">
                             <i class="bi bi-cash"></i>Price Range
                         </legend>
@@ -337,39 +111,120 @@ document.addEventListener('DOMContentLoaded', function() {
                             {% if vendor_slug %}<input type="hidden" name="vendor" value="{{ vendor_slug }}" />{% endif %}
                             {% if sort %}<input type="hidden" name="sort" value="{{ sort }}" />{% endif %}
 
-                            <div class="mb-3">
-                                <label class="form-label small" for="minPrice">Min Price</label>
-                                <input type="number" class="form-control" name="min_price" id="minPrice" value="{{ min_price }}" placeholder="0" min="0" />
+                            <div class="d-flex gap-2 mb-3">
+                                <div class="flex-fill">
+                                    <label class="form-label small" for="minPrice">Min</label>
+                                    <input type="number" class="form-control form-control-sm" name="min_price" id="minPrice" value="{{ min_price }}" placeholder="â‚¹0" min="0" />
+                                </div>
+                                <div class="flex-fill">
+                                    <label class="form-label small" for="maxPrice">Max</label>
+                                    <input type="number" class="form-control form-control-sm" name="max_price" id="maxPrice" value="{{ max_price }}" placeholder="â‚¹10000" min="0" />
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label small" for="maxPrice">Max Price</label>
-                                <input type="number" class="form-control" name="max_price" id="maxPrice" value="{{ max_price }}" placeholder="10000" min="0" />
-                            </div>
-                            <button type="submit" class="btn btn-success btn-sm w-100">Apply Filter</button>
+                            <button type="submit" class="btn btn-success btn-sm w-100 btn-magnetic">
+                                <i class="bi bi-check me-1"></i>Apply
+                            </button>
                         </form>
                     </fieldset>
 
+                    <!-- Ratings Filter -->
+                    <fieldset class="filter-group border-0 p-0 mt-4">
+                        <legend class="filter-title h6 bg-transparent border-0 w-100 mb-2 p-0">
+                            <i class="bi bi-star"></i>Customer Rating
+                        </legend>
+                        <div class="rating-filter">
+                            <a href="{% url 'shop' %}?rating=4{% if query %}&q={{ query }}{% endif %}{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                               class="d-flex align-items-center text-decoration-none text-dark py-1">
+                                <span class="text-warning me-2">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                </span>
+                                <span class="small">4 & up</span>
+                            </a>
+                            <a href="{% url 'shop' %}?rating=3{% if query %}&q={{ query }}{% endif %}{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                               class="d-flex align-items-center text-decoration-none text-dark py-1">
+                                <span class="text-warning me-2">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i><i class="bi bi-star"></i>
+                                </span>
+                                <span class="small">3 & up</span>
+                            </a>
+                            <a href="{% url 'shop' %}?rating=2{% if query %}&q={{ query }}{% endif %}{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                               class="d-flex align-items-center text-decoration-none text-dark py-1">
+                                <span class="text-warning me-2">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i>
+                                </span>
+                                <span class="small">2 & up</span>
+                            </a>
+                        </div>
+                    </fieldset>
+
                     <!-- Availability -->
-                    <fieldset class="filter-group border-0 p-0">
+                    <fieldset class="filter-group border-0 p-0 mt-4">
                         <legend class="filter-title h6 bg-transparent border-0 w-100 mb-2 p-0">
                             <i class="bi bi-check-circle"></i>Availability
                         </legend>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="inStock" checked disabled />
+                            <input class="form-check-input" type="checkbox" id="inStock"
+                                   {% if in_stock_only %}checked{% endif %}
+                                   onchange="toggleInStock(this.checked)" />
                             <label class="form-check-label" for="inStock">
                                 In Stock Only
                             </label>
                         </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="onSale"
+                                   {% if on_sale_only %}checked{% endif %}
+                                   onchange="toggleOnSale(this.checked)" />
+                            <label class="form-check-label" for="onSale">
+                                <i class="bi bi-tag-fill text-danger me-1"></i>On Sale
+                            </label>
+                        </div>
                     </fieldset>
 
+                    <!-- Active Filters -->
+                    {% if category_slug or vendor_slug or min_price or max_price or rating_filter %}
+                    <div class="filter-group mt-4 pt-3 border-top">
+                        <h6 class="small fw-bold text-muted mb-2">Active Filters</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if category_slug %}
+                            <span class="badge bg-success d-flex align-items-center">
+                                {{ category_slug }}
+                                <a href="{% url 'shop' %}?{% if query %}q={{ query }}&{% endif %}{% if vendor_slug %}vendor={{ vendor_slug }}&{% endif %}{% if sort %}sort={{ sort }}{% endif %}"
+                                   class="text-white ms-2">&times;</a>
+                            </span>
+                            {% endif %}
+                            {% if vendor_slug %}
+                            <span class="badge bg-primary d-flex align-items-center">
+                                {{ vendor_slug }}
+                                <a href="{% url 'shop' %}?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}{% endif %}"
+                                   class="text-white ms-2">&times;</a>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Clear Filters -->
-                    <div class="filter-group">
-                        <a href="{% url 'shop' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <div class="filter-group mt-4">
+                        <a href="{% url 'shop' %}" class="btn btn-outline-secondary btn-sm w-100 btn-magnetic">
                             <i class="bi bi-x-circle me-1"></i>Clear All Filters
                         </a>
                     </div>
                 </div>
             </div>
+
+            <!-- Flash Sale Banner -->
+            {% if flash_sales %}
+            <div class="mt-4 p-3 rounded-3 bg-gradient-primary text-white">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-lightning-fill fs-4 me-2"></i>
+                    <h6 class="mb-0 fw-bold">Flash Sale!</h6>
+                </div>
+                <p class="small mb-2">Up to {{ flash_sales.0.discount_percentage }}% off</p>
+                <a href="{% url 'flash_sales' %}" class="btn btn-light btn-sm w-100 btn-magnetic">
+                    Shop Now <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Product Grid -->
@@ -385,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="d-flex align-items-center gap-2">
                     <span class="text-muted small">Sort by:</span>
                     <div class="sort-dropdown">
-                        <select class="form-select form-select-sm" id="sortSelect" onchange="changeSort(this.value)">
+                        <select class="form-select form-select-sm" id="sortSelect" onchange="changeSort(this.value)" title="Sort products" aria-label="Sort products by">
                             <option value="relevance" {% if sort == 'relevance' or not sort %}selected{% endif %}>Relevance</option>
                             <option value="name" {% if sort == 'name' %}selected{% endif %}>Name A-Z</option>
                             <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
@@ -396,10 +251,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <span class="text-muted small ms-3">View:</span>
                     <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-secondary active" id="gridView">
+                        <button type="button" class="btn btn-outline-secondary active" id="gridView" title="Grid view" aria-label="Switch to grid view">
                             <i class="bi bi-grid"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" id="listView">
+                        <button type="button" class="btn btn-outline-secondary" id="listView" title="List view" aria-label="Switch to list view">
                             <i class="bi bi-list"></i>
                         </button>
                     </div>
@@ -408,36 +263,71 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             {% if products %}
-            <div class="product-grid" id="productGrid">
+            <div class="row" id="productGrid">
                 {% for product in products %}
-                <div class="product-card">
-                    <a href="{% url 'product_detail' product.slug %}" class="product-image">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
-                        {% else %}
-                        <img src="https://placehold.co/400x300?text={{ product.name|urlencode }}" alt="{{ product.name }}" />
-                        {% endif %}
-                        <div class="product-badge">Wholesale</div>
-                    </a>
-                    <div class="product-info">
-                        <div class="product-vendor">{{ product.brand|default:product.vendor.name }}</div>
-                        <h3 class="product-title">
-                            <a href="{% url 'product_detail' product.slug %}" class="text-decoration-none text-dark">{{ product.name }}</a>
-                        </h3>
-                        <div class="product-category">{{ product.category.name }}</div>
-                        <div class="product-price">₹{{ product.price }}</div>
-                        <div class="product-actions">
-                            {% if user.is_authenticated %}
-                            <button type="button" class="btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}" data-product-id="{{ product.id }}">
-                                <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill{% endif %}"></i>
-                            </button>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 glass-card-enhanced hover-3d-lift border-0">
+                        <div class="product-image-wrapper position-relative overflow-hidden bg-light ratio-4x3">
+                            {% if not product.is_in_stock %}
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-danger rounded-pill shadow-sm z-2">Out of Stock</span>
+                            {% elif product.discount_percentage > 0 %}
+                            <span class="position-absolute top-0 start-0 m-2 badge bg-success rounded-pill shadow-sm z-2">{{ product.discount_percentage }}% OFF</span>
                             {% endif %}
-                            <form action="{% url 'cart_add' product.id %}" method="POST" class="flex-grow-1 add-to-cart-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-add-cart">
-                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
+
+                            <div class="position-absolute top-0 end-0 m-2 z-2">
+                                {% if user.is_authenticated %}
+                                <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}"
+                                        data-product-id="{{ product.id }}" title="Wishlist" aria-label="Wishlist">
+                                    <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill text-danger{% endif %} text-secondary"></i>
                                 </button>
-                            </form>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-light rounded-circle shadow-sm btn-compare mt-1"
+                                        data-product-id="{{ product.id }}" title="Compare" aria-label="Compare">
+                                    <i class="bi bi-arrow-left-right text-secondary"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-light rounded-circle shadow-sm btn-quick-view mt-1"
+                                        data-product-id="{{ product.id }}" title="Quick View" aria-label="Quick View">
+                                    <i class="bi bi-eye text-secondary"></i>
+                                </button>
+                            </div>
+
+                            <a href="{% url 'product_detail' product.category.slug product.slug %}" class="d-block h-100">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid w-100 h-100 object-fit-cover loading" onload="this.classList.add('loaded')" loading="lazy">
+                                {% else %}
+                                <div class="image-placeholder d-flex align-items-center justify-content-center w-100 h-100 text-muted">
+                                    <i class="bi bi-image fs-1 opacity-25"></i>
+                                </div>
+                                {% endif %}
+                            </a>
+                        </div>
+
+                        <div class="card-body p-3 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-uppercase text-muted fw-bold fs-7-custom">{{ product.category.name }}</small>
+                                <small class="text-muted">{{ product.brand|default:product.vendor.name|truncatechars:15 }}</small>
+                            </div>
+
+                            <h5 class="card-title h6 fw-bold text-dark text-truncate mb-2">
+                                <a href="{% url 'product_detail' product.category.slug product.slug %}" class="text-dark text-decoration-none stretched-link">
+                                    {{ product.name }}
+                                </a>
+                            </h5>
+
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="h5 fw-bold text-success mb-0 d-block">â‚¹{{ product.price }}</span>
+                                    {% if product.mrp and product.mrp > product.price %}
+                                    <small class="text-muted text-decoration-line-through fs-8-custom">â‚¹{{ product.mrp }}</small>
+                                    {% endif %}
+                                </div>
+                                <form action="{% url 'cart_add' product.id %}" method="POST" class="d-inline position-relative z-2">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-success btn-sm rounded-circle shadow-sm btn-icon-sm" aria-label="Add to cart" {% if not product.is_in_stock %}disabled{% endif %}>
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -450,27 +340,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 <ul class="pagination justify-content-center">
                     {% if products.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ products.previous_page_number }}">
+                        <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ products.previous_page_number }}" title="Previous page" aria-label="Previous page">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
                     {% endif %}
 
                     {% for num in products.paginator.page_range %}
-                    {% if products.number == num %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ num }}</span>
-                    </li>
-                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
-                    <li class="page-item">
-                        <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ num }}">{{ num }}</a>
-                    </li>
-                    {% endif %}
+                        {% if products.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
                     {% endfor %}
 
                     {% if products.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ products.next_page_number }}">
+                        <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if category_slug %}category={{ category_slug }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ products.next_page_number }}" title="Next page" aria-label="Next page">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -484,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <i class="bi bi-search"></i>
                 <h3 class="fw-bold text-dark mb-3">No products found</h3>
                 <p class="mb-4">Try adjusting your search criteria or browse all products.</p>
-                <a href="{% url 'shop' %}" class="btn btn-success px-4">
+                <a href="{% url 'shop' %}" class="btn btn-success px-4 btn-magnetic">
                     <i class="bi bi-grid me-2"></i>Browse All Products
                 </a>
             </div>
@@ -492,4 +382,168 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 overflow-hidden shadow">
+            <div class="modal-header border-0 pb-0 position-absolute top-0 end-0 z-1050 m-2">
+                <button type="button" class="btn-close bg-white bg-opacity-75 rounded-circle shadow-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" id="quickViewContent">
+                <div class="d-flex justify-content-center align-items-center py-5">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Quick View Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const productGrid = document.getElementById('productGrid');
+        if (productGrid) {
+            productGrid.addEventListener('click', function(e) {
+                const quickViewBtn = e.target.closest('.btn-quick-view');
+                if (quickViewBtn) {
+                    const productId = quickViewBtn.dataset.productId;
+                    const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+                    const contentValues = document.getElementById('quickViewContent');
+
+                    // Show modal with loading state
+                    modal.show();
+                    contentValues.innerHTML = `
+                        <div class="d-flex justify-content-center align-items-center py-5">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    `;
+
+                    // Fetch product details
+                    fetch(`/product/${productId}/quick-view/`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.text();
+                        })
+                        .then(html => {
+                            contentValues.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            contentValues.innerHTML = `
+                                <div class="text-center py-5">
+                                    <div class="text-danger mb-3"><i class="bi bi-exclamation-circle fs-1"></i></div>
+                                    <h5>Failed to load product details</h5>
+                                    <p class="text-muted">Please try again later.</p>
+                                </div>
+                            `;
+                        });
+                }
+            });
+        }
+    });
+</script>
+
+<div id="compareBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 bg-dark text-white px-4 py-3 rounded-pill shadow-lg d-none z-1050">
+    <div class="d-flex align-items-center gap-3">
+        <span><i class="bi bi-arrow-left-right me-2"></i><span id="compareCount">0</span> products selected</span>
+        <a href="{% url 'product_compare' %}" id="compareLink" class="btn btn-success btn-sm rounded-pill btn-magnetic">
+            <i class="bi bi-eye me-1"></i>Compare Now
+        </a>
+        <button type="button" class="btn btn-outline-light btn-sm rounded-pill btn-magnetic" id="clearCompare" title="Clear comparison" aria-label="Clear product comparison">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+// Compare functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const compareBar = document.getElementById('compareBar');
+    const compareCount = document.getElementById('compareCount');
+    const compareLink = document.getElementById('compareLink');
+    const clearCompareBtn = document.getElementById('clearCompare');
+
+    // Update compare bar UI
+    function updateCompareBar() {
+        const compared = JSON.parse(localStorage.getItem('comparedProducts') || '[]');
+        if (compared.length > 0) {
+            compareBar.classList.remove('d-none');
+            compareCount.textContent = compared.length;
+            compareLink.href = "{% url 'product_compare' %}?products=" + compared.join('&products=');
+        } else {
+            compareBar.classList.add('d-none');
+        }
+    }
+
+    // Add to compare button handlers
+    document.querySelectorAll('.btn-compare').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const productId = Number.parseInt(this.dataset.productId, 10);
+            let compared = JSON.parse(localStorage.getItem('comparedProducts') || '[]');
+
+            if (compared.includes(productId)) {
+                // Remove from compare
+                compared = compared.filter(id => id !== productId);
+                this.classList.remove('active', 'btn-success');
+                this.classList.add('btn-outline-secondary');
+                Toastify({
+                    text: "Removed from comparison",
+                    duration: 2000,
+                    backgroundColor: "linear-gradient(to right, #ff9a9e, #fecfef)",
+                }).showToast();
+            } else if (compared.length >= 4) {
+                Toastify({
+                    text: "Maximum 4 products can be compared",
+                    duration: 3000,
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                }).showToast();
+                return;
+            } else {
+                // Add to compare
+                compared.push(productId);
+                this.classList.add('active', 'btn-success');
+                this.classList.remove('btn-outline-secondary');
+                Toastify({
+                    text: "Added to comparison!",
+                    duration: 2000,
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
+            }
+
+            localStorage.setItem('comparedProducts', JSON.stringify(compared));
+            updateCompareBar();
+        });
+    });
+
+    // Clear compare
+    if (clearCompareBtn) {
+        clearCompareBtn.addEventListener('click', function() {
+            localStorage.removeItem('comparedProducts');
+            updateCompareBar();
+            document.querySelectorAll('.btn-compare').forEach(function(btn) {
+                btn.classList.remove('active', 'btn-success');
+                btn.classList.add('btn-outline-secondary');
+            });
+        });
+    }
+
+    // Initialize compare bar
+    updateCompareBar();
+
+    // Highlight already compared products
+    const compared = JSON.parse(localStorage.getItem('comparedProducts') || '[]');
+    document.querySelectorAll('.btn-compare').forEach(function(btn) {
+        const productId = Number.parseInt(btn.dataset.productId, 10);
+        if (compared.includes(productId)) {
+            btn.classList.add('active', 'btn-success');
+            btn.classList.remove('btn-outline-secondary');
+        }
+    });
+});
+</script>
 {% endblock %}

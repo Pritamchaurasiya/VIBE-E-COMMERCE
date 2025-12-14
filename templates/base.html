@@ -1,10 +1,38 @@
-<!DOCTYPE html>
 {% load static %}
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Agri B2B{% endblock %}</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#22c55e">
+    <meta name="description" content="Premium Agri B2B E-commerce Platform - Connect with farmers, vendors, and businesses for quality agricultural products.">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AGRI B2B">
+    <meta name="application-name" content="AGRI B2B">
+    <meta name="msapplication-TileColor" content="#22c55e">
+    <meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
+
+    <!-- Icons - Apple Touch Icon must be in head before manifest -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/pwa/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/pwa/icon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/pwa/icon-16x16.png' %}">
+    <link rel="mask-icon" href="{% static 'images/pwa/safari-pinned-tab.svg' %}" color="#22c55e">
+
+    <!-- PWA Manifest - Using recommended .webmanifest extension -->
+    <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Agri B2B - Premium E-Commerce Platform">
+    <meta property="og:description" content="Connect with farmers, vendors, and businesses for quality agricultural products.">
+    <meta property="og:image" content="{% static 'images/pwa/icon-512x512.png' %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:type" content="website">
+
     <script src="https://js.stripe.com/v3/"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,18 +46,21 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="{% static 'css/utils.css' %}">
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pwa-premium.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard-premium.css' %}">
     {% block extra_css %}{% endblock %}
   </head>
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient shadow-lg sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark glass-navbar shadow-lg sticky-top" aria-label="Main navigation">
       <div class="container">
         <a class="navbar-brand fw-bold text-white d-flex align-items-center" href="{% url 'frontpage' %}">
           <i class="bi bi-tree-fill text-success me-2 fs-4"></i>
           AGRI B2B
         </a>
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" title="Toggle navigation" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -50,10 +81,28 @@
               <a class="nav-link fw-semibold{% if request.resolver_match.url_name == 'contact' %} active text-success{% endif %}" href="{% url 'contact' %}"><i class="bi bi-envelope me-1"></i>Contact</a>
             </li>
           </ul>
+
+          <!-- Live Search -->
+          <div class="position-relative me-3 d-none d-lg-block live-search-width">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-muted"></i>
+              </span>
+              <input type="text"
+                     class="form-control border-start-0 ps-0"
+                     id="liveSearchInput"
+                     placeholder="Search products..."
+                     autocomplete="off"
+                     aria-label="Search products">
+            </div>
+            <div id="searchResults" class="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 d-none search-results-container">
+            </div>
+          </div>
+
           <div class="d-flex align-items-center">
             <!-- Cart Icon -->
             {% if cart_item_count > 0 %}
-            <a href="{% url 'cart_detail' %}" class="btn btn-outline-light position-relative me-3">
+            <a href="{% url 'cart_detail' %}" class="btn btn-outline-light position-relative me-3" aria-label="View Cart">
               <i class="bi bi-cart3"></i>
               <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                 {{ cart_item_count }}
@@ -63,14 +112,14 @@
             {% endif %}
 
             <!-- Dark Mode Toggle -->
-            <button id="darkModeToggle" class="btn btn-outline-light rounded-circle me-3" style="width: 40px; height: 40px;">
+            <button id="darkModeToggle" class="btn btn-outline-light rounded-circle me-3 square-40" title="Toggle dark mode" aria-label="Toggle dark mode">
                 <i class="bi bi-moon-fill"></i>
             </button>
 
             {% if user.is_authenticated %}
             <div class="dropdown">
-              <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+              <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-2 square-32">
                   <span class="text-white fw-bold">{{ user.first_name|first|default:user.username|first|upper }}</span>
                 </div>
                 <span class="d-none d-md-inline">{{ user.first_name|default:user.username }}</span>
@@ -92,12 +141,127 @@
     </nav>
 
     <!-- Main Content -->
-    {% block content %} {% endblock %}
+    <main id="main-content" class="flex-grow-1">
+        {% block content %} {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-3 mt-5">
+      <div class="container">
+        <div class="row g-4">
+          <!-- Brand Column -->
+          <div class="col-lg-4 col-md-6">
+            <h5 class="fw-bold text-success mb-3 d-flex align-items-center">
+              <i class="bi bi-tree-fill me-2"></i> AGRI B2B
+            </h5>
+            <p class="text-secondary small mb-4">
+              Empowering farmers and businesses with a next-gen B2B e-commerce platform.
+              Quality products, fair prices, and seamless connectivity.
+            </p>
+            <div class="d-flex gap-3">
+              <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle square-32 d-flex align-items-center justify-content-center text-white" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+              <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle square-32 d-flex align-items-center justify-content-center text-white" aria-label="Twitter"><i class="bi bi-twitter"></i></a>
+              <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle square-32 d-flex align-items-center justify-content-center text-white" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+              <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle square-32 d-flex align-items-center justify-content-center text-white" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="col-lg-2 col-md-6">
+            <h6 class="fw-bold mb-3">Quick Links</h6>
+            <ul class="list-unstyled small text-secondary">
+              <li class="mb-2"><a href="{% url 'frontpage' %}" class="text-decoration-none text-secondary hover-text-white transition-all">Home</a></li>
+              <li class="mb-2"><a href="{% url 'shop' %}" class="text-decoration-none text-secondary hover-text-white transition-all">Shop</a></li>
+              <li class="mb-2"><a href="{% url 'vendor_list' %}" class="text-decoration-none text-secondary hover-text-white transition-all">Vendors</a></li>
+              <li class="mb-2"><a href="{% url 'about' %}" class="text-decoration-none text-secondary hover-text-white transition-all">About Us</a></li>
+              <li class="mb-2"><a href="{% url 'contact' %}" class="text-decoration-none text-secondary hover-text-white transition-all">Contact</a></li>
+            </ul>
+          </div>
+
+          <!-- Support -->
+          <div class="col-lg-2 col-md-6">
+            <h6 class="fw-bold mb-3">Support</h6>
+            <ul class="list-unstyled small text-secondary">
+              <li class="mb-2"><a href="#" class="text-decoration-none text-secondary hover-text-white transition-all">Help Center</a></li>
+              <li class="mb-2"><a href="#" class="text-decoration-none text-secondary hover-text-white transition-all">Terms of Service</a></li>
+              <li class="mb-2"><a href="#" class="text-decoration-none text-secondary hover-text-white transition-all">Privacy Policy</a></li>
+              <li class="mb-2"><a href="#" class="text-decoration-none text-secondary hover-text-white transition-all">Return Policy</a></li>
+              <li class="mb-2"><a href="#" class="text-decoration-none text-secondary hover-text-white transition-all">Sitemap</a></li>
+            </ul>
+          </div>
+
+          <!-- Newsletter -->
+          <div class="col-lg-4 col-md-6">
+            <h6 class="fw-bold mb-3">Newsletter</h6>
+            <p class="small text-secondary mb-3">Subscribe to get the latest updates and offers.</p>
+            <form class="input-group mb-3">
+              <input type="email" class="form-control bg-transparent border-secondary text-white" placeholder="Your email" aria-label="Your email">
+              <button class="btn btn-success" type="button">Subscribe</button>
+            </form>
+            <p class="small text-muted fst-italic">We respect your privacy.</p>
+          </div>
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <div class="row align-items-center">
+          <div class="col-md-6 text-center text-md-start">
+            <p class="small text-secondary mb-0">&copy; {% now "Y" %} Agri B2B. All rights reserved.</p>
+          </div>
+          <div class="col-md-6 text-center text-md-end">
+            <p class="small text-secondary mb-0">Designed with <i class="bi bi-heart-fill text-danger mx-1"></i> by VIBE-E-COMMERCE</p>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <!-- Scripts -->
+    <script>
+        window.VIBE_CONFIG = {
+            vapidPublicKey: "{{ vapid_public_key|default:'' }}",
+            urls: {
+                shop: "{% url 'shop' %}",
+                vendor_list: "{% url 'vendor_list' %}",
+                flash_sales: "{% url 'flash_sales' %}"
+            }
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    <!-- PWA Install Prompt -->
+    <script src="{% static 'js/pwa-install.js' %}"></script>
+    <!-- PWA Enhanced Features -->
+    <script src="{% static 'js/pwa-enhanced.js' %}"></script>
+    <!-- PWA Download Button -->
+    <script src="{% static 'js/pwa-download-btn.js' %}"></script>
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="btn btn-success rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4 square-50 d-none z-3" aria-label="Back to top">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    <script>
+        // Back to Top Functionality
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('d-none');
+                backToTopBtn.classList.add('fade-in');
+            } else {
+                backToTopBtn.classList.add('d-none');
+                backToTopBtn.classList.remove('fade-in');
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
   </body>
 </html>

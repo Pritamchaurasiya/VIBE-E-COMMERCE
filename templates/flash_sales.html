@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Flash Sales & Deals â€” Agri B2B{% endblock %}
+
+
+
+
+{% block content %}
+<!-- Flash Sale Hero -->
+<section class="flash-sale-hero">
+    <div class="container flash-sale-hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-lightning-charge-fill me-3"></i>
+                    Flash Sales
+                </h1>
+                <p class="lead mb-4">
+                    Limited-time deals on premium agricultural products. Don't miss out on these exclusive offers!
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clock-fill text-warning fs-5 me-2"></i>
+                        <span>Limited Time Only</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-percent text-success fs-5 me-2"></i>
+                        <span>Up to 50% Off</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-truck text-info fs-5 me-2"></i>
+                        <span>Free Shipping</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="bi bi-fire display-1 text-warning mb-3"></i>
+                    <h3 class="fw-bold">Hot Deals Active Now!</h3>
+                    <p class="text-white-50">Grab these deals before they're gone</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Active Flash Sales -->
+    {% if active_sales %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold text-dark mb-4">
+                <i class="bi bi-fire text-danger me-2"></i>
+                Active Deals
+            </h2>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        {% for sale in active_sales %}
+        <div class="col-lg-6 col-xl-4">
+            <div class="glass-card h-100 hover-3d-lift border-0 overflow-hidden">
+                {% if sale.banner_image %}
+                <div class="position-relative overflow-hidden flash-sale-banner-height">
+                    <img src="{{ sale.banner_image.url }}" alt="{{ sale.name }}" class="w-100 h-100 object-fit-cover">
+                    <div class="position-absolute top-0 end-0 m-3 badge bg-danger fs-6 shadow-sm animate-pulse">
+                        {{ sale.discount_percentage }}% OFF
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card-body p-4">
+                    <h3 class="h4 fw-bold mb-2">{{ sale.name }}</h3>
+                    <p class="text-muted mb-4 small">{{ sale.description|truncatewords:20 }}</p>
+
+                    <!-- Countdown Timer -->
+                    <div id="timer-{{ sale.id }}" class="background-light rounded-3 p-3 mb-4 border border-light" data-end-time="{{ sale.end_time|date:'c' }}">
+                        <div class="row text-center g-2">
+                            <div class="col-3 border-end">
+                                <div class="fw-bold text-success h5 mb-0" id="days-{{ sale.id }}">00</div>
+                                <small class="text-xs text-muted text-uppercase">Days</small>
+                            </div>
+                            <div class="col-3 border-end">
+                                <div class="fw-bold text-success h5 mb-0" id="hours-{{ sale.id }}">00</div>
+                                <small class="text-xs text-muted text-uppercase">Hrs</small>
+                            </div>
+                            <div class="col-3 border-end">
+                                <div class="fw-bold text-success h5 mb-0" id="minutes-{{ sale.id }}">00</div>
+                                <small class="text-xs text-muted text-uppercase">Mins</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold text-danger h5 mb-0" id="seconds-{{ sale.id }}">00</div>
+                                <small class="text-xs text-muted text-uppercase">Secs</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted fw-semibold"><i class="bi bi-tag-fill me-1"></i>{{ sale.products.count }} products included</small>
+                        <a href="{% url 'shop' %}?flash_sale={{ sale.id }}" class="btn btn-success btn-sm fw-bold px-3">
+                            Check Deals <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Upcoming Sales -->
+    {% if upcoming_sales %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold text-dark mb-4">
+                <i class="bi bi-clock text-primary me-2"></i>
+                Coming Soon
+            </h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for sale in upcoming_sales %}
+        <div class="col-lg-6">
+            <div class="upcoming-sale">
+                <div class="upcoming-badge">Coming Soon</div>
+                <h4 class="fw-bold mb-2">{{ sale.name }}</h4>
+                <p class="text-muted mb-3">{{ sale.description }}</p>
+
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Starts In</small>
+                            <strong>{{ sale.start_time|date:"M d, Y H:i" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Discount</small>
+                            <strong class="text-success">{{ sale.discount_percentage }}% OFF</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">{{ sale.products.count }} products included</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not active_sales and not upcoming_sales %}
+    <div class="empty-state">
+        <i class="bi bi-lightning-charge"></i>
+        <h3 class="fw-bold text-dark mb-3">No Flash Sales Available</h3>
+        <p class="mb-4">Check back later for amazing deals on agricultural products.</p>
+        <a href="{% url 'shop' %}" class="btn btn-success btn-lg">
+            <i class="bi bi-shop me-2"></i>Browse Products
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Countdown Timer Functionality
+function updateCountdown(saleId, endTime) {
+    const now = Date.now();
+    const end = new Date(endTime).getTime();
+    const distance = end - now;
+
+    if (distance > 0) {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        const daysEl = document.getElementById(`days-${saleId}`);
+        const hoursEl = document.getElementById(`hours-${saleId}`);
+        const minutesEl = document.getElementById(`minutes-${saleId}`);
+        const secondsEl = document.getElementById(`seconds-${saleId}`);
+
+        if (daysEl) daysEl.textContent = days.toString().padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = hours.toString().padStart(2, '0');
+        if (minutesEl) minutesEl.textContent = minutes.toString().padStart(2, '0');
+        if (secondsEl) secondsEl.textContent = seconds.toString().padStart(2, '0');
+    } else {
+        // Sale ended
+        location.reload();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize countdown timers for active sales
+    const countdownElements = document.querySelectorAll('.fs-countdown-timer');
+    countdownElements.forEach(element => {
+        const saleId = element.id.split('-')[1];
+        const endTime = element.dataset.endTime;
+
+        if (saleId && endTime) {
+            // Update immediately
+            updateCountdown(saleId, endTime);
+
+            // Update every second
+            setInterval(() => updateCountdown(saleId, endTime), 1000);
+        }
+    });
+});
+</script>
+{% endblock %}

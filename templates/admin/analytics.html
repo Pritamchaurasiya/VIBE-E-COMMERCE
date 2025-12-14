@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics — Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-container {
+        height: 350px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Analytics Dashboard</h1>
+                    <p class="text-muted mb-0">Advanced sales and performance analytics</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'admin_export_data' %}?type=orders" class="btn btn-outline-success">
+                        <i class="bi bi-download me-2"></i>Export Orders
+                    </a>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sales Chart -->
+        <div class="col-lg-8">
+            <div class="analytics-card">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-graph-up text-success me-2"></i>Daily Sales (Last 30 Days)
+                </h5>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Sales -->
+        <div class="col-lg-4">
+            <div class="analytics-card">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-pie-chart text-primary me-2"></i>Sales by Category
+                </h5>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Vendor Sales -->
+        <div class="col-lg-6">
+            <div class="analytics-card">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-shop text-warning me-2"></i>Top Vendors by Sales
+                </h5>
+                <div class="chart-container">
+                    <canvas id="vendorChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Summary -->
+        <div class="col-lg-6">
+            <div class="analytics-card">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-list-check text-info me-2"></i>Sales Summary Table
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in daily_sales|slice:":10" %}
+                            <tr>
+                                <td>{{ sale.date|date:"M d, Y" }}</td>
+                                <td>{{ sale.count }}</td>
+                                <td>₹{{ sale.total|floatformat:0 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No sales data</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JSON data using secure json_script tag -->
+{{ daily_sales_json|json_script:"daily-sales-data" }}
+{{ category_sales_json|json_script:"category-sales-data" }}
+{{ vendor_sales_json|json_script:"vendor-sales-data" }}
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Parse JSON data from script tags (secure method)
+const salesData = JSON.parse(document.getElementById('daily-sales-data').textContent);
+const categoryData = JSON.parse(document.getElementById('category-sales-data').textContent);
+const vendorData = JSON.parse(document.getElementById('vendor-sales-data').textContent);
+
+// Daily Sales Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+
+const salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: salesData.map(d => d.date),
+        datasets: [{
+            label: 'Revenue (₹)',
+            data: salesData.map(d => d.total),
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Category Sales Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+
+const categoryChart = new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: categoryData.map(d => d.product__category__name || 'Unknown'),
+        datasets: [{
+            data: categoryData.map(d => d.total),
+            backgroundColor: [
+                'rgb(34, 197, 94)',
+                'rgb(59, 130, 246)',
+                'rgb(245, 158, 11)',
+                'rgb(239, 68, 68)',
+                'rgb(139, 92, 246)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+
+// Vendor Sales Chart
+const vendorCtx = document.getElementById('vendorChart').getContext('2d');
+
+const vendorChart = new Chart(vendorCtx, {
+    type: 'bar',
+    data: {
+        labels: vendorData.map(d => d.vendor__name || 'Unknown'),
+        datasets: [{
+            label: 'Sales (₹)',
+            data: vendorData.map(d => d.total),
+            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+// Keep references to prevent garbage collection
+console.debug('Charts initialized:', salesChart ? 'sales' : '', categoryChart ? 'category' : '', vendorChart ? 'vendor' : '');
+</script>
+{% endblock %}

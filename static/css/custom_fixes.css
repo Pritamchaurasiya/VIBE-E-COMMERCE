@@ -1,0 +1,24 @@
+
+/* Utility classes added for template refactoring */
+
+.square-24 {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+}
+
+.flash-sale-banner-height {
+    height: 200px;
+}
+
+.category-card-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.category-icon-placeholder {
+    width: 100px;
+    height: 100px;
+}

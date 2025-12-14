@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Tracking Alerts</h1>
+<div class="alerts-list">
+    {% for alert in alerts %}
+    <div class="alert-item">
+        <h3>{{ alert.title }}</h3>
+        <p>{{ alert.description }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

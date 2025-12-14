@@ -4,294 +4,7 @@
 {% block title %}Checkout — Vibe E-commerce{% endblock %}
 
 {% block extra_css %}
-<style>
-    .checkout-header {
-        background: linear-gradient(135deg, var(--light-gray), white);
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
 
-    .checkout-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2322c55e' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        z-index: 0;
-    }
-
-    .checkout-header-content {
-        position: relative;
-        z-index: 1;
-    }
-
-    .checkout-progress {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-
-    .progress-step {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-    }
-
-    .progress-step:not(:last-child)::after {
-        content: '';
-        position: absolute;
-        top: 15px;
-        left: 100%;
-        width: 100px;
-        height: 2px;
-        background: #e5e7eb;
-        z-index: 1;
-    }
-
-    .progress-step.completed:not(:last-child)::after {
-        background: var(--primary-green);
-    }
-
-    .step-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #e5e7eb;
-        color: #4b5563;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .progress-step.completed .step-circle {
-        background: var(--primary-green);
-        color: white;
-    }
-
-    .progress-step.active .step-circle {
-        background: var(--primary-green);
-        color: white;
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
-    }
-
-    .step-label {
-        font-size: 0.75rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    .progress-step.active .step-label {
-        color: var(--primary-green);
-        font-weight: 600;
-    }
-
-    .billing-form {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .form-section {
-        margin-bottom: 2rem;
-    }
-
-    .form-section-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .form-section-title i {
-        color: var(--primary-green);
-        margin-right: 0.75rem;
-    }
-
-    .order-summary {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        position: sticky;
-        top: 20px;
-    }
-
-    .summary-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f3f4f6;
-    }
-
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .summary-item:last-child {
-        border-bottom: none;
-    }
-
-    .item-info {
-        display: flex;
-        align-items: center;
-    }
-
-    .item-image {
-        width: 48px;
-        height: 48px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-right: 1rem;
-        border: 2px solid #f3f4f6;
-    }
-
-    .item-details h6 {
-        margin: 0;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    .item-quantity {
-        font-size: 0.75rem;
-        color: #6b7280;
-    }
-
-    .summary-total {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-top: 1.5rem;
-    }
-
-    .summary-total-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
-    }
-
-    .summary-total-row.total {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--primary-green);
-        border-top: 2px solid #e5e7eb;
-        padding-top: 1rem;
-        margin-top: 1rem;
-        margin-bottom: 0;
-    }
-
-    .payment-section {
-        background: white;
-        border-radius: 16px;
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .payment-methods {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .payment-method {
-        flex: 1;
-        padding: 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .payment-method:hover {
-        border-color: var(--primary-green);
-        background: #f0fdf4;
-    }
-
-    .payment-method.active {
-        border-color: var(--primary-green);
-        background: #f0fdf4;
-    }
-
-    .payment-method i {
-        font-size: 1.5rem;
-        color: var(--primary-green);
-        margin-bottom: 0.5rem;
-    }
-
-    .place-order-btn {
-        width: 100%;
-        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-        border: none;
-        padding: 1rem;
-        border-radius: 12px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-top: 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .place-order-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
-    }
-
-    .security-badges {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .security-badge {
-        display: flex;
-        align-items: center;
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
-
-    .security-badge i {
-        color: var(--primary-green);
-        margin-right: 0.5rem;
-    }
-
-    @media (max-width: 768px) {
-        .checkout-progress {
-            display: none;
-        }
-
-        .payment-methods {
-            flex-direction: column;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -383,6 +96,95 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Stripe Payment Logic
+    var stripe = Stripe('{{ pub_key }}');
+    // We need to detach the previous form submit listener or handle the logic carefully.
+    // However, the previous listener at line 318 handles UI validation.
+    // This script handles the ACTUAL submission to backend to get Stripe session.
+    // We should merge them or ensure they don't conflict.// The previous listener prevents default but doesn't actually submit to Stripe.
+    // It returns false if invalid.
+
+    // Let's modify the form submit handler to handle both validation and Stripe.
+    // Note: The previous handler at L318 DOES NOT submit data, it just validates.
+    // It prevents default if invalid. If valid, it flows through? No, it prevents default ONLY if !isValid.
+    // If isValid, it continues. // BUT the form has `method="POST" id="payment-form"`.
+    // The previous handler at L318 adds a 'submit' listener.
+    // This script ADDS ANOTHER 'submit' listener.
+    // Both will fire. The order is registration order.
+    // L318 registers first. If it sees invalid, it calls e.preventDefault().
+    // If it's valid, it does nothing to prevent default.
+    // Then THIS listener runs. It calls e.preventDefault() immediately.
+    // So if valid, this listener stops normal submission and does fetch.
+
+    form.addEventListener('submit', function(event) {
+        // Validation check for invalid classes managed by other listeners
+        if (form.querySelectorAll('.is-invalid').length > 0) {
+            event.preventDefault();
+            return;
+        }
+
+        event.preventDefault(); // Stop standard POST
+
+        // Get active payment method
+        const activeMethod = document.querySelector('.payment-method.active');
+        const paymentMethod = activeMethod ? activeMethod.dataset.method : 'card';
+
+        var data = {
+            'first_name': form.first_name.value,
+            'last_name': form.last_name.value,
+            'email': form.email.value,
+            'address': form.address.value,
+            'zipcode': form.zipcode.value,
+            'place': form.place.value,
+            'phone': form.phone.value,
+            'payment_method': paymentMethod
+        };
+
+        // UI Loading State
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
+
+        fetch("{% url 'start_order' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(result) {
+            if (result.success) {
+                 // COD Success
+                 window.location.href = "{% url 'success' %}";
+            } else if (result.session) {
+                 // Stripe Session Created
+                 return stripe.redirectToCheckout({ sessionId: result.session.id });
+            } else if (result.error) {
+                 throw new Error(result.error);
+            }
+        })
+        .then(function(result) {
+            // Handle Stripe redirect error if any
+            if (result && result.error) {
+                alert(result.error.message);
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = '<i class="bi bi-lock me-2"></i>Place Order Securely';
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            const errorDiv = document.getElementById('card-errors');
+            errorDiv.textContent = error.message || 'An error occurred. Please try again.';
+            errorDiv.classList.remove('d-none');
+
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = '<i class="bi bi-lock me-2"></i>Place Order Securely';
+        });
+    });
 });
 </script>
 {% endblock %}
@@ -423,13 +225,13 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- Billing & Payment Form -->
         <div class="col-lg-8">
             <!-- Billing Details -->
-            <div class="billing-form">
-                <div class="form-section">
-                    <h3 class="form-section-title">
-                        <i class="bi bi-person"></i>Billing Details
-                    </h3>
-                    <form method="POST" id="payment-form">
-                        {% csrf_token %}
+            <div class="billing-form glass-card p-4 mb-4">
+                <form method="POST" id="payment-form">
+                    {% csrf_token %}
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i class="bi bi-person"></i>Billing Details
+                        </h3>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.first_name.id_for_label }}" class="form-label fw-semibold">First Name *</label>
@@ -463,55 +265,56 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Payment Method -->
-                <div class="payment-section">
-                    <h3 class="form-section-title">
-                        <i class="bi bi-credit-card"></i>Payment Method
-                    </h3>
-                    <div class="payment-methods">
-                        <div class="payment-method active" data-method="card">
-                            <i class="bi bi-credit-card"></i>
-                            <div class="fw-semibold">Credit/Debit Card</div>
-                            <small class="text-muted">Secure payment</small>
+                    <!-- Payment Method -->
+                    <div class="payment-section">
+                        <h3 class="form-section-title">
+                            <i class="bi bi-credit-card"></i>Payment Method
+                        </h3>
+                        <div class="payment-methods">
+                            <div class="payment-method active" data-method="card">
+                                <i class="bi bi-credit-card"></i>
+                                <div class="fw-semibold">Credit/Debit Card</div>
+                                <small class="text-muted">Secure payment</small>
+                            </div>
+                            <div class="payment-method" data-method="cod">
+                                <i class="bi bi-cash"></i>
+                                <div class="fw-semibold">Cash on Delivery</div>
+                                <small class="text-muted">Pay when delivered</small>
+                            </div>
                         </div>
-                        <div class="payment-method" data-method="cod">
-                            <i class="bi bi-cash"></i>
-                            <div class="fw-semibold">Cash on Delivery</div>
-                            <small class="text-muted">Pay when delivered</small>
+
+                        <!-- Card Errors -->
+                        <div id="card-errors" role="alert" class="text-danger mt-2 d-none"></div>
+
+                        <!-- Place Order Button -->
+                        <button class="btn btn-success place-order-btn" type="submit">
+                            <i class="bi bi-lock me-2"></i>Place Order Securely
+                        </button>
+
+                        <div class="security-badges">
+                            <div class="security-badge">
+                                <i class="bi bi-shield-check"></i>
+                                <span>SSL Secured</span>
+                            </div>
+                            <div class="security-badge">
+                                <i class="bi bi-credit-card"></i>
+                                <span>Secure Payment</span>
+                            </div>
+                            <div class="security-badge">
+                                <i class="bi bi-truck"></i>
+                                <span>Fast Delivery</span>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Card Errors -->
-                    <div id="card-errors" role="alert" class="text-danger mt-2 d-none"></div>
-
-                    <!-- Place Order Button -->
-                    <button class="btn btn-success place-order-btn" type="submit">
-                        <i class="bi bi-lock me-2"></i>Place Order Securely
-                    </button>
-
-                    <div class="security-badges">
-                        <div class="security-badge">
-                            <i class="bi bi-shield-check"></i>
-                            <span>SSL Secured</span>
-                        </div>
-                        <div class="security-badge">
-                            <i class="bi bi-credit-card"></i>
-                            <span>Secure Payment</span>
-                        </div>
-                        <div class="security-badge">
-                            <i class="bi bi-truck"></i>
-                            <span>Fast Delivery</span>
-                        </div>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
+
 
         <!-- Order Summary -->
         <div class="col-lg-4">
-            <div class="order-summary">
+            <div class="order-summary glass-card p-4">
                 <h3 class="summary-title">
                     <i class="bi bi-receipt me-2"></i>Order Summary
                 </h3>
@@ -558,47 +361,3 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 {% endblock %}
-
-<script>
-    var stripe = Stripe('{{ pub_key }}');
-    var form = document.getElementById('payment-form');
-
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        var data = {
-            'first_name': form.first_name.value,
-            'last_name': form.last_name.value,
-            'email': form.email.value,
-            'address': form.address.value,
-            'zipcode': form.zipcode.value,
-            'place': form.place.value,
-            'phone': form.phone.value,
-        };
-
-        fetch("{% url 'start_order' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(session) {
-            return stripe.redirectToCheckout({ sessionId: session.session.id });
-        })
-        .then(function(result) {
-            if (result.error) {
-                alert(result.error.message);
-            }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-        });
-    });
-</script>
-{% endblock %}
-

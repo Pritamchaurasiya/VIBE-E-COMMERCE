@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Site Settings — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Site Settings</h1>
+                    <p class="text-muted mb-0">Configure site-wide settings and features</p>
+                </div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="row">
+            <!-- General Settings -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-gear text-primary me-2"></i>General Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="site_name" class="form-label">Site Name</label>
+                            <input type="text" id="site_name" name="site_name" class="form-control" value="{{ settings.site_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="site_tagline" class="form-label">Tagline</label>
+                            <input type="text" id="site_tagline" name="site_tagline" class="form-control" value="{{ settings.site_tagline }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Settings -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-telephone text-success me-2"></i>Contact Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="contact_email" class="form-label">Contact Email</label>
+                            <input type="email" id="contact_email" name="contact_email" class="form-control" value="{{ settings.contact_email }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_phone" class="form-label">Contact Phone</label>
+                            <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="{{ settings.contact_phone }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea id="address" name="address" class="form-control" rows="3">{{ settings.address }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Toggles -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-toggles text-warning me-2"></i>Feature Toggles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable_rfq" name="enable_rfq" {% if settings.enable_rfq %}checked{% endif %}>
+                            <label class="form-check-label" for="enable_rfq">Enable RFQ System</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable_messaging" name="enable_messaging" {% if settings.enable_messaging %}checked{% endif %}>
+                            <label class="form-check-label" for="enable_messaging">Enable Buyer-Seller Messaging</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable_reviews" name="enable_reviews" {% if settings.enable_reviews %}checked{% endif %}>
+                            <label class="form-check-label" for="enable_reviews">Enable Product Reviews</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance Mode -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-tools text-danger me-2"></i>Maintenance Mode
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="maintenance_mode" name="maintenance_mode" {% if settings.maintenance_mode %}checked{% endif %}>
+                            <label class="form-check-label" for="maintenance_mode">
+                                <strong>Enable Maintenance Mode</strong>
+                                <br><small class="text-muted">Site will be inaccessible to regular users</small>
+                            </label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="maintenance_message" class="form-label">Maintenance Message</label>
+                            <textarea id="maintenance_message" name="maintenance_message" class="form-control" rows="3" placeholder="We're currently performing maintenance. Please check back soon.">{{ settings.maintenance_message }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commission Settings -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-percent text-info me-2"></i>Commission Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="default_commission_rate" class="form-label">Default Commission Rate (%)</label>
+                            <input type="number" id="default_commission_rate" name="default_commission_rate" class="form-control" value="{{ settings.default_commission_rate }}" step="0.01" min="0" max="100">
+                            <small class="text-muted">Percentage of each sale taken as platform commission</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-end">
+                        <button type="reset" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-2"></i>Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

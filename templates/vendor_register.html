@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Register as Vendor — Agri B2B{% endblock %}
+{% block title %}Register as Vendor â€” Agri B2B{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -9,14 +9,14 @@
             <div class="card shadow-lg border-0 rounded-3">
                 <div class="card-body p-5">
                     <h2 class="fw-bold text-center mb-4 text-success"><i class="bi bi-shop me-2"></i>Vendor Registration</h2>
-                    
+
                     {% if error %}
                     <div class="alert alert-danger">{{ error }}</div>
                     {% endif %}
-                    
+
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold" for="{{ form.name.id_for_label }}">Shop / Business Name</label>
                             {{ form.name }}
@@ -40,7 +40,7 @@
                                 <div class="text-danger small">{{ form.password.errors }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold" for="{{ form.city.id_for_label }}">City / Location</label>
                             {{ form.city }}
@@ -48,7 +48,7 @@
                                 <div class="text-danger small">{{ form.city.errors }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold" for="{{ form.logo.id_for_label }}">Shop Logo (Optional)</label>
                             {{ form.logo }}
@@ -58,7 +58,7 @@
                             <button type="submit" class="btn btn-success btn-lg fw-bold">Register Business</button>
                         </div>
                     </form>
-                    
+
                     <div class="text-center mt-3">
                         <small class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-success fw-bold">Login here</a></small>
                     </div>

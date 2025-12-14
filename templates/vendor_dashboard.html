@@ -1,0 +1,658 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vendor Dashboard | {{ vendor.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vendor-header {
+        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .stat-icon.green { background: rgba(34, 197, 94, 0.15); color: #14532d; }
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #1e3a8a; }
+    .stat-icon.orange { background: rgba(249, 115, 22, 0.15); color: #7c2d12; }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #4c1d95; }
+
+    .order-table {
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .nav-pills .nav-link.active {
+        background: var(--primary-green);
+    }
+
+    .product-row {
+        transition: background-color 0.2s ease;
+    }
+
+    .product-row:hover {
+        background-color: #f8fafc;
+    }
+
+    .low-stock {
+        background: rgba(239, 68, 68, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Vendor Header -->
+<div class="vendor-header">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            {% if vendor.logo %}
+            <img src="{{ vendor.logo.url }}" alt="{{ vendor.name }}" class="rounded-circle me-4 vendor-logo-lg">
+            {% else %}
+            <div class="bg-success rounded-circle me-4 d-flex align-items-center justify-content-center vendor-logo-placeholder">
+                <i class="bi bi-building fs-2 text-white"></i>
+            </div>
+            {% endif %}
+            <div>
+                <h1 class="fw-bold mb-1">{{ vendor.name }}</h1>
+                <p class="mb-0 opacity-75"><i class="bi bi-geo-alt me-2"></i>{{ vendor.city }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Total Revenue</p>
+                        <h3 class="mb-0 fw-bold">â‚¹{{ total_revenue|default:"0" }}</h3>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Total Orders</p>
+                        <h3 class="mb-0 fw-bold">{{ total_orders|default:"0" }}</h3>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="bi bi-bag-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Products</p>
+                        <h3 class="mb-0 fw-bold">{{ products_count|default:"0" }}</h3>
+                    </div>
+                    <div class="stat-icon orange">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Pending Orders</p>
+                        <h3 class="mb-0 fw-bold">{{ pending_orders|default:"0" }}</h3>
+                    </div>
+                    <div class="stat-icon purple">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills mb-4" id="vendorTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="orders-tab" data-bs-toggle="pill" data-bs-target="#orders" type="button" role="tab">
+                <i class="bi bi-receipt me-2"></i>Orders
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="products-tab" data-bs-toggle="pill" data-bs-target="#products" type="button" role="tab">
+                <i class="bi bi-box-seam me-2"></i>Products
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="bulk-tab" data-bs-toggle="pill" data-bs-target="#bulk" type="button" role="tab">
+                <i class="bi bi-truck me-2"></i>Bulk Requests
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="inquiries-tab" data-bs-toggle="pill" data-bs-target="#inquiries" type="button" role="tab">
+                <i class="bi bi-chat-dots me-2"></i>Inquiries
+                {% if new_inquiries_count %}<span class="badge bg-danger ms-1">{{ new_inquiries_count }}</span>{% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rfqs-tab" data-bs-toggle="pill" data-bs-target="#rfqs" type="button" role="tab">
+                <i class="bi bi-file-earmark-text me-2"></i>RFQs
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="inventory-tab" data-bs-toggle="pill" data-bs-target="#inventory" type="button" role="tab">
+                <i class="bi bi-clipboard-data me-2"></i>Inventory
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics" type="button" role="tab">
+                <i class="bi bi-graph-up me-2"></i>Analytics
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="vendorTabsContent">
+        <!-- Orders Tab -->
+        <div class="tab-pane fade show active" id="orders" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Recent Orders</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td><strong>#{{ item.order.id }}</strong></td>
+                                    <td>{{ item.order.first_name }} {{ item.order.last_name }}</td>
+                                    <td>{{ item.product.name|truncatechars:30 }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td class="text-success fw-bold">â‚¹{{ item.price }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if item.order.status == 'delivered' %}success{% elif item.order.status == 'shipped' %}info{% elif item.order.status == 'confirmed' %}primary{% else %}warning{% endif %}">
+                                            {{ item.order.status|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">{{ item.order.created_at|date:"M d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No orders yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="tab-pane fade" id="products" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Your Products</h5>
+                    <a href="{% url 'admin:store_product_add' %}" class="btn btn-success btn-sm rounded-pill">
+                        <i class="bi bi-plus-lg me-1"></i>Add Product
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr class="product-row {% if product.is_low_stock %}low-stock{% endif %}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if product.image %}
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded me-3 product-thumb-sm">
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ product.name|truncatechars:40 }}</div>
+                                                <small class="text-muted">{{ product.category.name }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>â‚¹{{ product.price }}</td>
+                                    <td>
+                                        {% if product.is_low_stock %}
+                                        <span class="text-danger fw-bold">{{ product.stock_quantity }}</span>
+                                        <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
+                                        {% else %}
+                                        {{ product.stock_quantity }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if product.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'product_detail' product.slug %}" class="btn btn-sm btn-outline-primary" title="View product" aria-label="View product details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No products yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Orders Tab -->
+        <div class="tab-pane fade" id="bulk" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Bulk Order Requests</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Requested Price</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bulk in bulk_orders %}
+                                <tr>
+                                    <td><strong>#{{ bulk.id }}</strong></td>
+                                    <td>{{ bulk.user.username }}</td>
+                                    <td>{{ bulk.product.name|truncatechars:25 }}</td>
+                                    <td>{{ bulk.quantity }}</td>
+                                    <td>â‚¹{{ bulk.requested_price|default:bulk.product.price }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if bulk.status == 'approved' %}success{% elif bulk.status == 'rejected' %}danger{% elif bulk.status == 'completed' %}info{% else %}warning{% endif %}">
+                                            {{ bulk.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">{{ bulk.created_at|date:"M d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No bulk order requests</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div class="tab-pane fade" id="inventory" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Inventory Logs</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Action</th>
+                                    <th>Quantity</th>
+                                    <th>Previous</th>
+                                    <th>New</th>
+                                    <th>Reference</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in inventory_logs %}
+                                <tr>
+                                    <td>{{ log.product.name|truncatechars:25 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if log.action == 'add' %}success{% elif log.action == 'sale' %}primary{% elif log.action == 'damaged' %}danger{% else %}secondary{% endif %}">
+                                            {{ log.get_action_display }}
+                                        </span>
+                                    </td>
+                                    <td class="{% if log.quantity > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                        {% if log.quantity > 0 %}+{% endif %}{{ log.quantity }}
+                                    </td>
+                                    <td>{{ log.previous_stock }}</td>
+                                    <td>{{ log.new_stock }}</td>
+                                    <td class="text-muted">{{ log.reference|default:"-" }}</td>
+                                    <td class="text-muted">{{ log.created_at|date:"M d, H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No inventory logs</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inquiries Tab -->
+        <div class="tab-pane fade" id="inquiries" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-chat-dots text-primary me-2"></i>Buyer Inquiries</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Buyer</th>
+                                    <th>Subject</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inquiry in inquiries %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ inquiry.buyer.username }}</strong>
+                                        <br><small class="text-muted">{{ inquiry.contact_email|default:inquiry.buyer.email }}</small>
+                                    </td>
+                                    <td>{{ inquiry.subject|truncatechars:30 }}</td>
+                                    <td>{{ inquiry.product.name|truncatechars:20|default:"-" }}</td>
+                                    <td>{{ inquiry.quantity_required|default:"-" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if inquiry.status == 'new' %}warning{% elif inquiry.status == 'won' %}success{% elif inquiry.status == 'lost' %}danger{% else %}info{% endif %}">
+                                            {{ inquiry.get_status_display }}
+                                        </span>
+                                        {% if inquiry.is_urgent %}<span class="badge bg-danger ms-1">Urgent</span>{% endif %}
+                                    </td>
+                                    <td class="text-muted">{{ inquiry.created_at|date:"M d" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary btn-view-inquiry" data-inquiry-id="{{ inquiry.id }}" title="View inquiry" aria-label="View inquiry">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success btn-reply-inquiry" data-inquiry-id="{{ inquiry.id }}" title="Reply to inquiry" aria-label="Reply to inquiry">
+                                            <i class="bi bi-reply"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="bi bi-inbox display-4 mb-2"></i>
+                                        <p>No buyer inquiries yet</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RFQs Tab -->
+        <div class="tab-pane fade" id="rfqs" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-text text-warning me-2"></i>Request for Quotes</h5>
+                    <a href="{% url 'shop' %}" class="btn btn-success btn-sm rounded-pill">
+                        <i class="bi bi-search me-1"></i>Browse RFQs
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>RFQ ID</th>
+                                    <th>Title</th>
+                                    <th>Buyer</th>
+                                    <th>Quantity</th>
+                                    <th>Budget</th>
+                                    <th>Status</th>
+                                    <th>Your Quote</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quote in vendor_quotes %}
+                                <tr>
+                                    <td><strong>#{{ quote.rfq.id }}</strong></td>
+                                    <td>{{ quote.rfq.title|truncatechars:25 }}</td>
+                                    <td>{{ quote.rfq.buyer.username }}</td>
+                                    <td>{{ quote.rfq.quantity }} {{ quote.rfq.unit }}</td>
+                                    <td>
+                                        {% if quote.rfq.budget_min and quote.rfq.budget_max %}
+                                        â‚¹{{ quote.rfq.budget_min }} - â‚¹{{ quote.rfq.budget_max }}
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if quote.status == 'accepted' %}success{% elif quote.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ quote.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-success">â‚¹{{ quote.price_per_unit }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" title="View quote details" aria-label="View quote details">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        <i class="bi bi-file-text display-4 mb-2"></i>
+                                        <p>No RFQ quotes submitted yet</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-pane fade" id="analytics" role="tabpanel">
+            <div class="row g-4">
+                <!-- Sales Chart -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up text-success me-2"></i>Sales Overview</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="vendorSalesChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart text-primary me-2"></i>Product Performance</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="productChart" height="200"
+                                data-active="{{ active_products_count|default:0 }}"
+                                data-lowstock="{{ low_stock_count|default:0 }}"
+                                data-outofstock="{{ out_of_stock_count|default:0 }}"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-trophy text-warning me-2"></i>Top Products</h6>
+                        </div>
+                        <div class="card-body">
+                            {% for product in top_products %}
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-success me-2">{{ forloop.counter }}</span>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-truncate truncate-150">{{ product.name }}</div>
+                                    <small class="text-muted">{{ product.order_count|default:0 }} orders</small>
+                                </div>
+                                <span class="fw-bold">â‚¹{{ product.price }}</span>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center">No sales data yet</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js for Analytics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Vendor Sales Chart
+document.addEventListener('DOMContentLoaded', function() {
+    const salesCtx = document.getElementById('vendorSalesChart');
+    if (salesCtx) {
+        const salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Sales (â‚¹)',
+                    data: [5000, 7500, 6200, 9800, 8500, 12000, 11000],
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'â‚¹' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        // Store chart reference for potential cleanup
+        salesCtx.chartInstance = salesChart;
+    }
+
+    const productCtx = document.getElementById('productChart');
+    if (productCtx) {
+        // Get data from data attributes set in the HTML
+        const activeCount = Number.parseInt(productCtx.dataset.active || '0', 10);
+        const lowStockCount = Number.parseInt(productCtx.dataset.lowstock || '0', 10);
+        const outOfStockCount = Number.parseInt(productCtx.dataset.outofstock || '0', 10);
+
+        const productChart = new Chart(productCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Low Stock', 'Out of Stock'],
+                datasets: [{
+                    data: [activeCount, lowStockCount, outOfStockCount],
+                    backgroundColor: ['#22c55e', '#f59e0b', '#ef4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+        // Store chart reference for potential cleanup
+        productCtx.chartInstance = productChart;
+    }
+
+    // Event delegation for inquiry buttons
+    document.querySelectorAll('.btn-view-inquiry').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const inquiryId = this.dataset.inquiryId;
+            alert('View inquiry #' + inquiryId);
+        });
+    });
+
+    document.querySelectorAll('.btn-reply-inquiry').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const inquiryId = this.dataset.inquiryId;
+            alert('Reply to inquiry #' + inquiryId);
+        });
+    });
+});
+</script>
+{% endblock %}

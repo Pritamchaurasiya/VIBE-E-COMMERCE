@@ -1,0 +1,24 @@
+{
+    "chatgpt.commentCodeLensEnabled": false,
+    "snyk.advanced.organization": "d1b895a9-a3ff-4ea8-8f94-a6985bba6de2",
+    "snyk.advanced.autoSelectOrganization": true,
+    "python.testing.pytestArgs": [
+        "templates"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "PostgreSQL 18",
+            "database": "postgres",
+            "username": "postgres",
+            "connectionTimeout": 30,
+            "password": "admin"
+        }
+    ]
+}

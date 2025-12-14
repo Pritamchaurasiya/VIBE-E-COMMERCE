@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Buyer Inquiries — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">Buyer Inquiries</h1>
+                    <p class="text-muted mb-0">Manage leads and inquiries from buyers</p>
+                </div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status-filter" class="form-label">Status</label>
+                    <select name="status" id="status-filter" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+                        <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacted</option>
+                        <option value="quoted" {% if status_filter == 'quoted' %}selected{% endif %}>Quote Sent</option>
+                        <option value="negotiating" {% if status_filter == 'negotiating' %}selected{% endif %}>Negotiating</option>
+                        <option value="won" {% if status_filter == 'won' %}selected{% endif %}>Won</option>
+                        <option value="lost" {% if status_filter == 'lost' %}selected{% endif %}>Lost</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inquiry List -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Buyer</th>
+                            <th>Vendor</th>
+                            <th>Subject</th>
+                            <th>Quantity</th>
+                            <th>Urgent</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inquiry in inquiries %}
+                        <tr>
+                            <td><strong>#{{ inquiry.id }}</strong></td>
+                            <td>
+                                {{ inquiry.buyer.username }}
+                                <br>
+                                <small class="text-muted">{{ inquiry.contact_email|default:inquiry.buyer.email }}</small>
+                            </td>
+                            <td>{{ inquiry.vendor.name }}</td>
+                            <td>{{ inquiry.subject|truncatechars:30 }}</td>
+                            <td>{{ inquiry.quantity_required|default:"-" }}</td>
+                            <td>
+                                {% if inquiry.is_urgent %}
+                                <span class="badge bg-danger">Urgent</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if inquiry.status == 'new' %}bg-warning{% elif inquiry.status == 'won' %}bg-success{% elif inquiry.status == 'lost' %}bg-danger{% else %}bg-info{% endif %}">
+                                    {{ inquiry.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ inquiry.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'admin:store_buyerinquiry_change' inquiry.id %}" class="btn btn-sm btn-outline-primary" title="View inquiry" aria-label="View inquiry details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                No inquiries found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if inquiries.has_other_pages %}
+    <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+            {% if inquiries.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ inquiries.previous_page_number }}&status={{ status_filter }}">Previous</a>
+            </li>
+            {% endif %}
+            {% for num in inquiries.paginator.page_range %}
+            <li class="page-item {% if inquiries.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}&status={{ status_filter }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if inquiries.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ inquiries.next_page_number }}&status={{ status_filter }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -3,7 +3,8 @@ Forms for the store app.
 """
 from django import forms
 
-from .models import Order, Vendor, Review
+from django.contrib.auth.models import User
+from .models import Order, Vendor, Review, Profile
 
 class OrderForm(forms.ModelForm):
     """
@@ -51,3 +52,45 @@ class VendorRegistrationForm(forms.ModelForm):
         """Meta definition for VendorRegistrationForm."""
         model = Vendor
         fields = ['name', 'city', 'logo']
+
+
+
+
+class UserUpdateForm(forms.ModelForm):
+    """
+    Form for updating user personal details.
+    """
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+    first_name = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    last_name = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        """Meta definition for UserUpdateForm."""
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+class ProfileUpdateForm(forms.ModelForm):
+    """
+    Form for updating extended profile details.
+    """
+    class Meta:
+        """Meta definition for ProfileUpdateForm."""
+        model = Profile
+        fields = ['shop_name', 'gst_number', 'address', 'city', 'state', 'pincode']
+        widgets = {
+            'shop_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'gst_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'state': forms.TextInput(attrs={'class': 'form-control'}),
+            'pincode': forms.TextInput(attrs={'class': 'form-control'}),
+        }

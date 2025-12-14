@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .order-info {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .order-info h3 {
+            margin-top: 0;
+            color: #16a34a;
+        }
+        .order-items {
+            margin: 20px 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #16a34a;
+            text-align: right;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #166534;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #15803d;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8fafc;
+            color: #666;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #16a34a;
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ðŸŽ‰ Order Confirmed!</h1>
+            <p>Thank you for your order</p>
+        </div>
+
+        <div class="content">
+            <p>Dear {{ order.first_name }},</p>
+
+            <p>Your order has been successfully placed. We're processing it now and will update you when it ships.</p>
+
+            <div class="order-info">
+                <h3>Order Details</h3>
+                <p><strong>Order Number:</strong> #{{ order.id }}</p>
+                <p><strong>Order Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                <p><strong>Payment Method:</strong> {{ order.get_payment_method_display|default:order.payment_method }}</p>
+                <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+            </div>
+
+            <div class="order-items">
+                <h3>Items Ordered</h3>
+                {% for item in items %}
+                <div class="order-item">
+                    <span>{{ item.product.name }} Ã— {{ item.quantity }}</span>
+                    <span>â‚¹{{ item.price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="total">
+                Total: â‚¹{{ order.paid_amount|default:"0.00" }}
+            </div>
+
+            <div class="order-info">
+                <h3>Shipping Address</h3>
+                <p>
+                    {{ order.first_name }} {{ order.last_name }}<br>
+                    {{ order.address }}<br>
+                    {{ order.place }}, {{ order.zipcode }}<br>
+                    Phone: {{ order.phone }}
+                </p>
+            </div>
+
+            <p class="text-center">
+                <a href="{{ site_url }}/orders/{{ order.id }}/" class="button">View Order</a>
+            </p>
+
+            <p>If you have any questions, please reply to this email or contact our support team.</p>
+
+            <p>Best regards,<br><strong>VIBE E-Commerce Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>Â© 2024 VIBE E-Commerce. All rights reserved.</p>
+            <p>
+                <a href="#">Privacy Policy</a> |
+                <a href="#">Terms of Service</a> |
+                <a href="#">Contact Us</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

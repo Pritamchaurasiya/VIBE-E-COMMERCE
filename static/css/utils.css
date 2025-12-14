@@ -1,0 +1,54 @@
+
+/* Utility Classes for Template Cleanup */
+.fs-7 {
+    font-size: 0.875rem !important; /* 14px */
+}
+
+.fs-8 {
+    font-size: 0.75rem !important; /* 12px */
+}
+
+.fs-7-custom {
+    font-size: 0.7rem !important;
+}
+
+.fs-8-custom {
+    font-size: 0.8rem !important;
+}
+
+.btn-icon-sm {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon-xs {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-img-circle {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.category-icon-circle {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ratio-4x3 {
+    aspect-ratio: 4/3;
+}
