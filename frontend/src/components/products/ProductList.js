@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -719,6 +719,7 @@ ProductListItem.propTypes = {
   onAddToCart: PropTypes.func.isRequired,
   onQuickView: PropTypes.func.isRequired,
 };
+
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { slug } = useParams();
@@ -899,8 +900,12 @@ const ProductList = () => {
     }
   };
 
-  const handleFilterChange = (name, value) => {
-    const newFilters = { ...filters, [name]: value };
+  const loadMore = useCallback(() => {
+    loadProducts(true);
+  }, [loadProducts]);
+
+  // Shared helper to update filters and URL params
+  const updateFiltersAndParams = useCallback((newFilters) => {
     setFilters(newFilters);
     setCurrentPage(1);
 
@@ -913,38 +918,46 @@ const ProductList = () => {
       }
     });
     setSearchParams(params);
-  };
+  }, [setSearchParams]);
 
-  const loadMore = () => {
-    loadProducts(true);
-  };
+  const handleFilterChange = useCallback((name, value) => {
+      const newFilters = { ...filters, [name]: value };
+      updateFiltersAndParams(newFilters);
+  }, [filters, updateFiltersAndParams]);
 
-  const handleBrandChange = (brand, checked) => {
+  const handleBrandChange = useCallback((brand, checked) => {
     const newBrands = checked
       ? [...filters.brands, brand]
       : filters.brands.filter((b) => b !== brand);
-    handleFilterChange("brands", newBrands);
-  };
 
-  const handlePriceRangeChange = (event, newValue) => {
+    const newFilters = { ...filters, brands: newBrands };
+    updateFiltersAndParams(newFilters);
+  }, [filters, updateFiltersAndParams]);
+
+  const handlePriceRangeChange = useCallback((event, newValue) => {
     setPriceRange(newValue);
-    handleFilterChange("min_price", newValue[0].toString());
-    handleFilterChange("max_price", newValue[1].toString());
-  };
 
-  const handleViewModeChange = (event, newViewMode) => {
+    const newFilters = {
+        ...filters,
+        min_price: newValue[0].toString(),
+        max_price: newValue[1].toString()
+    };
+    updateFiltersAndParams(newFilters);
+  }, [filters, updateFiltersAndParams]);
+
+  const handleViewModeChange = useCallback((event, newViewMode) => {
     if (newViewMode !== null) {
       setViewMode(newViewMode);
     }
-  };
+  }, []);
 
-  const handleProductSelect = (productId) => {
+  const handleProductSelect = useCallback((productId) => {
     setSelectedProducts((prev) =>
       prev.includes(productId)
         ? prev.filter((id) => id !== productId)
         : [...prev, productId],
     );
-  };
+  }, []);
 
   const handleAddToCart = useCallback(
     async (productId) => {
@@ -974,7 +987,7 @@ const ProductList = () => {
     [handleAddToCart, navigate],
   );
 
-  const handleToggleWishlist = async (productId, isInWishlist) => {
+  const handleToggleWishlist = useCallback(async (productId, isInWishlist) => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
@@ -989,17 +1002,17 @@ const ProductList = () => {
     } catch (error) {
       console.error("Failed to update wishlist:", error);
     }
-  };
+  }, [isAuthenticated, navigate, loadProducts]);
 
-  const handleHoverPreview = (product, anchorEl) => {
+  const handleHoverPreview = useCallback((product, anchorEl) => {
     setHoverPreview({ product, anchorEl });
-  };
+  }, []);
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const handleCloseSnackbar = useCallback(() => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     const clearedFilters = {
       q: "",
       category: "",
@@ -1015,7 +1028,7 @@ const ProductList = () => {
     setPriceRange([0, 10000]);
     setCurrentPage(1);
     setSearchParams({});
-  };
+  }, [setSearchParams]);
 
   return (
     <Container maxWidth="xl">
