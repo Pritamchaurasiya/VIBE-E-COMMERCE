@@ -16,6 +16,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Q, Sum, Count
@@ -104,14 +105,17 @@ def frontpage(request):
     # Crops - fetch top crops
     crops = Crop.objects.all().order_by('order')[:12]
 
-    # Statistics for the homepage
-    stats = {
-        'total_products': Product.objects.filter(is_active=True).count(),
-        'total_vendors': Vendor.objects.count(),
-        'total_categories': Category.objects.count(),
-        'total_orders': Order.objects.filter(paid=True).count(),
-        'total_crops': Crop.objects.count(),
-    }
+    # Statistics for the homepage (cached for 5 minutes)
+    stats = cache.get('frontpage_stats')
+    if not stats:
+        stats = {
+            'total_products': Product.objects.filter(is_active=True).count(),
+            'total_vendors': Vendor.objects.count(),
+            'total_categories': Category.objects.count(),
+            'total_orders': Order.objects.filter(paid=True).count(),
+            'total_crops': Crop.objects.count(),
+        }
+        cache.set('frontpage_stats', stats, 300)
 
     # Superfoods products
     superfood_products = Product.objects.select_related('category', 'vendor').filter(
