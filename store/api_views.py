@@ -85,7 +85,8 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        # ⚡ Bolt: Optimized query to prefetch images and prevent N+1 queries during serialization
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
