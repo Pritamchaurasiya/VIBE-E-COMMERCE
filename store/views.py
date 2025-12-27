@@ -382,7 +382,9 @@ def product_detail(request, slug, category_slug=None):
     ).exclude(id=product.id)[0:4]
 
     # Get reviews
-    reviews = product.reviews.all().order_by('-created_at')
+    reviews = product.reviews.select_related('user').annotate(
+        count_helpful=models.Count('helpful_votes')
+    ).order_by('-created_at')
     review_count = reviews.count()
     avg_rating = reviews.aggregate(models.Avg('rating'))['rating__avg'] or 0
 
