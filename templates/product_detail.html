@@ -114,8 +114,8 @@
                     </button>
                     <!-- Wishlist button -->
                     {% if user.is_authenticated %}
-                    <button type="button" class="btn btn-premium-outline btn-lg ms-2 btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}" data-product-id="{{ product.id }}" title="Add to wishlist" aria-label="Add to wishlist">
-                        <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill text-danger{% endif %}"></i>
+                    <button type="button" class="btn btn-premium-outline btn-lg ms-2 btn-wishlist{% if product.id in user_wishlist_ids %} active{% endif %}" data-product-id="{{ product.id }}" title="Add to wishlist" aria-label="Add to wishlist">
+                        <i class="bi bi-heart{% if product.id in user_wishlist_ids %}-fill text-danger{% endif %}"></i>
                     </button>
                     {% endif %}
                 </form>

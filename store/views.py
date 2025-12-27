@@ -125,6 +125,13 @@ def frontpage(request):
         category__name__iexact='Machinery'
     ).order_by('-price')[:4]
 
+    # Get user's wishlist product IDs to avoid N+1 queries in template
+    user_wishlist_ids = []
+    if request.user.is_authenticated:
+        user_wishlist_ids = list(Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True))
+
     context = {
         'products': products,
         'trending_products': trending_products if trending_products.exists() else products[:6],
@@ -140,6 +147,7 @@ def frontpage(request):
         'categories': categories,
         'crops': crops,
         'stats': stats,
+        'user_wishlist_ids': user_wishlist_ids,
     }
     return render(request, 'index.html', context)
 
@@ -288,6 +296,13 @@ def shop(request):
     paginator = Paginator(products, 12)  # 12 products per page
     products = paginator.get_page(page)
 
+    # Get user's wishlist product IDs to avoid N+1 queries in template
+    user_wishlist_ids = []
+    if request.user.is_authenticated:
+        user_wishlist_ids = list(Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True))
+
     context = {
         'products': products,
         'categories': categories,
@@ -302,6 +317,7 @@ def shop(request):
         'in_stock_only': params['in_stock_only'],
         'on_sale_only': params['on_sale_only'],
         'flash_sales': active_flash_sales,
+        'user_wishlist_ids': user_wishlist_ids,
     }
     return render(request, 'shop.html', context)
 
@@ -420,6 +436,13 @@ def product_detail(request, slug, category_slug=None):
         else:
             review_form = ReviewForm()
 
+    # Get user's wishlist product IDs to avoid N+1 queries in template
+    user_wishlist_ids = []
+    if request.user.is_authenticated:
+        user_wishlist_ids = list(Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True))
+
     context = {
         'product': product,
         'related_products': related_products,
@@ -428,7 +451,8 @@ def product_detail(request, slug, category_slug=None):
         'avg_rating': avg_rating,
         'rating_counts': rating_counts,
         'user_review': user_review,
-        'review_form': review_form
+        'review_form': review_form,
+        'user_wishlist_ids': user_wishlist_ids,
     }
     return render(request, 'product_detail.html', context)
 
