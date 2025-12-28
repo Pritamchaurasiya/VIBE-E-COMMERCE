@@ -865,12 +865,15 @@ def vendor_dashboard(request):
     products_count = products.count()
 
     # Product stock analytics
-    active_products_count = products.filter(is_active=True, stock_quantity__gt=0).count()
-    low_stock_count = products.filter(
-        stock_quantity__gt=0,
-        stock_quantity__lte=models.F('low_stock_threshold')
-    ).count()
-    out_of_stock_count = products.filter(stock_quantity=0).count()
+    stock_analytics = products.aggregate(
+        active=Count('id', filter=Q(is_active=True, stock_quantity__gt=0)),
+        low_stock=Count('id', filter=Q(stock_quantity__gt=0, stock_quantity__lte=models.F('low_stock_threshold'))),
+        out_of_stock=Count('id', filter=Q(stock_quantity=0))
+    )
+
+    active_products_count = stock_analytics['active']
+    low_stock_count = stock_analytics['low_stock']
+    out_of_stock_count = stock_analytics['out_of_stock']
 
     # Get order items for this vendor's products
     order_items = OrderItem.objects.filter(
