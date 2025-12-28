@@ -153,9 +153,9 @@
 
                         <div class="position-absolute top-0 end-0 m-2 z-2">
                              {% if user.is_authenticated %}
-                            <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}"
+                            <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if product.id in user_wishlist_ids %} active{% endif %}"
                                     data-product-id="{{ product.id }}" title="Wishlist" aria-label="Wishlist">
-                                <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill text-danger{% endif %} text-secondary"></i>
+                                <i class="bi bi-heart{% if product.id in user_wishlist_ids %}-fill text-danger{% endif %} text-secondary"></i>
                             </button>
                             {% else %}
                              <button class="btn btn-sm btn-light rounded-circle shadow-sm" title="Login to Wishlist" aria-label="Login to Wishlist">
@@ -299,9 +299,9 @@
 
                         <div class="position-absolute top-0 end-0 m-2 z-2">
                              {% if user.is_authenticated %}
-                            <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}"
+                            <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if product.id in user_wishlist_ids %} active{% endif %}"
                                     data-product-id="{{ product.id }}" title="Wishlist" aria-label="Wishlist">
-                                <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill text-danger{% endif %} text-secondary"></i>
+                                <i class="bi bi-heart{% if product.id in user_wishlist_ids %}-fill text-danger{% endif %} text-secondary"></i>
                             </button>
                             {% else %}
                              <button class="btn btn-sm btn-light rounded-circle shadow-sm" title="Login to Wishlist" aria-label="Login to Wishlist">
@@ -540,9 +540,9 @@
 
                         <div class="position-absolute top-0 end-0 m-2 z-2">
                              {% if user.is_authenticated %}
-                            <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if user in product.wishlisted_by.all %} active{% endif %}"
+                            <button class="btn btn-sm btn-light rounded-circle shadow-sm btn-wishlist{% if product.id in user_wishlist_ids %} active{% endif %}"
                                     data-product-id="{{ product.id }}" title="Wishlist" aria-label="Wishlist">
-                                <i class="bi bi-heart{% if user in product.wishlisted_by.all %}-fill text-danger{% endif %} text-secondary"></i>
+                                <i class="bi bi-heart{% if product.id in user_wishlist_ids %}-fill text-danger{% endif %} text-secondary"></i>
                             </button>
                             {% else %}
                              <button class="btn btn-sm btn-light rounded-circle shadow-sm" title="Login to Wishlist" aria-label="Login to Wishlist">

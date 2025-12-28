@@ -125,6 +125,13 @@ def frontpage(request):
         category__name__iexact='Machinery'
     ).order_by('-price')[:4]
 
+    # Get user wishlist IDs for N+1 optimization
+    user_wishlist_ids = set()
+    if request.user.is_authenticated:
+        user_wishlist_ids = set(
+            Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        )
+
     context = {
         'products': products,
         'trending_products': trending_products if trending_products.exists() else products[:6],
@@ -140,6 +147,7 @@ def frontpage(request):
         'categories': categories,
         'crops': crops,
         'stats': stats,
+        'user_wishlist_ids': user_wishlist_ids,
     }
     return render(request, 'index.html', context)
 
@@ -288,6 +296,13 @@ def shop(request):
     paginator = Paginator(products, 12)  # 12 products per page
     products = paginator.get_page(page)
 
+    # Get user wishlist IDs for N+1 optimization
+    user_wishlist_ids = set()
+    if request.user.is_authenticated:
+        user_wishlist_ids = set(
+            Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        )
+
     context = {
         'products': products,
         'categories': categories,
@@ -302,6 +317,7 @@ def shop(request):
         'in_stock_only': params['in_stock_only'],
         'on_sale_only': params['on_sale_only'],
         'flash_sales': active_flash_sales,
+        'user_wishlist_ids': user_wishlist_ids,
     }
     return render(request, 'shop.html', context)
 
