@@ -447,6 +447,8 @@ class Review(models.Model):
     @property
     def helpful_count(self):
         """Return the number of helpful votes."""
+        if hasattr(self, 'count_helpful'):
+            return self.count_helpful
         return self.helpful_votes.count()
 
 class Contact(models.Model):
