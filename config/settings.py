@@ -292,7 +292,14 @@ X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-    # Additional production security (already defined below, keeping here for completeness)
+    # HTTPS/SSL Settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # Secure Cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # REST Framework settings
 REST_FRAMEWORK = {

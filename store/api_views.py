@@ -23,6 +23,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
 from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -34,7 +35,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 from django.views import View
 
@@ -707,6 +708,7 @@ class UserProfileView(APIView):
 class FlashSaleListView(generics.ListAPIView):
     """API view for listing active flash sales."""
     serializer_class = FlashSaleSerializer
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
 
     def get_queryset(self):
         """Get currently active flash sales."""
@@ -723,6 +725,7 @@ class FlashSaleDetailView(generics.RetrieveAPIView):
     queryset = FlashSale.objects.prefetch_related('products__vendor', 'products__category')
     serializer_class = FlashSaleSerializer
     lookup_field = 'slug'
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
 
 
 class BulkOrderView(APIView):
@@ -3192,8 +3195,8 @@ class AnalyticsDashboardView(APIView):
         daily_revenue = list(Order.objects.filter(
             paid=True,
             created_at__gte=thirty_days_ago
-        ).extra(
-            select={'date': 'DATE(created_at)'}
+        ).annotate(
+            date=TruncDate('created_at')
         ).values('date').annotate(
             revenue=Sum('paid_amount')
         ).order_by('date')[:30])
