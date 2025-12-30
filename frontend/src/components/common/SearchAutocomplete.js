@@ -190,6 +190,9 @@ const SearchAutocomplete = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setOpen(true)}
+          inputProps={{
+            "aria-label": placeholder,
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -200,7 +203,11 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    aria-label="Clear search query"
+                  >
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
