@@ -387,9 +387,20 @@ def product_detail(request, slug, category_slug=None):
     avg_rating = reviews.aggregate(models.Avg('rating'))['rating__avg'] or 0
 
     # Rating distribution
-    rating_counts = {}
-    for i in range(1, 6):
-        rating_counts[i] = reviews.filter(rating=i).count()
+    rating_counts_data = reviews.aggregate(
+        count_1=Count('id', filter=Q(rating=1)),
+        count_2=Count('id', filter=Q(rating=2)),
+        count_3=Count('id', filter=Q(rating=3)),
+        count_4=Count('id', filter=Q(rating=4)),
+        count_5=Count('id', filter=Q(rating=5)),
+    )
+    rating_counts = {
+        1: rating_counts_data['count_1'] or 0,
+        2: rating_counts_data['count_2'] or 0,
+        3: rating_counts_data['count_3'] or 0,
+        4: rating_counts_data['count_4'] or 0,
+        5: rating_counts_data['count_5'] or 0,
+    }
 
     # Check if user has already reviewed this product
     user_review = None
