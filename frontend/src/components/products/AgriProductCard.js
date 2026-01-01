@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
+import { CircularProgress } from "@mui/material";
 import "../../styles/agri-theme.css";
 import {
   Whatshot,
@@ -27,7 +28,8 @@ const AgriProductCard = ({
   onWishlistToggle,
 }) => {
   const [selectedPacking, setSelectedPacking] = useState(0);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(
     product.in_wishlist || false,
   );
@@ -54,15 +56,19 @@ const AgriProductCard = ({
   // Handle add to cart
   const handleAddToCart = async (e) => {
     e.stopPropagation();
-    setIsAddingToCart(true);
+    if (loading || success) return;
+
+    setLoading(true);
 
     try {
       await addToCart(product.id, 1, packingOptions[selectedPacking]?.size);
+      setLoading(false);
+      setSuccess(true);
       // Briefly show success state
-      setTimeout(() => setIsAddingToCart(false), 1500);
+      setTimeout(() => setSuccess(false), 2000);
     } catch (error) {
       console.error("Failed to add to cart:", error);
-      setIsAddingToCart(false);
+      setLoading(false);
     }
   };
 
@@ -141,7 +147,7 @@ const AgriProductCard = ({
 
         {/* Packing Options */}
         {packingOptions.length > 1 && (
-          <div className="agri-product-packing">
+          <div className="agri-product-packing" role="group" aria-label="Packing options">
             {packingOptions.slice(0, 3).map((option, optionIndex) => (
               <button
                 type="button"
@@ -151,12 +157,14 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={`Select ${option.size} pack`}
               >
                 {option.size}
               </button>
             ))}
             {packingOptions.length > 3 && (
-              <span className="agri-packing-option agri-packing-more">
+              <span className="agri-packing-option agri-packing-more" role="presentation">
                 +{packingOptions.length - 3} more
               </span>
             )}
@@ -167,11 +175,11 @@ const AgriProductCard = ({
         <div className="agri-product-pricing">
           <div className="agri-price-row">
             <span className="agri-price-current">
-              ?{currentPrice.toLocaleString()}
+              ₹{currentPrice.toLocaleString()}
             </span>
             {mrp > currentPrice && (
               <>
-                <span className="agri-price-mrp">?{mrp.toLocaleString()}</span>
+                <span className="agri-price-mrp">₹{mrp.toLocaleString()}</span>
                 <span className="agri-price-discount">
                   {discountPercent}% OFF
                 </span>
@@ -191,7 +199,7 @@ const AgriProductCard = ({
           {/* Bulk Pricing */}
           {showBulkPrice && bulkPricing && (
             <div className="agri-price-bulk">
-              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ?{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
+              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ₹{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
             </div>
           )}
         </div>
@@ -199,11 +207,18 @@ const AgriProductCard = ({
         {/* Add to Cart Button */}
         <button
           type="button"
-          className={`agri-add-to-cart ${isAddingToCart ? "added" : ""}`}
+          className={`agri-add-to-cart ${success ? "added" : ""}`}
           onClick={handleAddToCart}
-          disabled={isAddingToCart}
+          disabled={loading}
+          aria-live="polite"
         >
-          {isAddingToCart ? <><Check fontSize="small" /> Added</> : <><Add fontSize="small" /> Add to Cart</>}
+          {loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : success ? (
+            <><Check fontSize="small" /> Added</>
+          ) : (
+            <><Add fontSize="small" /> Add to Cart</>
+          )}
         </button>
       </div>
     </article>
