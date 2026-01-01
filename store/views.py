@@ -18,7 +18,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, Prefetch
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -75,7 +75,7 @@ def frontpage(request):
         start_time__lte=now,
         end_time__gte=now
     ).prefetch_related(
-        'products', 'products__category', 'products__vendor'
+        Prefetch('products', queryset=Product.objects.select_related('category', 'vendor'))
     ).order_by('end_time')[:4]
 
     # Active deals
