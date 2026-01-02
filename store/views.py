@@ -861,33 +861,45 @@ def vendor_dashboard(request):
         return redirect('frontpage')
 
     # Get vendor's products
-    products = Product.objects.filter(vendor=vendor).order_by('-created_at')
+    products = Product.objects.filter(vendor=vendor).select_related('category').order_by('-created_at')
     products_count = products.count()
 
     # Product stock analytics
-    active_products_count = products.filter(is_active=True, stock_quantity__gt=0).count()
-    low_stock_count = products.filter(
-        stock_quantity__gt=0,
-        stock_quantity__lte=models.F('low_stock_threshold')
-    ).count()
-    out_of_stock_count = products.filter(stock_quantity=0).count()
+    stock_stats = products.aggregate(
+        active=Count('id', filter=Q(is_active=True, stock_quantity__gt=0)),
+        low_stock=Count(
+            'id',
+            filter=Q(
+                stock_quantity__gt=0,
+                stock_quantity__lte=models.F('low_stock_threshold')
+            )
+        ),
+        out_of_stock=Count('id', filter=Q(stock_quantity=0))
+    )
 
-    # Get order items for this vendor's products
-    order_items = OrderItem.objects.filter(
+    active_products_count = stock_stats['active']
+    low_stock_count = stock_stats['low_stock']
+    out_of_stock_count = stock_stats['out_of_stock']
+
+    # Get order items for this vendor's products (Base QuerySet)
+    base_order_items = OrderItem.objects.filter(
         product__vendor=vendor
-    ).select_related('order', 'product').order_by('-order__created_at')[:20]
+    ).select_related('order', 'product').order_by('-order__created_at')
+
+    # Get recent order items for display
+    order_items = base_order_items[:20]
 
     # Calculate total revenue
-    total_revenue = order_items.filter(
+    total_revenue = base_order_items.filter(
         order__paid=True
     ).aggregate(total=Sum('price'))['total'] or 0
 
     # Get pending orders count
-    pending_orders = order_items.filter(
+    pending_orders = base_order_items.filter(
         order__status='pending'
     ).values('order').distinct().count()
 
-    total_orders = order_items.values('order').distinct().count()
+    total_orders = base_order_items.values('order').distinct().count()
 
     # Get bulk orders
     bulk_orders = BulkOrder.objects.filter(vendor=vendor).order_by('-created_at')[:10]
