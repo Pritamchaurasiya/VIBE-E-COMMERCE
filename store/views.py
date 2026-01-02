@@ -698,7 +698,10 @@ def apply_coupon(request):
     try:
         data = json.loads(request.body)
         code = data.get('code', '').strip().upper()
-        cart_total = data.get('cart_total', 0)
+
+        # Security Fix: Recalculate cart total on server side
+        cart = Cart(request)
+        cart_total = cart.get_total_cost()
 
         if not code:
             return JsonResponse({'success': False, 'error': 'Please enter a coupon code'})
@@ -1864,7 +1867,10 @@ def apply_deal(request):
     try:
         data = json.loads(request.body)
         deal_id = data.get('deal_id')
-        cart_total = data.get('cart_total', 0)
+
+        # Security Fix: Recalculate cart total on server side
+        cart = Cart(request)
+        cart_total = cart.get_total_cost()
 
         deal = get_object_or_404(Deal, id=deal_id)
 

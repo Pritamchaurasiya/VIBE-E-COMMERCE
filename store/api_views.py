@@ -397,7 +397,10 @@ class ApplyCouponView(APIView):
     def post(self, request):
         """Apply a coupon code."""
         code = request.data.get('code', '').strip().upper()
-        cart_total = request.data.get('cart_total', 0)
+
+        # Security Fix: Recalculate cart total on server side
+        cart = Cart(request)
+        cart_total = cart.get_total_cost()
 
         if not code:
             return Response({'success': False, 'error': 'Please enter a coupon code'})
