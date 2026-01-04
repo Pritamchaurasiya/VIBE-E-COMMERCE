@@ -1731,9 +1731,10 @@ class UserCoin(models.Model):
 
     def add_coins(self, amount, reason=''):
         """Add coins to user balance."""
-        self.balance += amount
-        self.lifetime_earned += amount
+        self.balance = models.F('balance') + amount
+        self.lifetime_earned = models.F('lifetime_earned') + amount
         self.save()
+        self.refresh_from_db()
         CoinTransaction.objects.create(
             user_coin=self,
             amount=amount,
@@ -1743,11 +1744,20 @@ class UserCoin(models.Model):
 
     def spend_coins(self, amount, reason=''):
         """Spend coins from user balance."""
-        if amount > self.balance:
+        # Use atomic update to prevent race conditions
+        updated = UserCoin.objects.filter(
+            id=self.id,
+            balance__gte=amount
+        ).update(
+            balance=models.F('balance') - amount,
+            lifetime_spent=models.F('lifetime_spent') + amount
+        )
+
+        if not updated:
             raise ValueError("Insufficient coin balance")
-        self.balance -= amount
-        self.lifetime_spent += amount
-        self.save()
+
+        self.refresh_from_db()
+
         CoinTransaction.objects.create(
             user_coin=self,
             amount=amount,
