@@ -2719,3 +2719,109 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access patterns and security events.
+    """
+    access_type = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    session_id = models.CharField(max_length=100, blank=True)
+    resource_accessed = models.CharField(max_length=255)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, default='low')
+    metadata = models.JSONField(default=dict, blank=True)
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'System Access'
+        verbose_name_plural = 'System Access Logs'
+        indexes = [
+            models.Index(fields=['access_type', 'access_timestamp']),
+            models.Index(fields=['ip_address', 'access_timestamp']),
+            models.Index(fields=['user', 'access_timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.access_type} - {self.user.username if self.user else 'Anonymous'} ({self.access_timestamp})"
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications (create, update, delete).
+    """
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=100, blank=True, null=True)
+    operation = models.CharField(max_length=20)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    changes = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['model_name', 'timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+        ]
+
+class SessionTracker(models.Model):
+    """
+    Model for tracking user sessions.
+    """
+    session_key = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    login_timestamp = models.DateTimeField(auto_now_add=True)
+    logout_timestamp = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'login_timestamp']),
+            models.Index(fields=['is_active']),
+        ]
+
+class TrackingDataRetention(models.Model):
+    """
+    Configuration for data retention policies.
+    """
+    RETENTION_UNITS = [
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+        ('years', 'Years'),
+    ]
+
+    data_type = models.CharField(max_length=50, unique=True)
+    retention_period = models.PositiveIntegerField()
+    retention_unit = models.CharField(max_length=10, choices=RETENTION_UNITS, default='days')
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.data_type} retention: {self.retention_period} {self.retention_unit}"
+
+class TrackingExport(models.Model):
+    """
+    Model for tracking data exports.
+    """
+    export_name = models.CharField(max_length=255)
+    data_type = models.CharField(max_length=50)
+    format = models.CharField(max_length=10)
+    status = models.CharField(max_length=20, default='pending')
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    file_size = models.BigIntegerField(default=0)
+    record_count = models.PositiveIntegerField(default=0)
+    file = models.FileField(upload_to='exports/', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Tracking Export'
+        verbose_name_plural = 'Tracking Exports'
+
+    def __str__(self):
+        return self.export_name
