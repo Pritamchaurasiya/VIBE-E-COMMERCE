@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, F
 
 logger = logging.getLogger(__name__)
 
@@ -270,10 +270,13 @@ class CouponService:
 
         try:
             # pylint: disable=no-member
+            # Use F() expression to atomically increment usage count
+            # This prevents race conditions where multiple requests could
+            # update the count based on the same stale initial value.
             coupon = Coupon.objects.get(code__iexact=code.strip())
-            coupon.used_count += 1
+            coupon.used_count = F('used_count') + 1
             coupon.save(update_fields=['used_count'])
-            logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
+            logger.info("Coupon %s applied, usage count incremented", code)
             return True, "Coupon applied successfully"
         except Coupon.DoesNotExist:
             return False, "Coupon not found"
