@@ -3,7 +3,8 @@ Cart management module.
 """
 # pylint: disable=no-member
 from django.conf import settings
-from .models import Product, CartItem
+from django.utils import timezone
+from .models import Product, CartItem, Coupon
 
 
 class Cart:
@@ -134,6 +135,11 @@ class Cart:
             del self.session[settings.CART_SESSION_ID]
             self.session.modified = True
 
+        # Also clear coupon
+        if 'coupon_id' in self.session:
+            del self.session['coupon_id']
+            self.session.modified = True
+
     def _calculate_unit_price(self, product, quantity):
         """
         Calculate unit price based on quantity (Bulk Pricing).
@@ -147,6 +153,25 @@ class Cart:
             return product.bulk_price
         return product.price
 
+    def add_coupon(self, coupon_id):
+        """
+        Add a coupon to the session.
+        """
+        self.session['coupon_id'] = coupon_id
+        self.session.modified = True
+
+    def get_coupon(self):
+        """
+        Get the applied coupon.
+        """
+        coupon_id = self.session.get('coupon_id')
+        if coupon_id:
+            try:
+                return Coupon.objects.get(id=coupon_id)
+            except Coupon.DoesNotExist:
+                return None
+        return None
+
     def get_total_cost(self):
         """
         Calculate the total cost of items in the cart.
@@ -158,4 +183,19 @@ class Cart:
             quantity = self.cart_data[str(product.id)]['quantity']
             unit_price = self._calculate_unit_price(product, quantity)
             total += unit_price * quantity
+
+        # Apply coupon discount
+        coupon = self.get_coupon()
+        if coupon and coupon.is_valid:
+            if coupon.discount_type == 'percent':
+                discount = total * (coupon.discount_value / 100)
+            else:
+                discount = coupon.discount_value
+
+            # Ensure discount doesn't exceed total
+            if discount > total:
+                discount = total
+
+            total -= discount
+
         return total
