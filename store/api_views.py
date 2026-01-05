@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -83,9 +83,26 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            # Fetch all wishlist product IDs for the current user in one query
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+        return context
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        # Prefetch images and annotate reviews to avoid N+1 queries
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
+
+        # Annotate with review stats
+        queryset = queryset.annotate(
+            avg_rating_annotated=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -197,6 +214,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
