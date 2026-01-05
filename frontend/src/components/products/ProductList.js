@@ -133,6 +133,7 @@ const ProductCard = React.memo(
             onChange={() => onSelect(product.id)}
             size="small"
             onClick={(e) => e.stopPropagation()}
+            inputProps={{ "aria-label": "Select to compare" }}
             sx={{
               backgroundColor: "rgba(255,255,255,0.8)",
               backdropFilter: "blur(8px)",
@@ -156,6 +157,11 @@ const ProductCard = React.memo(
             }
           >
             <IconButton
+              aria-label={
+                product.is_in_wishlist
+                  ? "Remove from wishlist"
+                  : "Add to wishlist"
+              }
               sx={{
                 position: "absolute",
                 top: 12,
@@ -419,6 +425,7 @@ const ProductCard = React.memo(
                 disabled={!product.in_stock}
                 startIcon={<ShoppingCart sx={{ fontSize: 20 }} />}
                 size="small"
+                aria-label="Add to cart"
                 sx={{
                   borderRadius: 2,
                   fontWeight: 600,
@@ -440,6 +447,7 @@ const ProductCard = React.memo(
                 disabled={!product.in_stock}
                 startIcon={<FlashOn sx={{ fontSize: 20 }} />}
                 size="small"
+                aria-label="Buy now"
                 sx={{
                   borderRadius: 2,
                   fontWeight: 600,
@@ -459,6 +467,7 @@ const ProductCard = React.memo(
                   }}
                   color="default"
                   size="small"
+                  aria-label="Quick view"
                   sx={{
                     border: "1px solid",
                     borderColor: "divider",
@@ -535,6 +544,7 @@ const ProductListItem = React.memo(
                   checked={selectedProducts.includes(product.id)}
                   onChange={() => onSelect(product.id)}
                   size="small"
+                  inputProps={{ "aria-label": "Select to compare" }}
                   sx={{
                     position: "absolute",
                     top: 8,
@@ -678,16 +688,20 @@ const ProductListItem = React.memo(
                         disabled={!product.in_stock}
                         size="small"
                         startIcon={<ShoppingCart />}
+                        aria-label="Add to cart"
                       >
                         Add
                       </Button>
-                      <IconButton
-                        onClick={() => onQuickView(product)}
-                        size="small"
-                        sx={{ border: "1px solid", borderColor: "divider" }}
-                      >
-                        <Visibility />
-                      </IconButton>
+                      <Tooltip title="Quick View">
+                        <IconButton
+                          onClick={() => onQuickView(product)}
+                          size="small"
+                          aria-label="Quick view"
+                          sx={{ border: "1px solid", borderColor: "divider" }}
+                        >
+                          <Visibility />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </Grid>
                 </Grid>
