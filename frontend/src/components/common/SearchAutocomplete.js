@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -40,6 +40,7 @@ const SearchAutocomplete = ({
   onSearch,
   placeholder = "Search products...",
   fullWidth = false,
+  sx = {},
 }) => {
   const navigate = useNavigate();
   const inputRef = useRef(null);
@@ -135,7 +136,8 @@ const SearchAutocomplete = ({
       if (onSearch) {
         onSearch(searchTerm.trim());
       } else {
-        navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+        // Updated to use 'q' parameter instead of 'search'
+        navigate(`/products?q=${encodeURIComponent(searchTerm.trim())}`);
       }
     }
   };
@@ -179,6 +181,7 @@ const SearchAutocomplete = ({
         sx={{
           position: "relative",
           width: fullWidth ? "100%" : { xs: "100%", md: 400 },
+          ...sx,
         }}
       >
         <TextField
@@ -190,6 +193,9 @@ const SearchAutocomplete = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setOpen(true)}
+          inputProps={{
+            "aria-label": "search products",
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -200,7 +206,11 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    aria-label="clear search"
+                  >
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
@@ -266,6 +276,7 @@ const SearchAutocomplete = ({
                               src={product.image}
                               variant="rounded"
                               sx={{ width: 40, height: 40 }}
+                              alt={product.name}
                             >
                               <Category />
                             </Avatar>
@@ -285,7 +296,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  ₹{product.price}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>
@@ -293,7 +304,7 @@ const SearchAutocomplete = ({
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      Ã¢â‚¬Â¢
+                                      •
                                     </Typography>
                                     <Typography
                                       variant="body2"
@@ -433,6 +444,7 @@ SearchAutocomplete.propTypes = {
   onSearch: PropTypes.func,
   placeholder: PropTypes.string,
   fullWidth: PropTypes.bool,
+  sx: PropTypes.object,
 };
 
 export default SearchAutocomplete;

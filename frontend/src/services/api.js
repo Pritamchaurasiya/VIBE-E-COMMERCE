@@ -328,5 +328,9 @@ export const businessIntelligenceAPI = {
     api.get("/api/analytics/churn-analysis/", { params }),
 };
 
+// Aliases for backward compatibility or direct imports
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
+
 // Export all APIs
 export default api;

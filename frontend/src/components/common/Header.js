@@ -32,11 +32,11 @@ import {
   Search as SearchIcon,
   Brightness4,
   Brightness7,
+  Close,
   Menu as MenuIcon,
   Home,
   Store,
   Category,
-  Close,
   Notifications,
   Message,
   Settings,
@@ -52,6 +52,7 @@ import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, selectIsDarkMode } from "../../features/theme/themeSlice";
+import SearchAutocomplete from "./SearchAutocomplete";
 
 const Header = () => {
   const { logout, isAuthenticated, user } = useAuth();
@@ -127,6 +128,14 @@ const Header = () => {
   const toggleMobileDrawer = useCallback(() => {
     setMobileDrawerOpen((prev) => !prev);
   }, []);
+
+  const handleAutocompleteSearch = useCallback(
+    (term) => {
+      navigate(`/products?q=${encodeURIComponent(term)}`);
+      setMobileDrawerOpen(false);
+    },
+    [navigate],
+  );
 
   const handleNotificationsOpen = useCallback((event) => {
     setNotificationsAnchor(event.currentTarget);
@@ -267,39 +276,50 @@ const Header = () => {
               ))}
             </Box>
 
-            {/* Search Bar */}
+            {/* Search Bar - Desktop */}
             <Box
-              component="form"
-              onSubmit={handleSearch}
               sx={{
-                display: { xs: "none", sm: "flex" },
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                borderRadius: 2,
-                px: 1.5,
-                py: 0.5,
+                display: { xs: "none", sm: "block" },
                 mr: 2,
                 minWidth: { sm: 180, md: 280 },
-                transition: "all 0.3s ease",
-                "&:hover, &:focus-within": {
-                  backgroundColor: "rgba(255, 255, 255, 0.25)",
-                  boxShadow: "0 0 0 2px rgba(255,255,255,0.2)",
-                },
               }}
             >
-              <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
-              <InputBase
+              <SearchAutocomplete
                 placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                inputProps={{
-                  "aria-label": "search products",
-                  role: "searchbox",
-                }}
+                onSearch={handleAutocompleteSearch}
                 sx={{
-                  color: "white",
-                  flex: 1,
-                  "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 2,
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.25)",
+                    },
+                    "&.Mui-focused": {
+                      backgroundColor: "white",
+                      color: "text.primary",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      "& .MuiSvgIcon-root": {
+                        color: "text.secondary",
+                      },
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                  },
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "rgba(255, 255, 255, 0.8)",
+                    opacity: 1,
+                  },
+                  "& .MuiSvgIcon-root": {
+                    color: "white",
+                    transition: "color 0.3s",
+                  },
+                  "& .Mui-focused .MuiInputBase-input::placeholder": {
+                    color: "text.secondary",
+                  },
                 }}
               />
             </Box>
@@ -507,29 +527,20 @@ const Header = () => {
 
         {/* Mobile Search */}
         <Box sx={{ p: 2 }}>
-          <Box
-            component="form"
-            onSubmit={handleSearch}
+          <SearchAutocomplete
+            fullWidth
+            onSearch={handleAutocompleteSearch}
+            placeholder="Search products..."
             sx={{
-              display: "flex",
-              alignItems: "center",
-              bgcolor: "action.hover",
-              borderRadius: 2,
-              px: 2,
-              py: 1,
+              "& .MuiOutlinedInput-root": {
+                bgcolor: "action.hover",
+                borderRadius: 2,
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+              },
             }}
-          >
-            <InputBase
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ flex: 1 }}
-              inputProps={{ "aria-label": "search" }}
-            />
-            <IconButton type="submit" size="small" aria-label="submit search">
-              <SearchIcon />
-            </IconButton>
-          </Box>
+          />
         </Box>
 
         <List>
