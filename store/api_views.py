@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -85,13 +85,23 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        # Base queryset with optimizations
+        # Note: annotations should be applied *after* filters if possible to ensure correct grouping,
+        # but before slicing/pagination.
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
         queryset = self._filter_by_price(queryset)
         queryset = self._filter_by_attributes(queryset)
         queryset = self._filter_by_brand_crop_disease(queryset)
+
+        # Optimize: Annotate rating and review count to avoid N+1 queries.
+        # We use 'reviews' (related name) to join.
+        queryset = queryset.annotate(
+            avg_rating_annotated=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews', distinct=True)
+        )
 
         return self._apply_sorting(queryset)
 
@@ -167,8 +177,20 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'newest':
             return queryset.order_by('-created_at')
         elif sort == 'rating':
-            return queryset.order_by('-created_at')
+            # Use the annotated field for sorting
+            return queryset.order_by('-avg_rating_annotated', '-created_at')
         return queryset.order_by('-created_at')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            # Optimize: Pre-fetch wishlist product IDs for the user to avoid N+1 queries
+            # We use list instead of set for checking if user is authenticated
+            # Wait, set is better for lookup.
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+        return context
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
