@@ -435,6 +435,10 @@ class ApplyCouponView(APIView):
 
         discount = min(discount, float(cart_total))
 
+        # Save coupon to cart session
+        cart = Cart(request)
+        cart.add_coupon(coupon.id)
+
         return Response({
             'success': True,
             'code': coupon.code,
@@ -2359,11 +2363,31 @@ class StartOrderView(APIView):
     def post(self, request, *_args, **_kwargs):
         """Start a checkout session for card payment or COD."""
         cart = Cart(request)
+        if len(cart) == 0:
+            return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
         data = request.data
 
-        # Calculate total using cart method
+        # Verify stock availability
+        for item in cart:
+            product = item['product']
+            quantity = int(item['quantity'])
+            if product.stock_quantity < quantity:
+                return Response({
+                    'error': f'Insufficient stock for {product.name}. Available: {product.stock_quantity}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate total using cart method (includes coupon discount)
         total_price = cart.get_total_cost()
         payment_method = data.get('payment_method', 'card')
+
+        # Get applied coupon info
+        coupon = cart.get_coupon()
+        discount_amount = 0
+        if coupon:
+            # Re-calculate discount amount for record
+            raw_total = sum(item['product'].price * item['quantity'] for item in cart)
+            discount_amount = raw_total - total_price
 
         # Create Order
         user = request.user if request.user.is_authenticated else None
@@ -2380,7 +2404,9 @@ class StartOrderView(APIView):
             paid_amount=total_price,
             paid=False,
             payment_method=payment_method,
-            status='pending'
+            status='pending',
+            coupon=coupon,
+            discount_amount=discount_amount
         )
 
         items = []
@@ -2388,15 +2414,32 @@ class StartOrderView(APIView):
         for item in cart:
             product = item['product']
             quantity = int(item['quantity'])
-            price = product.price * quantity
+            price = product.price * quantity # Note: This is line item total price, not unit price
 
             # Create OrderItem
             OrderItem.objects.create(
-                order=order, product=product, price=price,
+                order=order, product=product, price=product.price, # Storing unit price
                 quantity=quantity, vendor=product.vendor
             )
 
+            # Decrement stock (Reserved)
+            # We decrement here to reserve stock. If payment fails, we rely on a cleanup task
+            # or cancellation webhook to restore it.
+            # For simplicity in this implementation, we decrement now.
+            # Use F() expression for atomic update to prevent race conditions
+            product.stock_quantity = models.F('stock_quantity') - quantity
+            product.save(update_fields=['stock_quantity'])
+
             if payment_method == 'card':
+                # Stripe Line Items
+                # Note: Stripe expects unit amount in cents/paise
+                # If we have a global discount (coupon), we need to handle it.
+                # Stripe Coupons are complex, so for simplicity we might just pass the discounted total as one custom item
+                # OR pass items and let Stripe calculate total (but that ignores our coupon logic if not synced).
+                # Here we pass items with their unit price.
+                # To support coupons correctly with Stripe Checkout without syncing coupons objects to Stripe,
+                # we can add a negative line item for the discount.
+
                 items.append({
                     'price_data': {
                         'currency': 'inr',
@@ -2408,9 +2451,49 @@ class StartOrderView(APIView):
                     'quantity': quantity
                 })
 
+        # Add discount as a negative line item for Stripe if applicable
+        if discount_amount > 0:
+            # Stripe doesn't support negative line items directly in 'line_items' for Checkout in this way easily without coupon objects.
+            # A common workaround is using 'discounts' parameter but that requires Stripe Coupon ID.
+            # Since we are managing coupons internally, we can either:
+            # 1. Create a Stripe coupon on the fly (complex)
+            # 2. Pass the final amount as a single custom item "Cart Total" (simple but less detailed)
+            # 3. Adjust line item prices proportionally (complex rounding issues)
+
+            # Given the constraints and "Auto Fix" nature, we will use option 3 (Proportional) roughly,
+            # OR simpler: Use the `discounts` list with `coupon_data` if Stripe API version supports it,
+            # but `coupon` object creation is safer.
+            # Let's try creating a ephemeral coupon or just adjusting the total logic.
+
+            # actually, better to just create a single line item for the TOTAL amount if there is a discount
+            # to ensure exact match with our DB calculation.
+            # BUT users like to see items.
+
+            # Let's stick to standard items. If there is a discount, we unfortunately can't easily pass it
+            # without creating a Stripe Coupon object.
+            # We will skip sending detailed line items to Stripe if there is a discount and just send "Order #ID" with total amount.
+            pass
+
+        if discount_amount > 0 and payment_method == 'card':
+             # Override items to be a single summary item to ensure total matches exactly
+             items = [{
+                'price_data': {
+                    'currency': 'inr',
+                    'product_data': {
+                        'name': f'Order #{order.id} (incl. discount)',
+                    },
+                    'unit_amount': int(total_price * 100),
+                },
+                'quantity': 1
+            }]
+
         # Handle COD
         if payment_method == 'cod':
             cart.clear()
+            if coupon:
+                coupon.used_count += 1
+                coupon.save()
+
             return Response({
                 'success': True,
                 'order_id': order.id,
