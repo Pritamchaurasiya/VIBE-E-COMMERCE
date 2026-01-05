@@ -84,8 +84,8 @@ class InputValidator:
 
     # Compiled regex patterns for efficiency
     SQL_INJECTION_PATTERN = re.compile(
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
-        r"(--|;|/\*|\*/|@@|@|char\(|nchar\(|varchar\(|nvarchar\())",
+        r"(\b(SELECT|INSERT|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
+        r"(--|;|/\*|\*/|@@|char\(|nchar\(|varchar\(|nvarchar\())",
         re.IGNORECASE
     )
 
@@ -295,8 +295,8 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
-        return getattr(tracking_models, model_name)
+        from . import models
+        return getattr(models, model_name)
 
     @classmethod
     def get_tracking_config(cls, category: str):
@@ -359,7 +359,7 @@ class EnhancedTrackingService:
                 request.META.get('HTTP_USER_AGENT', ''),
                 MAX_USER_AGENT_LENGTH
             ),
-            'session_id': getattr(request.session, 'session_key', '') or '',
+            'session_id': getattr(request.session, 'session_key', '') or '' if hasattr(request, 'session') else '',
             'path': request.path,
             'method': request.method,
         }
@@ -506,12 +506,18 @@ class EnhancedTrackingService:
         try:
             TrackingAlert = cls._get_model('TrackingAlert')
             # pylint: disable=no-member
+
+            # Combine triggered_by into metadata since TrackingAlert doesn't have a specific field for it
+            metadata = kwargs.get('metadata', {})
+            if triggered_by:
+                metadata['triggered_by'] = InputValidator.sanitize_metadata(triggered_by)
+            kwargs['metadata'] = metadata
+
             return TrackingAlert.objects.create(
                 alert_type=alert_type,
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
                 **kwargs
             )
         except Exception as exc:
