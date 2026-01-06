@@ -28,6 +28,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import PropTypes from "prop-types";
 
 /**
@@ -224,7 +225,7 @@ const ProductQuickView = ({ open, onClose, product }) => {
                         color="primary"
                         fontWeight="bold"
                       >
-                        Ã¢â€šÂ¹{product.price}
+                        {formatCurrency(product.price)}
                       </Typography>
                       {product.mrp && product.mrp > product.price && (
                         <Typography
@@ -232,7 +233,7 @@ const ProductQuickView = ({ open, onClose, product }) => {
                           color="text.secondary"
                           sx={{ textDecoration: "line-through" }}
                         >
-                          Ã¢â€šÂ¹{product.mrp}
+                          {formatCurrency(product.mrp)}
                         </Typography>
                       )}
                     </Box>

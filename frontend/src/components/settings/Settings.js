@@ -846,9 +846,9 @@ const Settings = () => {
                               label="Currency"
                               onChange={handleAppearanceChange("currency")}
                             >
-                              <MenuItem value="INR">Indian Rupee (Ã¢â€šÂ¹)</MenuItem>
+                              <MenuItem value="INR">Indian Rupee (₹)</MenuItem>
                               <MenuItem value="USD">US Dollar ($)</MenuItem>
-                              <MenuItem value="EUR">Euro (Ã¢â€šÂ¬)</MenuItem>
+                              <MenuItem value="EUR">Euro (€)</MenuItem>
                             </Select>
                           </FormControl>
                         </Grid>

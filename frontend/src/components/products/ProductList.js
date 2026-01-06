@@ -62,6 +62,7 @@ import {
 import { productsAPI, wishlistAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { motion, AnimatePresence } from "framer-motion";
 import LazyImage from "../common/LazyImage";
 
@@ -344,11 +345,7 @@ const ProductCard = React.memo(
                 fontWeight="800"
                 sx={{ lineHeight: 1 }}
               >
-                {new Intl.NumberFormat("en-IN", {
-                  style: "currency",
-                  currency: "INR",
-                  maximumFractionDigits: 0,
-                }).format(product.price)}
+                {formatCurrency(product.price)}
               </Typography>
               {product.mrp && product.mrp > product.price && (
                 <Typography
@@ -356,11 +353,7 @@ const ProductCard = React.memo(
                   sx={{ textDecoration: "line-through", mb: 0.2 }}
                   color="text.secondary"
                 >
-                  {new Intl.NumberFormat("en-IN", {
-                    style: "currency",
-                    currency: "INR",
-                    maximumFractionDigits: 0,
-                  }).format(product.mrp)}
+                  {formatCurrency(product.mrp)}
                 </Typography>
               )}
             </Box>
@@ -644,11 +637,7 @@ const ProductListItem = React.memo(
                         color="primary"
                         fontWeight="bold"
                       >
-                        {new Intl.NumberFormat("en-IN", {
-                          style: "currency",
-                          currency: "INR",
-                          maximumFractionDigits: 0,
-                        }).format(product.price)}
+                        {formatCurrency(product.price)}
                       </Typography>
                       {product.mrp && product.mrp > product.price && (
                         <Typography
@@ -656,11 +645,7 @@ const ProductListItem = React.memo(
                           sx={{ textDecoration: "line-through" }}
                           color="text.secondary"
                         >
-                          {new Intl.NumberFormat("en-IN", {
-                            style: "currency",
-                            currency: "INR",
-                            maximumFractionDigits: 0,
-                          }).format(product.mrp)}
+                          {formatCurrency(product.mrp)}
                         </Typography>
                       )}
                     </Box>
@@ -1225,7 +1210,7 @@ const ProductList = () => {
                   color="text.secondary"
                   sx={{ mt: 1 }}
                 >
-                  Ã¢â€šÂ¹{priceRange[0]} - Ã¢â€šÂ¹{priceRange[1]}
+                  {formatCurrency(priceRange[0])} - {formatCurrency(priceRange[1])}
                 </Typography>
               </Box>
 
@@ -1664,7 +1649,7 @@ const ProductList = () => {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
               >
                 <Typography variant="h6" color="primary" fontWeight="bold">
-                  Ã¢â€šÂ¹{hoverPreview.product.price}
+                  {formatCurrency(hoverPreview.product.price)}
                 </Typography>
                 {hoverPreview.product.mrp &&
                   hoverPreview.product.mrp > hoverPreview.product.price && (
@@ -1673,7 +1658,7 @@ const ProductList = () => {
                       sx={{ textDecoration: "line-through" }}
                       color="text.secondary"
                     >
-                      Ã¢â€šÂ¹{hoverPreview.product.mrp}
+                      {formatCurrency(hoverPreview.product.mrp)}
                     </Typography>
                   )}
                 {hoverPreview.product.discount_percentage > 0 && (
@@ -1917,7 +1902,7 @@ const FiltersDrawer = React.memo(
               sx={{ color: "primary.main" }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Ã¢â€šÂ¹{priceRange[0]} - Ã¢â€šÂ¹{priceRange[1]}
+              {formatCurrency(priceRange[0])} - {formatCurrency(priceRange[1])}
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -2094,7 +2079,7 @@ const QuickViewDialog = React.memo(
                   sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
                 >
                   <Typography variant="h4" color="primary" fontWeight="bold">
-                    Ã¢â€šÂ¹{quickViewProduct.price}
+                    {formatCurrency(quickViewProduct.price)}
                   </Typography>
                   {quickViewProduct.mrp &&
                     quickViewProduct.mrp > quickViewProduct.price && (
@@ -2103,7 +2088,7 @@ const QuickViewDialog = React.memo(
                         sx={{ textDecoration: "line-through" }}
                         color="text.secondary"
                       >
-                        Ã¢â€šÂ¹{quickViewProduct.mrp}
+                        {formatCurrency(quickViewProduct.mrp)}
                       </Typography>
                     )}
                 </Box>

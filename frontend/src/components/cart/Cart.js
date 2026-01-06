@@ -39,6 +39,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const Cart = () => {
   const { cart, updateCartItem, removeFromCart, clearCart, loading } =
@@ -436,7 +437,7 @@ const Cart = () => {
                               color="primary"
                               fontWeight="600"
                             >
-                              Ã¢â€šÂ¹{item.price} each
+                              {formatCurrency(item.price)} each
                             </Typography>
                             {item.discount_percentage > 0 && (
                               <Chip
@@ -510,7 +511,7 @@ const Cart = () => {
                             color="primary"
                             fontWeight="bold"
                           >
-                            Ã¢â€šÂ¹{item.total_price.toFixed(2)}
+                            {formatCurrency(item.total_price)}
                           </Typography>
                         </Grid>
 
@@ -582,7 +583,7 @@ const Cart = () => {
                   }}
                 >
                   <Typography>Items ({cart.item_count}):</Typography>
-                  <Typography>Ã¢â€šÂ¹{cart.total_cost.toFixed(2)}</Typography>
+                  <Typography>{formatCurrency(cart.total_cost)}</Typography>
                 </Box>
 
                 <Box
@@ -608,7 +609,7 @@ const Cart = () => {
                   >
                     <Typography>Coupon ({appliedCoupon.code}):</Typography>
                     <Typography color="success.main">
-                      -Ã¢â€šÂ¹{appliedCoupon.discount.toFixed(2)}
+                      -{formatCurrency(appliedCoupon.discount)}
                     </Typography>
                   </Box>
                 )}
@@ -624,10 +625,7 @@ const Cart = () => {
                 >
                   <Typography variant="h6">Total:</Typography>
                   <Typography variant="h6" color="primary" fontWeight="bold">
-                    Ã¢â€šÂ¹
-                    {(cart.total_cost - (appliedCoupon?.discount || 0)).toFixed(
-                      2,
-                    )}
+                    {formatCurrency(cart.total_cost - (appliedCoupon?.discount || 0))}
                   </Typography>
                 </Box>
               </Box>
@@ -678,7 +676,7 @@ const Cart = () => {
                 }}
               >
                 {selectedItems.length > 0
-                  ? `Checkout Selected (${selectedCount}) - Ã¢â€šÂ¹${selectedTotal.toFixed(2)}`
+                  ? `Checkout Selected (${selectedCount}) - ${formatCurrency(selectedTotal)}`
                   : "Select Items to Checkout"}
               </Button>
 

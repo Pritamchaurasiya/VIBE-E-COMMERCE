@@ -53,6 +53,7 @@ import {
 import { productsAPI, reviewsAPI, wishlistAPI, recentlyViewedAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { motion } from "framer-motion";
 import ScrollAnimation from "../common/ScrollAnimation";
 
@@ -468,7 +469,7 @@ const ProductDetail = () => {
                     color="primary.main"
                     fontWeight="800"
                   >
-                    ₹{product.price.toLocaleString()}
+                    {formatCurrency(product.price)}
                   </Typography>
                   {product.mrp && product.mrp > product.price && (
                     <Typography
@@ -480,7 +481,7 @@ const ProductDetail = () => {
                       }}
                       color="text.secondary"
                     >
-                      ₹{product.mrp.toLocaleString()}
+                      {formatCurrency(product.mrp)}
                     </Typography>
                   )}
                 </Box>
@@ -498,7 +499,7 @@ const ProductDetail = () => {
                         Bulk Offer:
                      </Typography>
                      <Typography variant="body2" color="text.primary">
-                        Buy {product.bulk_min_quantity}+ for <strong>₹{product.bulk_price}</strong> / unit
+                        Buy {product.bulk_min_quantity}+ for <strong>{formatCurrency(product.bulk_price)}</strong> / unit
                      </Typography>
                   </Box>
                 )}
@@ -1096,7 +1097,7 @@ const ProductDetail = () => {
                           color="primary"
                           fontWeight="bold"
                         >
-                          Ã¢â€šÂ¹{rec.price}
+                          {formatCurrency(rec.price)}
                         </Typography>
                       </CardContent>
                     </Card>

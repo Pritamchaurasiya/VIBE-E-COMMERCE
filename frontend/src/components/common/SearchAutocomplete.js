@@ -28,6 +28,7 @@ import {
   Category,
 } from "@mui/icons-material";
 import { productsAPI } from "../../services/api";
+import { formatCurrency } from "../../utils/formatCurrency";
 import debounce from "lodash/debounce";
 
 const SEARCH_HISTORY_KEY = "vibe_search_history";
@@ -285,7 +286,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  {formatCurrency(product.price)}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>

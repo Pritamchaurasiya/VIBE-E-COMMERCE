@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import { ordersAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Orders = () => {
@@ -290,7 +291,7 @@ const Orders = () => {
                         color="primary.main"
                         fontWeight="800"
                       >
-                        Ã¢â€šÂ¹{order.total_amount || order.paid_amount || "0"}
+                        {formatCurrency(order.total_amount || order.paid_amount || 0)}
                       </Typography>
                       <Button
                         component={Link}
