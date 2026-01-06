@@ -41,8 +41,10 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.urls import reverse
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
+from django.core.cache import cache
 
 from .tracking_service import EnhancedTrackingService, InputValidator
+from .models import BannedIP
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -535,6 +537,14 @@ class SecurityTrackingMiddleware(BaseTrackingMiddleware):
 
         client_ip = self.get_client_ip(request) or 'unknown'
 
+        # Check for persistent IP ban (Active Defense)
+        if self._is_banned(client_ip):
+             self._log_security_event(
+                request, 'banned_ip_access', 'critical',
+                {'reason': 'Access attempted from permanently banned IP'}
+            )
+             return self._block_request('Your IP has been banned due to suspicious activity.')
+
         # Check for brute force lockout
         if self._is_locked_out(client_ip):
             self._log_security_event(
@@ -677,6 +687,34 @@ class SecurityTrackingMiddleware(BaseTrackingMiddleware):
                 return False
 
         return True
+
+    def _is_banned(self, ip: str) -> bool:
+        """
+        Check if IP is permanently banned in database (cached).
+        """
+        if not ip:
+            return False
+
+        cache_key = f'banned_ip_{ip}'
+        is_banned = cache.get(cache_key)
+
+        if is_banned is None:
+            try:
+                # Check DB
+                banned_entry = BannedIP.objects.filter(ip_address=ip).first()
+                if banned_entry and banned_entry.is_active:
+                    is_banned = True
+                    # Cache for 1 hour
+                    cache.set(cache_key, True, 3600)
+                else:
+                    is_banned = False
+                    # Cache negative result for 5 mins to avoid DB hits
+                    cache.set(cache_key, False, 300)
+            except Exception:
+                # Fallback if DB is unreachable
+                return False
+
+        return is_banned
 
     def _is_locked_out(self, ip: str) -> bool:
         """

@@ -456,6 +456,33 @@ urlpatterns = [
         name='api_newly_launched'
     ),
 
+    # ====== SUPPLY CHAIN & AI ENDPOINTS ======
+    path(
+        'api/v1/vendor/restock-predictions/',
+        api_views.RestockPredictionsView.as_view(),
+        name='api_restock_predictions'
+    ),
+    path(
+        'api/v1/supply-chain/track/<str:batch_id>/',
+        api_views.SupplyChainView.as_view(),
+        name='api_supply_chain_track'
+    ),
+    path(
+        'api/v1/vendor/dynamic-pricing/',
+        api_views.DynamicPricingRecommendationsView.as_view(),
+        name='api_dynamic_pricing'
+    ),
+    path(
+        'api/v1/admin/banned-ips/',
+        api_views.AdminBannedIPView.as_view(),
+        name='api_admin_banned_ips'
+    ),
+    path(
+        'api/v1/admin/banned-ips/<str:ip_address>/',
+        api_views.AdminBannedIPView.as_view(),
+        name='api_admin_unban_ip'
+    ),
+
     # ====== POSTGRESQL ANALYTICS API ENDPOINTS ======
     # PostgreSQL Analytics API (Admin only)
     path(

@@ -21,6 +21,7 @@ import bleach
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import connection, models
 from django.db.models import Q, Sum, Count, Min, Max
 from django.http import HttpResponse
@@ -47,7 +48,8 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment,
+    RestockRecommendation, ProductBatch, JourneyPoint, BannedIP
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -60,6 +62,8 @@ from .serializers import (
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
 )
+from .services.inventory_prediction import InventoryPredictionService
+from .services.dynamic_pricing import DynamicPricingService
 
 logger = logging.getLogger(__name__)
 
@@ -2754,6 +2758,150 @@ class NewlyLaunchedView(APIView):
 
 
 # ============================================
+# SUPPLY CHAIN & INVENTORY AI ENDPOINTS
+# ============================================
+
+class RestockPredictionsView(APIView):
+    """API view for AI-driven restock predictions."""
+    permission_classes = [permissions.IsAuthenticated, IsVendorUser]
+
+    def get(self, request):
+        """Get restock recommendations for the vendor."""
+        if not hasattr(request.user, 'vendor'):
+            return Response({'error': ERROR_NOT_VENDOR}, status=status.HTTP_403_FORBIDDEN)
+
+        vendor = request.user.vendor
+
+        # Trigger generation (could be async in production)
+        InventoryPredictionService.generate_restock_recommendations_for_vendor(vendor)
+
+        recommendations = RestockRecommendation.objects.filter(
+            vendor=vendor,
+            is_actioned=False
+        ).select_related('product').order_by('predicted_stockout_date')
+
+        data = []
+        for rec in recommendations:
+            data.append({
+                'id': rec.id,
+                'product_name': rec.product.name,
+                'current_stock': rec.product.stock_quantity,
+                'predicted_stockout': rec.predicted_stockout_date,
+                'recommended_quantity': rec.recommended_quantity,
+                'confidence': rec.confidence_score
+            })
+
+        return Response({'recommendations': data})
+
+class SupplyChainView(APIView):
+    """API view for tracking product journey (Farm-to-Fork)."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, batch_id):
+        """Get journey details for a product batch."""
+        try:
+            batch = ProductBatch.objects.select_related('product', 'vendor').get(batch_id=batch_id)
+            journey_points = batch.journey.all().order_by('timestamp')
+
+            journey_data = [{
+                'status': point.get_status_display(),
+                'location': point.location,
+                'timestamp': point.timestamp,
+                'handler': point.handler,
+                'description': point.description
+            } for point in journey_points]
+
+            return Response({
+                'batch_id': batch.batch_id,
+                'product': batch.product.name,
+                'vendor': batch.vendor.name,
+                'created_at': batch.created_at,
+                'expiry_date': batch.expiry_date,
+                'journey': journey_data
+            })
+        except ProductBatch.DoesNotExist:
+            return Response({'error': 'Batch not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class DynamicPricingRecommendationsView(APIView):
+    """API view for dynamic pricing recommendations."""
+    permission_classes = [permissions.IsAuthenticated, IsVendorUser]
+
+    def get(self, request):
+        """Get pricing recommendations for vendor's products."""
+        if not hasattr(request.user, 'vendor'):
+            return Response({'error': ERROR_NOT_VENDOR}, status=status.HTTP_403_FORBIDDEN)
+
+        vendor = request.user.vendor
+        products = Product.objects.filter(vendor=vendor, is_active=True)
+
+        recommendations = []
+        for product in products:
+            rec = DynamicPricingService.get_pricing_recommendation(product)
+            if rec['action'] != 'hold':
+                recommendations.append(rec)
+
+        return Response({'recommendations': recommendations})
+
+
+class AdminBannedIPView(APIView):
+    """API view for managing IP bans."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        """List all banned IPs."""
+        banned_ips = BannedIP.objects.all().order_by('-banned_at')
+        data = [{
+            'ip_address': ip.ip_address,
+            'reason': ip.reason,
+            'banned_at': ip.banned_at,
+            'banned_until': ip.banned_until,
+            'is_active': ip.is_active
+        } for ip in banned_ips]
+        return Response({'banned_ips': data})
+
+    def post(self, request):
+        """Ban an IP address."""
+        ip_address = request.data.get('ip_address')
+        reason = request.data.get('reason', 'Manual ban')
+        duration_hours = request.data.get('duration_hours') # Optional
+
+        if not ip_address:
+            return Response({'error': 'IP address is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        banned_until = None
+        if duration_hours:
+            banned_until = timezone.now() + timedelta(hours=int(duration_hours))
+
+        BannedIP.objects.create(
+            ip_address=ip_address,
+            reason=reason,
+            banned_until=banned_until,
+            banned_by=request.user
+        )
+
+        # Clear cache for this IP
+        from django.core.cache import cache
+        cache.delete(f'banned_ip_{ip_address}')
+
+        return Response({'success': True, 'message': f'IP {ip_address} banned successfully'})
+
+    def delete(self, request, ip_address):
+        """Unban an IP address."""
+        try:
+            ban = BannedIP.objects.get(ip_address=ip_address)
+            ban.delete()
+
+            # Clear cache
+            from django.core.cache import cache
+            cache.delete(f'banned_ip_{ip_address}')
+
+            return Response({'success': True, 'message': f'IP {ip_address} unbanned'})
+        except BannedIP.DoesNotExist:
+            return Response({'error': 'IP not found in ban list'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# ============================================
 # PWA ANALYTICS ENDPOINTS
 # ============================================
 
@@ -3171,7 +3319,13 @@ class AnalyticsDashboardView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
-        """Get complete analytics dashboard data."""
+        """Get complete analytics dashboard data with caching."""
+        cache_key = 'analytics_dashboard_data'
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(cached_data)
+
         # Get summary for overall platform
         now = timezone.now()
         thirty_days_ago = now - timedelta(days=30)
@@ -3188,15 +3342,23 @@ class AnalyticsDashboardView(APIView):
             created_at__gte=thirty_days_ago
         ).count()
 
-        # Charts data
+        # Charts data - optimized with TruncDate instead of extra()
+        from django.db.models.functions import TruncDate
+
         daily_revenue = list(Order.objects.filter(
             paid=True,
             created_at__gte=thirty_days_ago
-        ).extra(
-            select={'date': 'DATE(created_at)'}
+        ).annotate(
+            date=TruncDate('created_at')
         ).values('date').annotate(
             revenue=Sum('paid_amount')
         ).order_by('date')[:30])
+
+        # Convert dates to strings for JSON serialization
+        daily_revenue = [
+            {'date': str(item['date']), 'revenue': float(item['revenue'])}
+            for item in daily_revenue
+        ]
 
         dashboard_data = {
             'summary': {
@@ -3240,7 +3402,12 @@ class AnalyticsDashboardView(APIView):
         }
 
         serializer = AnalyticsDashboardSerializer(dashboard_data)
-        return Response(serializer.data)
+        serialized_data = serializer.data
+
+        # Cache for 5 minutes
+        cache.set(cache_key, serialized_data, 300)
+
+        return Response(serialized_data)
 
 
 class SystemMonitoringView(APIView):
