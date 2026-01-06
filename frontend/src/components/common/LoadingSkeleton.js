@@ -577,6 +577,8 @@ export const ProductComparisonSkeleton = () => (
 
 export const LoadingSpinner = ({ size = 40, message = "Loading..." }) => (
   <Box
+    role="status"
+    aria-live="polite"
     sx={{
       display: "flex",
       flexDirection: "column",
