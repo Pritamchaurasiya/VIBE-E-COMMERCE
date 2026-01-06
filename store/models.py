@@ -2719,3 +2719,110 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+
+# ============================================
+# NEW CAPABILITY MODELS
+# ============================================
+
+class ProductBatch(models.Model):
+    """
+    Represents a specific batch of products for supply chain tracking.
+    """
+    batch_id = models.CharField(max_length=100, unique=True, help_text="Unique Batch ID / QR Code")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='batches')
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='batches')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    quantity = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['batch_id'], name='idx_batch_id'),
+        ]
+
+    def __str__(self):
+        return f"Batch {self.batch_id} - {self.product.name}"
+
+
+class JourneyPoint(models.Model):
+    """
+    Represents a checkpoint in the supply chain journey.
+    """
+    STATUS_CHOICES = [
+        ('harvested', 'Harvested'),
+        ('processing', 'Processing'),
+        ('packaged', 'Packaged'),
+        ('shipped', 'Shipped'),
+        ('in_transit', 'In Transit'),
+        ('warehouse', 'At Warehouse'),
+        ('delivered', 'Delivered'),
+    ]
+
+    batch = models.ForeignKey(ProductBatch, on_delete=models.CASCADE, related_name='journey')
+    location = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    timestamp = models.DateTimeField(default=timezone.now)
+    handler = models.CharField(max_length=255, help_text="Name of person/entity handling this step")
+    description = models.TextField(blank=True)
+    coordinates = models.CharField(max_length=100, blank=True, help_text="Lat,Long")
+
+    class Meta:
+        ordering = ['timestamp']
+        indexes = [
+            models.Index(fields=['batch', 'timestamp'], name='idx_journey_batch_time'),
+        ]
+
+    def __str__(self):
+        return f"{self.batch.batch_id} - {self.status} at {self.location}"
+
+
+class RestockRecommendation(models.Model):
+    """
+    AI-generated restock recommendations for vendors.
+    """
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='restock_recommendations')
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='restock_recommendations')
+    predicted_stockout_date = models.DateField()
+    recommended_quantity = models.PositiveIntegerField()
+    confidence_score = models.FloatField(help_text="0.0 to 1.0 confidence")
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_actioned = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['predicted_stockout_date']
+        indexes = [
+            models.Index(fields=['vendor', 'is_actioned'], name='idx_restock_vendor_action'),
+        ]
+
+    def __str__(self):
+        return f"Restock {self.product.name} by {self.predicted_stockout_date}"
+
+
+class BannedIP(models.Model):
+    """
+    Persistent storage for banned IP addresses.
+    """
+    ip_address = models.GenericIPAddressField(unique=True)
+    reason = models.CharField(max_length=255)
+    banned_at = models.DateTimeField(auto_now_add=True)
+    banned_until = models.DateTimeField(null=True, blank=True, help_text="Null means permanent ban")
+    banned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-banned_at']
+        indexes = [
+            models.Index(fields=['ip_address'], name='idx_banned_ip'),
+        ]
+
+    def __str__(self):
+        return f"Banned IP: {self.ip_address}"
+
+    @property
+    def is_active(self):
+        if not self.banned_until:
+            return True
+        return timezone.now() < self.banned_until
