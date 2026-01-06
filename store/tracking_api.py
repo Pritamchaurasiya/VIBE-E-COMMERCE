@@ -27,8 +27,25 @@ logger = logging.getLogger(__name__)
 def _get_model(model_name: str):
     """Lazy import of tracking models."""
     # pylint: disable=import-outside-toplevel
-    from . import tracking_models
-    return getattr(tracking_models, model_name)
+    from . import models
+    # Mapping for models that might be missing or renamed
+    if model_name == 'SessionTracker':
+        if hasattr(models, 'SessionTracker'):
+            return models.SessionTracker
+        # Fallback or return None to handle gracefully
+        return None
+
+    if model_name == 'SystemAccessTracker':
+        if hasattr(models, 'SystemAccessTracker'):
+            return models.SystemAccessTracker
+        return None
+
+    if model_name == 'DataModificationTracker':
+        if hasattr(models, 'DataModificationTracker'):
+            return models.DataModificationTracker
+        return None
+
+    return getattr(models, model_name)
 
 
 class DecimalEncoder:
