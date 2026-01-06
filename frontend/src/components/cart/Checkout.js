@@ -33,6 +33,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
 import { ordersAPI } from "../../services/api";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const steps = ["Shipping", "Payment", "Review"];
 
@@ -550,7 +551,7 @@ const Checkout = () => {
                   </Grid>
                   <Grid item xs={3} sx={{ textAlign: "right" }}>
                     <Typography variant="h6" color="primary">
-                      Ã¢â€šÂ¹{item.total_price.toFixed(2)}
+                      {formatCurrency(item.total_price)}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -746,7 +747,7 @@ const Checkout = () => {
                     </Grid>
                     <Grid item xs={3} sx={{ textAlign: "right" }}>
                       <Typography variant="body2" fontWeight="600">
-                        Ã¢â€šÂ¹{item.total_price.toFixed(2)}
+                        {formatCurrency(item.total_price)}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -759,7 +760,7 @@ const Checkout = () => {
                 sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
               >
                 <Typography>Items ({cart.item_count}):</Typography>
-                <Typography>Ã¢â€šÂ¹{cart.total_cost.toFixed(2)}</Typography>
+                <Typography>{formatCurrency(cart.total_cost)}</Typography>
               </Box>
 
               <Box
@@ -773,7 +774,7 @@ const Checkout = () => {
                 sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
               >
                 <Typography>Tax:</Typography>
-                <Typography>Ã¢â€šÂ¹{(cart.total_cost * 0.18).toFixed(2)}</Typography>
+                <Typography>{formatCurrency(cart.total_cost * 0.18)}</Typography>
               </Box>
 
               <Divider sx={{ my: 2 }} />
@@ -783,7 +784,7 @@ const Checkout = () => {
               >
                 <Typography variant="h6">Total:</Typography>
                 <Typography variant="h6" color="primary" fontWeight="bold">
-                  Ã¢â€šÂ¹{(cart.total_cost * 1.18).toFixed(2)}
+                  {formatCurrency(cart.total_cost * 1.18)}
                 </Typography>
               </Box>
 

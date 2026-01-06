@@ -35,6 +35,7 @@ import {
 import { productsAPI, wishlistAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { motion } from "framer-motion";
 import ScrollAnimation from "../common/ScrollAnimation";
 import LazyImage from "../common/LazyImage";
@@ -341,7 +342,7 @@ const ProductComparison = () => {
                         color="primary"
                         fontWeight="bold"
                       >
-                        Ã¢â€šÂ¹{product.price}
+                        {formatCurrency(product.price)}
                       </Typography>
                       {product.mrp && product.mrp > product.price && (
                         <Typography
@@ -349,7 +350,7 @@ const ProductComparison = () => {
                           sx={{ textDecoration: "line-through" }}
                           color="text.secondary"
                         >
-                          Ã¢â€šÂ¹{product.mrp}
+                          {formatCurrency(product.mrp)}
                         </Typography>
                       )}
                     </Box>
@@ -470,7 +471,7 @@ const ProductComparison = () => {
                             color="primary"
                             fontWeight="bold"
                           >
-                            Ã¢â€šÂ¹{product.price}
+                            {formatCurrency(product.price)}
                           </Typography>
                           {isBestValue(product, "price") && (
                             <Chip
@@ -500,7 +501,7 @@ const ProductComparison = () => {
                           sx={{ textDecoration: "line-through" }}
                           color="text.secondary"
                         >
-                          {product.mrp ? `Ã¢â€šÂ¹${product.mrp}` : "N/A"}
+                          {product.mrp ? `${formatCurrency(product.mrp)}` : "N/A"}
                         </Typography>
                       </TableCell>
                     ))}

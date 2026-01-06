@@ -32,6 +32,7 @@ import {
   ContactMail,
 } from "@mui/icons-material";
 import { productsAPI } from "../../services/api";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const VendorDetail = () => {
   const { slug } = useParams();
@@ -564,7 +565,7 @@ const VendorDetail = () => {
                         {product.category?.name}
                       </Typography>
                       <Typography variant="h6" color="primary">
-                        Ã¢â€šÂ¹{product.price}
+                        {formatCurrency(product.price)}
                       </Typography>
                     </CardContent>
                   </Card>

@@ -25,6 +25,7 @@ import {
 import { wishlistAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Wishlist = () => {
@@ -346,7 +347,7 @@ const Wishlist = () => {
                               color="primary.main"
                               fontWeight="700"
                             >
-                              Ã¢â€šÂ¹{product.price}
+                              {formatCurrency(product.price)}
                             </Typography>
                             {product.mrp && product.mrp > product.price && (
                               <Typography
@@ -356,7 +357,7 @@ const Wishlist = () => {
                                   color: "text.disabled",
                                 }}
                               >
-                                Ã¢â€šÂ¹{product.mrp}
+                                {formatCurrency(product.mrp)}
                               </Typography>
                             )}
                           </Box>

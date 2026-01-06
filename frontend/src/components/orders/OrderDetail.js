@@ -30,6 +30,7 @@ import {
 } from "@mui/icons-material";
 import { ordersAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { motion } from "framer-motion";
 
 const MotionPaper = motion(Paper);
@@ -382,7 +383,7 @@ const OrderDetail = () => {
                           fontWeight="700"
                           color="primary"
                         >
-                          Ã¢â€šÂ¹{item.price * item.quantity}
+                          {formatCurrency(item.price * item.quantity)}
                         </Typography>
                       </Box>
                     </Box>
@@ -465,7 +466,7 @@ const OrderDetail = () => {
               >
                 <Typography variant="body2">Subtotal</Typography>
                 <Typography variant="body2" fontWeight="600">
-                  Ã¢â€šÂ¹{order.total_amount || order.paid_amount}
+                  {formatCurrency(order.total_amount || order.paid_amount)}
                 </Typography>
               </Box>
               <Box
@@ -490,7 +491,7 @@ const OrderDetail = () => {
                   fontWeight="700"
                   color="primary"
                 >
-                  Ã¢â€šÂ¹{order.total_amount || order.paid_amount}
+                  {formatCurrency(order.total_amount || order.paid_amount)}
                 </Typography>
               </Box>
             </MotionPaper>
