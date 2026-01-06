@@ -1,0 +1,3 @@
+## 2025-05-27 - [Optimizing RecommendationsView N+1]
+**Learning:** In Django DRF views that manually construct responses by iterating over querysets (like `RecommendationsView`), N+1 queries are easily introduced when accessing ForeignKey fields (like `product.category.name`) if `select_related` is missing. Standard `prefetch_related` on the queryset might not be enough if the code iterates and accesses single related objects.
+**Action:** Always verify query counts for views that aggregate multiple querysets. Use `select_related` for ForeignKeys and `prefetch_related` for M2M/Reverse FKs on the base queryset before iteration. Create a dedicated test case with `assertNumQueries` to lock in the performance gain.
