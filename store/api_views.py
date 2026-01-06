@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -85,7 +85,13 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor') \
+            .prefetch_related('images') \
+            .annotate(
+                review_count_annotated=Count('reviews'),
+                avg_rating_annotated=Avg('reviews__rating')
+            ) \
+            .filter(is_active=True)
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -167,7 +173,7 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'newest':
             return queryset.order_by('-created_at')
         elif sort == 'rating':
-            return queryset.order_by('-created_at')
+            return queryset.order_by('-avg_rating_annotated')
         return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
@@ -195,7 +201,13 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
-    queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+    queryset = Product.objects.select_related('category', 'vendor') \
+        .prefetch_related('images') \
+        .annotate(
+            review_count_annotated=Count('reviews'),
+            avg_rating_annotated=Avg('reviews__rating')
+        ) \
+        .filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
 
