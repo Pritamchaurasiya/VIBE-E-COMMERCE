@@ -83,9 +83,11 @@ class InputValidator:
     """Secure input validation for tracking data."""
 
     # Compiled regex patterns for efficiency
+    # Improved pattern to avoid false positives with common words like "update" and email addresses
     SQL_INJECTION_PATTERN = re.compile(
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
-        r"(--|;|/\*|\*/|@@|@|char\(|nchar\(|varchar\(|nvarchar\())",
+        r"(\b(SELECT|INSERT|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
+        r"(\bUPDATE\b\s+\w+)|"  # UPDATE followed by something
+        r"(--|;|/\*|\*/|@@|char\(|nchar\(|varchar\(|nvarchar\())",
         re.IGNORECASE
     )
 
@@ -295,8 +297,29 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
-        return getattr(tracking_models, model_name)
+        from . import models
+        # Mapping for models that might be missing or renamed
+        if model_name == 'SessionTracker':
+            if hasattr(models, 'SessionTracker'):
+                return models.SessionTracker
+            return None
+
+        if model_name == 'SystemAccessTracker':
+            if hasattr(models, 'SystemAccessTracker'):
+                return models.SystemAccessTracker
+            return None
+
+        if model_name == 'DataModificationTracker':
+            if hasattr(models, 'DataModificationTracker'):
+                return models.DataModificationTracker
+            return None
+
+        if model_name == 'TrackingDataRetention':
+            if hasattr(models, 'TrackingDataRetention'):
+                return models.TrackingDataRetention
+            return None
+
+        return getattr(models, model_name)
 
     @classmethod
     def get_tracking_config(cls, category: str):
@@ -359,7 +382,7 @@ class EnhancedTrackingService:
                 request.META.get('HTTP_USER_AGENT', ''),
                 MAX_USER_AGENT_LENGTH
             ),
-            'session_id': getattr(request.session, 'session_key', '') or '',
+            'session_id': getattr(getattr(request, 'session', None), 'session_key', '') or '',
             'path': request.path,
             'method': request.method,
         }
@@ -505,13 +528,18 @@ class EnhancedTrackingService:
         """Create a tracking alert."""
         try:
             TrackingAlert = cls._get_model('TrackingAlert')
+            # Move triggered_by into metadata as the model lacks triggered_by field
+            metadata = kwargs.get('metadata', {})
+            if triggered_by:
+                metadata['triggered_by'] = InputValidator.sanitize_metadata(triggered_by)
+            kwargs['metadata'] = metadata
+
             # pylint: disable=no-member
             return TrackingAlert.objects.create(
                 alert_type=alert_type,
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
                 **kwargs
             )
         except Exception as exc:
