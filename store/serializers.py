@@ -61,6 +61,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_is_in_wishlist(self, obj):
         """Check if product is in user's wishlist."""
+        # Use pre-fetched wishlist IDs from context if available
+        wishlist_product_ids = self.context.get('wishlist_product_ids')
+        if wishlist_product_ids is not None:
+            return obj.id in wishlist_product_ids
+
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Wishlist.objects.filter(user=request.user, product=obj).exists()
