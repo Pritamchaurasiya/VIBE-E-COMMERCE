@@ -170,6 +170,20 @@ class ProductListView(generics.ListAPIView):
             return queryset.order_by('-created_at')
         return queryset.order_by('-created_at')
 
+    def get_serializer_context(self):
+        """
+        Add wishlist product IDs to context to avoid N+1 queries.
+        """
+        context = super().get_serializer_context()
+        request = context.get('request')
+        if request and request.user.is_authenticated:
+            # Fetch all wishlist product IDs for this user in one query
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=request.user)
+                .values_list('product_id', flat=True)
+            )
+        return context
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         limit = request.query_params.get('limit')
