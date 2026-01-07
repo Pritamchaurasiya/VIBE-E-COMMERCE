@@ -451,7 +451,9 @@ class RecommendationsView(APIView):
     def get(self, _request, product_id):
         """Get product recommendations."""
         try:
-            product = Product.objects.get(id=product_id)
+            # Optimize initial fetch to include related fields if used,
+            # though here we mainly need IDs for filters.
+            product = Product.objects.select_related('category', 'vendor').get(id=product_id)
         except Product.DoesNotExist:
             return Response({'recommendations': []})
 
@@ -459,13 +461,13 @@ class RecommendationsView(APIView):
         category_products = Product.objects.filter(
             category=product.category,
             is_active=True
-        ).exclude(id=product.id)[:4]
+        ).select_related('category', 'vendor').exclude(id=product.id)[:4]
 
         # Get products from same vendor
         vendor_products = Product.objects.filter(
             vendor=product.vendor,
             is_active=True
-        ).exclude(id=product.id).exclude(id__in=category_products)[:2]
+        ).select_related('category', 'vendor').exclude(id=product.id).exclude(id__in=category_products)[:2]
 
         # Get products in similar price range (Â±20%)
         price_min = float(product.price) * 0.8
@@ -474,7 +476,7 @@ class RecommendationsView(APIView):
             price__gte=price_min,
             price__lte=price_max,
             is_active=True
-        ).exclude(id=product.id).exclude(
+        ).select_related('category', 'vendor').exclude(id=product.id).exclude(
             id__in=category_products
         ).exclude(id__in=vendor_products)[:2]
 
