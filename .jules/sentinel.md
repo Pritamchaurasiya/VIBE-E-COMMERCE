@@ -1,0 +1,4 @@
+## 2025-02-17 - [Race Condition in Coupon Application]
+**Vulnerability:** A race condition in `CouponService.apply_coupon` allowed concurrent requests to increment `used_count` beyond the `max_uses` limit due to a read-modify-write cycle (`get`, `+=1`, `save`).
+**Learning:** Atomic database operations (`F()` expressions) are crucial even for simple counters when strict limits are involved. The initial code lacked any check for `max_uses` during the application phase, relying solely on a prior validation step which is insufficient in concurrent scenarios.
+**Prevention:** Always use `F()` expressions for updates dependent on the current value. Enforce limits within the `update()` query itself using filters (e.g., `filter(used_count__lt=F('max_uses')).update(...)`) to ensure atomicity and correctness.
