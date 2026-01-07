@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -11,6 +11,8 @@ import {
   Divider,
   TextField,
   InputAdornment,
+  Tooltip,
+  Snackbar,
 } from "@mui/material";
 import {
   Facebook,
@@ -61,6 +63,24 @@ const Footer = () => {
     { icon: <LinkedIn />, url: "#", label: "LinkedIn" },
     { icon: <YouTube />, url: "#", label: "YouTube" },
   ];
+
+  const [email, setEmail] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (email) {
+      setSnackbarOpen(true);
+      setEmail("");
+    }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
 
   return (
     <Box
@@ -226,31 +246,47 @@ const Footer = () => {
               <Typography variant="body2" sx={{ opacity: 0.8, mb: 2 }}>
                 Subscribe for updates and exclusive offers.
               </Typography>
-              <TextField
-                placeholder="Your email"
-                size="small"
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    bgcolor: "rgba(255,255,255,0.1)",
-                    color: "white",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(255,255,255,0.5)",
+              <form onSubmit={handleSubscribe}>
+                <TextField
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  required
+                  placeholder="Your email"
+                  size="small"
+                  fullWidth
+                  inputProps={{
+                    "aria-label": "Email for newsletter subscription",
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      color: "white",
+                      "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                      "&:hover fieldset": {
+                        borderColor: "rgba(255,255,255,0.5)",
+                      },
                     },
-                  },
-                  "& input::placeholder": { color: "rgba(255,255,255,0.5)" },
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton size="small" sx={{ color: "primary.light" }}>
-                        <Send />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                    "& input::placeholder": { color: "rgba(255,255,255,0.5)" },
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Subscribe">
+                          <IconButton
+                            type="submit"
+                            size="small"
+                            aria-label="Subscribe to newsletter"
+                            sx={{ color: "primary.light" }}
+                          >
+                            <Send />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </form>
             </motion.div>
           </Grid>
         </Grid>
@@ -295,6 +331,14 @@ const Footer = () => {
           </Box>
         </Box>
       </Container>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        message="Thanks for subscribing!"
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      />
     </Box>
   );
 };
