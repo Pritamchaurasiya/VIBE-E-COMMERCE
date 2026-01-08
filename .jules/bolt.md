@@ -1,0 +1,3 @@
+## 2024-05-23 - Recommendations N+1 Query Optimization
+**Learning:** Django serializers accessing related fields (`category`, `vendor`) and related managers (`images`, `reviews`) trigger separate queries for each object if not prefetched/annotated.
+**Action:** Always use `.select_related('category', 'vendor')` and `.prefetch_related('images')` in service methods returning querysets for `ProductSerializer`. Annotate aggregations like `review_count` and `avg_rating` and update the serializer to use these annotated attributes via `hasattr` to avoid per-object aggregation queries. Also ensure `related_name` in filters matches the model definition (e.g., `items` vs `orderitem`).

@@ -53,7 +53,7 @@ class RecommendationService:
             is_active=True
         ).exclude(
             id=product.id
-        )
+        ).select_related('category', 'vendor').prefetch_related('images')
 
         # Same category products
         if product.category:
@@ -69,7 +69,8 @@ class RecommendationService:
 
         # Order by rating and then by recency
         similar = similar.annotate(
-            avg_rating=Avg('reviews__rating')
+            avg_rating=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews')
         ).order_by('-avg_rating', '-created_at')[:limit]
 
         result = list(similar)
@@ -105,6 +106,9 @@ class RecommendationService:
         products = Product.objects.filter(
             id__in=product_ids,
             is_active=True
+        ).select_related('category', 'vendor').prefetch_related('images').annotate(
+            avg_rating=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews')
         )
 
         result = list(products)
@@ -132,7 +136,7 @@ class RecommendationService:
         # Get categories and vendors from user's history
         user_orders = Order.objects.filter(user=self.user)
         purchased_products = Product.objects.filter(
-            orderitem__order__in=user_orders
+            items__order__in=user_orders
         ).distinct()
 
         # Get categories user has purchased from
@@ -158,7 +162,7 @@ class RecommendationService:
             is_active=True
         ).exclude(
             id__in=purchased_products.values_list('id', flat=True)
-        )
+        ).select_related('category', 'vendor').prefetch_related('images')
 
         if all_categories:
             recommendations = recommendations.filter(
@@ -168,7 +172,8 @@ class RecommendationService:
 
         recommendations = recommendations.annotate(
             avg_rating=Avg('reviews__rating'),
-            order_count=Count('orderitem')
+            review_count_annotated=Count('reviews'),
+            order_count=Count('items')
         ).order_by('-avg_rating', '-order_count')[:limit]
 
         result = list(recommendations)
@@ -190,10 +195,11 @@ class RecommendationService:
 
         trending = Product.objects.filter(
             is_active=True,
-            orderitem__order__created_at__gte=since
-        ).annotate(
-            recent_orders=Count('orderitem'),
-            avg_rating=Avg('reviews__rating')
+            items__order__created_at__gte=since
+        ).select_related('category', 'vendor').prefetch_related('images').annotate(
+            recent_orders=Count('items'),
+            avg_rating=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews')
         ).order_by('-recent_orders', '-avg_rating')[:limit]
 
         result = list(trending)
@@ -214,9 +220,10 @@ class RecommendationService:
         products = Product.objects.filter(
             category=category,
             is_active=True
-        ).annotate(
+        ).select_related('category', 'vendor').prefetch_related('images').annotate(
             avg_rating=Avg('reviews__rating'),
-            order_count=Count('orderitem')
+            review_count_annotated=Count('reviews'),
+            order_count=Count('items')
         ).order_by('-avg_rating', '-order_count')[:limit]
 
         result = list(products)
@@ -237,9 +244,10 @@ class RecommendationService:
         products = Product.objects.filter(
             vendor=vendor,
             is_active=True
-        ).annotate(
+        ).select_related('category', 'vendor').prefetch_related('images').annotate(
             avg_rating=Avg('reviews__rating'),
-            order_count=Count('orderitem')
+            review_count_annotated=Count('reviews'),
+            order_count=Count('items')
         ).order_by('-avg_rating', '-order_count')[:limit]
 
         result = list(products)
@@ -311,7 +319,13 @@ def get_recommendations_for_cart(cart_items, limit=4):
     ).order_by('-count')[:limit]
 
     related_ids = [r['product'] for r in related]
-    return Product.objects.filter(id__in=related_ids, is_active=True)
+    return Product.objects.filter(
+        id__in=related_ids,
+        is_active=True
+    ).select_related('category', 'vendor').prefetch_related('images').annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count_annotated=Count('reviews')
+    )
 
 
 def get_seasonal_recommendations(limit=8):
@@ -353,8 +367,9 @@ def get_seasonal_recommendations(limit=8):
 
     products = Product.objects.filter(
         is_active=True
-    ).filter(query).annotate(
-        avg_rating=Avg('reviews__rating')
+    ).filter(query).select_related('category', 'vendor').prefetch_related('images').annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count_annotated=Count('reviews')
     ).order_by('-avg_rating')[:limit]
 
     # If not enough seasonal products, fill with trending
@@ -364,7 +379,7 @@ def get_seasonal_recommendations(limit=8):
             is_active=True
         ).exclude(
             id__in=products.values_list('id', flat=True)
-        ).order_by('-created_at')[:remaining]
+        ).select_related('category', 'vendor').prefetch_related('images').order_by('-created_at')[:remaining]
         return list(products) + list(trending)
 
     return list(products)
