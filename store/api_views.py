@@ -85,7 +85,7 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -169,6 +169,15 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'rating':
             return queryset.order_by('-created_at')
         return queryset.order_by('-created_at')
+
+    def get_serializer_context(self):
+        """Add wishlist product IDs to context to avoid N+1 queries."""
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+        return context
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
