@@ -846,6 +846,23 @@ urlpatterns = [
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
     ),
+
+    # ====== NEW CAPABILITIES ENDPOINTS ======
+    path(
+        'api/v1/supply-chain/<str:batch_number>/',
+        api_views.SupplyChainView.as_view(),
+        name='api_supply_chain'
+    ),
+    path(
+        'api/v1/dynamic-pricing/<int:product_id>/',
+        api_views.DynamicPricingRecommendationsView.as_view(),
+        name='api_dynamic_pricing'
+    ),
+    path(
+        'api/v1/inventory/predictions/',
+        api_views.RestockPredictionsView.as_view(),
+        name='api_inventory_predictions'
+    ),
 ]
 
 

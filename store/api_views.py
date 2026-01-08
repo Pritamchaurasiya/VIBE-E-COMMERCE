@@ -47,8 +47,11 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment,
+    ProductBatch, JourneyPoint
 )
+from .services.dynamic_pricing import DynamicPricingService
+from .services.inventory_prediction import InventoryPredictionService
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
     WishlistSerializer, ReviewSerializer, FlashSaleSerializer, BulkOrderSerializer,
@@ -3742,3 +3745,97 @@ __all__ = [
     'tracking_realtime_stats',
 ]
 
+# ============================================
+# NEW CAPABILITIES VIEWS
+# ============================================
+
+class SupplyChainView(APIView):
+    """API view for supply chain traceability."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, batch_number):
+        """Get journey of a product batch."""
+        try:
+            batch = ProductBatch.objects.select_related('product', 'vendor').get(batch_number=batch_number)
+            journey = JourneyPoint.objects.filter(batch=batch).order_by('timestamp')
+
+            journey_data = []
+            for point in journey:
+                journey_data.append({
+                    'status': point.get_status_display(),
+                    'location': point.location,
+                    'timestamp': point.timestamp.isoformat(),
+                    'description': point.description
+                })
+
+            return Response({
+                'product': batch.product.name,
+                'vendor': batch.vendor.name,
+                'batch_number': batch.batch_number,
+                'manufacturing_date': batch.manufacturing_date,
+                'expiry_date': batch.expiry_date,
+                'journey': journey_data
+            })
+        except ProductBatch.DoesNotExist:
+            return Response({'error': 'Batch not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class DynamicPricingRecommendationsView(APIView):
+    """API view to get dynamic price recommendations (Admin/Vendor)."""
+    permission_classes = [permissions.IsAuthenticated, IsVendorUser]
+
+    def get(self, request, product_id):
+        """Get recommended price for a product."""
+        try:
+            product = Product.objects.get(id=product_id, vendor=request.user.vendor)
+            service = DynamicPricingService(product)
+            recommended_price = service.calculate_price()
+
+            return Response({
+                'product_id': product.id,
+                'current_price': product.price,
+                'recommended_price': recommended_price,
+                'difference': round(recommended_price - product.price, 2)
+            })
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, product_id):
+        """Apply dynamic pricing."""
+        try:
+            product = Product.objects.get(id=product_id, vendor=request.user.vendor)
+            service = DynamicPricingService(product)
+            updated, new_price = service.update_product_price()
+
+            return Response({
+                'success': True,
+                'new_price': new_price,
+                'updated': updated
+            })
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class RestockPredictionsView(APIView):
+    """API view for inventory predictions."""
+    permission_classes = [permissions.IsAuthenticated, IsVendorUser]
+
+    def get(self, request):
+        """Get restock predictions for vendor products."""
+        vendor = request.user.vendor
+        products = Product.objects.filter(vendor=vendor, is_active=True)
+
+        predictions = []
+        for product in products:
+            service = InventoryPredictionService(product)
+            stockout_date = service.predict_stockout_date()
+            restock_amount = service.get_restock_recommendation()
+
+            if stockout_date or restock_amount > 0:
+                predictions.append({
+                    'product_id': product.id,
+                    'product_name': product.name,
+                    'current_stock': product.stock_quantity,
+                    'predicted_stockout_date': stockout_date,
+                    'recommended_restock': restock_amount
+                })
+
+        return Response({'predictions': predictions})
