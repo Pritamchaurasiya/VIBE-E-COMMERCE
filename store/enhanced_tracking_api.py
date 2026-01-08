@@ -25,7 +25,7 @@ from typing import Dict, List, Any
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Avg, Count
-from django.db.models.functions import TruncDay, TruncHour
+from django.db.models.functions import TruncDay, TruncHour, ExtractHour
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -344,8 +344,8 @@ class EnhancedDashboardAPIView(View):
             # Analyze user activity patterns
             hourly_activity = UserActionTracker.objects.filter(
                 action_timestamp__gte=cutoff
-            ).extra(
-                select={'hour': 'EXTRACT(hour FROM action_timestamp)'}
+            ).annotate(
+                hour=ExtractHour('action_timestamp')
             ).values('hour').annotate(
                 count=Count('id')
             )
