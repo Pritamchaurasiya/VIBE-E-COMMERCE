@@ -141,10 +141,16 @@ const AgriProductCard = ({
 
         {/* Packing Options */}
         {packingOptions.length > 1 && (
-          <div className="agri-product-packing">
+          <div
+            className="agri-product-packing"
+            role="radiogroup"
+            aria-label="Packing size"
+          >
             {packingOptions.slice(0, 3).map((option, optionIndex) => (
               <button
                 type="button"
+                role="radio"
+                aria-checked={selectedPacking === optionIndex}
                 key={`pack-${option.size}`}
                 className={`agri-packing-option ${selectedPacking === optionIndex ? "active" : ""}`}
                 onClick={(e) => {
