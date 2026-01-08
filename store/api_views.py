@@ -23,6 +23,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
 from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -3192,8 +3193,8 @@ class AnalyticsDashboardView(APIView):
         daily_revenue = list(Order.objects.filter(
             paid=True,
             created_at__gte=thirty_days_ago
-        ).extra(
-            select={'date': 'DATE(created_at)'}
+        ).annotate(
+            date=TruncDate('created_at')
         ).values('date').annotate(
             revenue=Sum('paid_amount')
         ).order_by('date')[:30])

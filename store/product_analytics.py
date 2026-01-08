@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Dict, List, Optional
 
 from django.db.models import Sum, Count, Avg, F
+from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.core.cache import cache
 
@@ -299,8 +300,8 @@ class ProductAnalyticsService:
         daily_revenue = order_model.objects.filter(
             created_at__gte=start_date,
             status__in=['delivered', 'shipped', 'confirmed']
-        ).extra(
-            select={'date': 'date(created_at)'}
+        ).annotate(
+            date=TruncDate('created_at')
         ).values('date').annotate(
             revenue=Sum('paid_amount'),
             orders=Count('id')
