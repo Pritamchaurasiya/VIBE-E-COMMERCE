@@ -84,8 +84,27 @@ class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
 
+    def get_serializer_context(self):
+        """Pass wishlist products to serializer context to avoid N+1 queries."""
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            # Fetch all wishlisted product IDs for the current user in one query
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
+            )
+        return context
+
     def get_queryset(self):
+        # Optimized queryset with prefetch_related for images and annotations for reviews
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = queryset.prefetch_related('images')
+
+        # Annotate with review data to avoid N+1 queries in serializer
+        queryset = queryset.annotate(
+            avg_rating_annotated=models.Avg('reviews__rating'),
+            review_count_annotated=models.Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
