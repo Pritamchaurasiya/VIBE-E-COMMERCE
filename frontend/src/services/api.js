@@ -258,7 +258,14 @@ productsAPI.search = (query) =>
 export const analyticsAPI = {
   getDashboard: () => api.get("/api/analytics/dashboard/"),
   getRealTimeAnalytics: () => api.get("/api/analytics/realtime/"),
+  getAnalyticsDashboard: () => api.get("/api/analytics/dashboard/"),
   getUserAnalyticsSummary: () => api.get("/api/analytics/summary/"),
+};
+
+export const getAnalyticsDashboard = analyticsAPI.getAnalyticsDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
+
+export const monitoringAPI_backup = {
   getUserSessions: (params) => api.get("/api/analytics/sessions/", { params }),
   getSessionDetail: (sessionId) => api.get(`/api/analytics/sessions/${sessionId}/`),
   createUserInteraction: (interactionData) =>
