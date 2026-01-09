@@ -109,14 +109,14 @@ def setup_admin_permissions():
     """
 
     # Get or create content types for tracking models
-    tracking_models = [
+    tracking_models_list = [
         'TrackingConfiguration', 'SystemFileTracker', 'UserActionTracker',
         'SystemAccessTracker', 'DataModificationTracker', 'SessionTracker',
         'PerformanceMetric', 'TrackingAlert', 'TrackingDataRetention',
         'TrackingExport', 'AdminTrackingAudit'
     ]
 
-    for model_name in tracking_models:
+    for model_name in tracking_models_list:
         try:
             app_label = 'store'
             content_type, _ = ContentType.objects.get_or_create(
