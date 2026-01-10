@@ -295,8 +295,8 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
-        return getattr(tracking_models, model_name)
+        from store import models
+        return getattr(models, model_name)
 
     @classmethod
     def get_tracking_config(cls, category: str):
