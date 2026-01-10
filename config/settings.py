@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 CART_SESSION_ID = 'cart'
 
@@ -446,13 +446,17 @@ else:
     }
 
 # Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+# Updated for django-csp 4.0 format (using dict instead of tuple constants)
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': ["'self'", "https://fonts.gstatic.com"],
+        'img-src': ["'self'", "data:", "https:", "http:"],
+        'connect-src': ["'self'", "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
