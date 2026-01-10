@@ -27,6 +27,7 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from .cart import Cart
+from .utils import sanitize_csv_field
 from .forms import (
     OrderForm, VendorRegistrationForm, ReviewForm, UserUpdateForm, ProfileUpdateForm
 )
@@ -1251,14 +1252,14 @@ def _export_orders(writer):
     orders = Order.objects.all().order_by('-created_at')
     for order in orders:
         writer.writerow([
-            order.id,
-            f"{order.first_name} {order.last_name}",
-            order.email,
-            order.phone,
-            order.paid_amount or 0,
-            order.status,
-            order.payment_method,
-            order.created_at.strftime('%Y-%m-%d %H:%M'),
+            sanitize_csv_field(order.id),
+            sanitize_csv_field(f"{order.first_name} {order.last_name}"),
+            sanitize_csv_field(order.email),
+            sanitize_csv_field(order.phone),
+            sanitize_csv_field(order.paid_amount or 0),
+            sanitize_csv_field(order.status),
+            sanitize_csv_field(order.payment_method),
+            sanitize_csv_field(order.created_at.strftime('%Y-%m-%d %H:%M')),
         ])
 
 
@@ -1271,14 +1272,14 @@ def _export_products(writer):
     products = Product.objects.select_related('category', 'vendor').all()
     for product in products:
         writer.writerow([
-            product.id,
-            product.name,
-            product.category.name,
-            product.vendor.name,
-            product.price,
-            product.mrp or '',
-            product.stock_quantity,
-            'Active' if product.is_active else 'Inactive',
+            sanitize_csv_field(product.id),
+            sanitize_csv_field(product.name),
+            sanitize_csv_field(product.category.name),
+            sanitize_csv_field(product.vendor.name),
+            sanitize_csv_field(product.price),
+            sanitize_csv_field(product.mrp or ''),
+            sanitize_csv_field(product.stock_quantity),
+            sanitize_csv_field('Active' if product.is_active else 'Inactive'),
         ])
 
 
@@ -1290,10 +1291,10 @@ def _export_vendors(writer):
     ).all()
     for vendor in vendors:
         writer.writerow([
-            vendor.id,
-            vendor.name,
-            vendor.city,
-            vendor.products_count,
+            sanitize_csv_field(vendor.id),
+            sanitize_csv_field(vendor.name),
+            sanitize_csv_field(vendor.city),
+            sanitize_csv_field(vendor.products_count),
         ])
 
 
@@ -1306,13 +1307,13 @@ def _export_users(writer):
     users = User.objects.all().order_by('-date_joined')
     for user in users:
         writer.writerow([
-            user.id,
-            user.username,
-            user.email,
-            user.first_name,
-            user.last_name,
-            user.date_joined.strftime('%Y-%m-%d'),
-            'Yes' if user.is_active else 'No',
+            sanitize_csv_field(user.id),
+            sanitize_csv_field(user.username),
+            sanitize_csv_field(user.email),
+            sanitize_csv_field(user.first_name),
+            sanitize_csv_field(user.last_name),
+            sanitize_csv_field(user.date_joined.strftime('%Y-%m-%d')),
+            sanitize_csv_field('Yes' if user.is_active else 'No'),
         ])
 
 
