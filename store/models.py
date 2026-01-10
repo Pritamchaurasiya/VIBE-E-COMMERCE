@@ -2719,3 +2719,90 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+# ============================================
+# SUPPLY CHAIN TRACEABILITY MODELS
+# ============================================
+
+class ProductBatch(models.Model):
+    """
+    Model for tracking product batches (Farm to Fork traceability).
+    """
+    batch_id = models.CharField(max_length=100, unique=True)
+    product = models.ForeignKey(Product, related_name='batches', on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, related_name='batches', on_delete=models.CASCADE)
+    origin_location = models.CharField(max_length=255, help_text="Farm or facility location")
+    harvest_date = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    quantity = models.PositiveIntegerField()
+    certification = models.CharField(max_length=255, blank=True, help_text="e.g. Organic, ISO")
+    notes = models.TextField(blank=True)
+    qr_code_data = models.TextField(blank=True, help_text="Data for QR code generation")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['batch_id']),
+            models.Index(fields=['product', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Batch {self.batch_id} - {self.product.name}"
+
+class JourneyPoint(models.Model):
+    """
+    Model for tracking journey points of a product batch.
+    """
+    batch = models.ForeignKey(ProductBatch, related_name='journey', on_delete=models.CASCADE)
+    location = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    stage = models.CharField(max_length=50, choices=[
+        ('harvest', 'Harvested'),
+        ('processing', 'Processing'),
+        ('packaging', 'Packaging'),
+        ('shipping', 'Shipping'),
+        ('transit', 'In Transit'),
+        ('delivered', 'Delivered'),
+        ('retail', 'Retail Store'),
+    ])
+    timestamp = models.DateTimeField(default=timezone.now)
+    handler = models.CharField(max_length=100, blank=True, help_text="Person/Company handling this stage")
+    temperature = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Storage temp in Celsius")
+    image = models.ImageField(upload_to='supply_chain/', blank=True, null=True)
+
+    class Meta:
+        ordering = ['timestamp']
+        indexes = [
+            models.Index(fields=['batch', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.stage} at {self.location} for {self.batch.batch_id}"
+
+# ============================================
+# SECURITY MODELS
+# ============================================
+
+class BannedIP(models.Model):
+    """
+    Model for blocking malicious IPs.
+    """
+    ip_address = models.GenericIPAddressField(unique=True)
+    reason = models.TextField(blank=True)
+    banned_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    banned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    attempts = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['ip_address']),
+            models.Index(fields=['expires_at']),
+        ]
+
+    def __str__(self):
+        return f"Banned IP: {self.ip_address}"
+
+    @property
+    def is_active(self):
+        return self.expires_at is None or self.expires_at > timezone.now()

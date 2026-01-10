@@ -535,6 +535,14 @@ class SecurityTrackingMiddleware(BaseTrackingMiddleware):
 
         client_ip = self.get_client_ip(request) or 'unknown'
 
+        # Check for permanent ban (database)
+        if self._is_banned(client_ip):
+            self._log_security_event(
+                request, 'banned_ip', 'critical',
+                {'reason': 'IP is permanently banned'}
+            )
+            return self._block_request('Your IP address has been banned.')
+
         # Check for brute force lockout
         if self._is_locked_out(client_ip):
             self._log_security_event(
@@ -677,6 +685,33 @@ class SecurityTrackingMiddleware(BaseTrackingMiddleware):
                 return False
 
         return True
+
+    def _is_banned(self, ip: str) -> bool:
+        """
+        Check if IP is permanently banned in database.
+
+        Args:
+            ip: The IP address to check.
+
+        Returns:
+            True if the IP is banned.
+        """
+        if not ip:
+            return False
+
+        try:
+            # Import locally to avoid circular imports during startup
+            from store.models import BannedIP
+            from django.db import models
+            from django.utils import timezone
+            return BannedIP.objects.filter(
+                ip_address=ip
+            ).filter(
+                models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=timezone.now())
+            ).exists()
+        except Exception as e:
+            logger.warning("Error checking BannedIP: %s", e)
+            return False
 
     def _is_locked_out(self, ip: str) -> bool:
         """

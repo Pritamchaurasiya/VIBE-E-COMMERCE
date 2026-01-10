@@ -850,3 +850,25 @@ urlpatterns = [
 
 
 
+
+# ============================================
+# NEW CAPABILITY API ENDPOINTS
+# ============================================
+from . import supply_chain_api
+from . import dynamic_pricing_api
+from . import inventory_prediction_api
+from . import security_api
+
+urlpatterns += [
+    # Supply Chain
+    path('api/v1/supply-chain/batch/<str:batch_id>/', supply_chain_api.SupplyChainView.as_view(), name='api_supply_chain'),
+
+    # Dynamic Pricing
+    path('api/v1/dynamic-pricing/<int:product_id>/', dynamic_pricing_api.DynamicPricingView.as_view(), name='api_dynamic_pricing'),
+
+    # Inventory Prediction
+    path('api/v1/inventory-prediction/<int:product_id>/', inventory_prediction_api.InventoryPredictionView.as_view(), name='api_inventory_prediction'),
+
+    # Security Dashboard
+    path('api/v1/security/dashboard/', security_api.SecurityDashboardView.as_view(), name='api_security_dashboard'),
+]
