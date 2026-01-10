@@ -41,6 +41,7 @@ from django.views import View
 # Local imports
 from .cart import Cart
 from .permissions import IsVendorUser
+from .utils import sanitize_csv_field
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Wishlist, Review, Coupon, Profile,
     FlashSale, BulkOrder, Notification, Deal, InventoryLog, Contact, Subscription,
@@ -1493,15 +1494,15 @@ class ExportDataView(APIView):
 
         for order in orders:
             writer.writerow([
-                order.id,
-                f"{order.first_name} {order.last_name}",
-                order.email,
-                order.phone,
-                order.address,
-                order.paid_amount or 0,
-                'Paid' if order.paid else 'Unpaid',
-                order.status,
-                order.created_at.strftime('%Y-%m-%d %H:%M')
+                sanitize_csv_field(order.id),
+                sanitize_csv_field(f"{order.first_name} {order.last_name}"),
+                sanitize_csv_field(order.email),
+                sanitize_csv_field(order.phone),
+                sanitize_csv_field(order.address),
+                sanitize_csv_field(order.paid_amount or 0),
+                sanitize_csv_field('Paid' if order.paid else 'Unpaid'),
+                sanitize_csv_field(order.status),
+                sanitize_csv_field(order.created_at.strftime('%Y-%m-%d %H:%M'))
             ])
 
         return response
@@ -1521,16 +1522,16 @@ class ExportDataView(APIView):
 
         for product in products:
             writer.writerow([
-                product.id,
-                product.name,
-                product.category.name,
-                product.vendor.name,
-                product.price,
-                product.mrp or '',
-                product.stock_quantity,
-                product.brand,
-                'Yes' if product.is_active else 'No',
-                product.created_at.strftime('%Y-%m-%d')
+                sanitize_csv_field(product.id),
+                sanitize_csv_field(product.name),
+                sanitize_csv_field(product.category.name),
+                sanitize_csv_field(product.vendor.name),
+                sanitize_csv_field(product.price),
+                sanitize_csv_field(product.mrp or ''),
+                sanitize_csv_field(product.stock_quantity),
+                sanitize_csv_field(product.brand),
+                sanitize_csv_field('Yes' if product.is_active else 'No'),
+                sanitize_csv_field(product.created_at.strftime('%Y-%m-%d'))
             ])
 
         return response
@@ -1555,13 +1556,13 @@ class ExportDataView(APIView):
 
         for user in users:
             writer.writerow([
-                user.id,
-                user.username,
-                user.email,
-                user.first_name,
-                user.last_name,
-                user.date_joined.strftime('%Y-%m-%d'),
-                'Yes' if user.is_active else 'No'
+                sanitize_csv_field(user.id),
+                sanitize_csv_field(user.username),
+                sanitize_csv_field(user.email),
+                sanitize_csv_field(user.first_name),
+                sanitize_csv_field(user.last_name),
+                sanitize_csv_field(user.date_joined.strftime('%Y-%m-%d')),
+                sanitize_csv_field('Yes' if user.is_active else 'No')
             ])
 
         return response
@@ -1578,10 +1579,10 @@ class ExportDataView(APIView):
 
         for vendor in vendors:
             writer.writerow([
-                vendor.id,
-                vendor.name,
-                vendor.city,
-                vendor.products.count()
+                sanitize_csv_field(vendor.id),
+                sanitize_csv_field(vendor.name),
+                sanitize_csv_field(vendor.city),
+                sanitize_csv_field(vendor.products.count())
             ])
 
         return response
