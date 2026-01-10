@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -85,7 +85,12 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        # Annotate with review count and average rating to prevent N+1 queries
+        # Also prefetch images to prevent N+1 queries
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').annotate(
+            review_count_annotated=Count('reviews'),
+            avg_rating_annotated=Avg('reviews__rating')
+        ).filter(is_active=True)
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -169,6 +174,26 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'rating':
             return queryset.order_by('-created_at')
         return queryset.order_by('-created_at')
+
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        Injected wishlist_product_ids for O(1) lookup in serializer.
+        """
+        context = super().get_serializer_context()
+        request = self.request
+
+        if request and request.user.is_authenticated:
+            # Fetch all wishlist product IDs for this user once
+            wishlist_product_ids = set(
+                Wishlist.objects.filter(user=request.user)
+                .values_list('product_id', flat=True)
+            )
+            context['wishlist_product_ids'] = wishlist_product_ids
+        else:
+            context['wishlist_product_ids'] = set()
+
+        return context
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
