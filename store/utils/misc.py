@@ -17,7 +17,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from django.db.models import F
 
-from .models import Notification, Product, Order, InventoryLog, Coupon
+from store.models import Notification, Product, Order, InventoryLog, Coupon
 
 logger = logging.getLogger(__name__)
 
@@ -338,3 +338,26 @@ def validate_coupon(code: str, cart_total: Decimal, user=None) -> dict:  # noqa:
         'discount': round(discount, 2),
         'message': f'Coupon applied! You save {format_currency(discount)}'
     }
+
+
+def sanitize_csv_field(value) -> str:
+    """
+    Sanitize a field for CSV export to prevent Formula Injection (CSV Injection).
+    If a field starts with =, +, -, or @, it is escaped by prepending a single quote.
+
+    Args:
+        value: The value to sanitize.
+
+    Returns:
+        str: The sanitized value.
+    """
+    if value is None:
+        return ""
+
+    value_str = str(value)
+
+    # Check for dangerous start characters
+    if value_str and value_str[0] in ('=', '+', '-', '@'):
+        return f"'{value_str}"
+
+    return value_str

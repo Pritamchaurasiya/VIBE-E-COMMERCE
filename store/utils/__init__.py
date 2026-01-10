@@ -56,6 +56,20 @@ from .performance import (
     LazyObject,
 )
 
+# Miscellaneous utilities
+from .misc import (
+    create_notification,
+    send_order_confirmation_email,
+    send_order_status_update_email,
+    update_product_stock,
+    check_low_stock_products,
+    calculate_order_total,
+    get_product_recommendations,
+    format_currency,
+    validate_coupon,
+    sanitize_csv_field
+)
+
 __all__ = [
     # Cache utilities
     'CACHE_TTL_SHORT',
@@ -97,4 +111,15 @@ __all__ = [
     'batch_processor',
     'queryset_iterator',
     'LazyObject',
+    # Miscellaneous utilities
+    'create_notification',
+    'send_order_confirmation_email',
+    'send_order_status_update_email',
+    'update_product_stock',
+    'check_low_stock_products',
+    'calculate_order_total',
+    'get_product_recommendations',
+    'format_currency',
+    'validate_coupon',
+    'sanitize_csv_field',
 ]

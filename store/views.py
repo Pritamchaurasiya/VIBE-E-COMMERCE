@@ -37,6 +37,7 @@ from .models import (
     Subscription, BuyerInquiry, RFQQuote, VendorVerification, RFQ,
     AuditLog, SiteSettings, TradeEvent, Crop
 )
+from .utils import sanitize_csv_field
 
 stripe.api_key = settings.STRIPE_API_KEY_HIDDEN
 
@@ -1252,9 +1253,9 @@ def _export_orders(writer):
     for order in orders:
         writer.writerow([
             order.id,
-            f"{order.first_name} {order.last_name}",
-            order.email,
-            order.phone,
+            sanitize_csv_field(f"{order.first_name} {order.last_name}"),
+            sanitize_csv_field(order.email),
+            sanitize_csv_field(order.phone),
             order.paid_amount or 0,
             order.status,
             order.payment_method,
@@ -1272,9 +1273,9 @@ def _export_products(writer):
     for product in products:
         writer.writerow([
             product.id,
-            product.name,
-            product.category.name,
-            product.vendor.name,
+            sanitize_csv_field(product.name),
+            sanitize_csv_field(product.category.name),
+            sanitize_csv_field(product.vendor.name),
             product.price,
             product.mrp or '',
             product.stock_quantity,
@@ -1291,8 +1292,8 @@ def _export_vendors(writer):
     for vendor in vendors:
         writer.writerow([
             vendor.id,
-            vendor.name,
-            vendor.city,
+            sanitize_csv_field(vendor.name),
+            sanitize_csv_field(vendor.city),
             vendor.products_count,
         ])
 
@@ -1307,10 +1308,10 @@ def _export_users(writer):
     for user in users:
         writer.writerow([
             user.id,
-            user.username,
-            user.email,
-            user.first_name,
-            user.last_name,
+            sanitize_csv_field(user.username),
+            sanitize_csv_field(user.email),
+            sanitize_csv_field(user.first_name),
+            sanitize_csv_field(user.last_name),
             user.date_joined.strftime('%Y-%m-%d'),
             'Yes' if user.is_active else 'No',
         ])
