@@ -1,0 +1,3 @@
+## 2024-05-23 - N+1 Queries in Django DRF Views
+**Learning:** `queryset` in DRF views is evaluated lazily, but serializer fields that access related objects (Reverse FK or M2M) trigger new queries for each item if not optimized. `select_related` handles Forward FKs, but `prefetch_related` is needed for M2M/Reverse FKs. Annotations are crucial for calculated fields like counts or averages to avoid `aggregate()` in loops.
+**Action:** Always verify `get_queryset` includes `prefetch_related` for list fields and `annotate` for calculated fields used in the serializer. Use `CaptureQueriesContext` to verify query counts in tests. Inject expensive lookups (like wishlist membership) into serializer context in bulk rather than querying per object.
