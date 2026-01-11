@@ -102,6 +102,7 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
+    'store.security_hardening.SecurityHardeningMiddleware', # Enhanced security hardening
     'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

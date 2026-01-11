@@ -354,6 +354,10 @@ class Order(models.Model):
     payment_intent = models.CharField(max_length=255, blank=True, default='')
     payment_method = models.CharField(max_length=20, default='cod')
 
+    # Coupon fields
+    coupon = models.ForeignKey('Coupon', related_name='orders', on_delete=models.SET_NULL, null=True, blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
     # New status field for tracking
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
@@ -2719,3 +2723,113 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access attempts (login, API access, etc.).
+    """
+    access_type = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    session_id = models.CharField(max_length=100, blank=True)
+    resource_accessed = models.CharField(max_length=255, blank=True)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, default='low')
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        verbose_name = 'System Access'
+        verbose_name_plural = 'System Accesses'
+        indexes = [
+            models.Index(fields=['access_type', 'access_timestamp']),
+            models.Index(fields=['ip_address', 'access_timestamp']),
+            models.Index(fields=['risk_level']),
+        ]
+
+    def __str__(self):
+        return f"{self.access_type} - {self.user} ({self.risk_level})"
+
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications (audit trail for data changes).
+    """
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=100)
+    operation_type = models.CharField(max_length=20)  # create, update, delete
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    previous_state = models.JSONField(null=True, blank=True)
+    new_state = models.JSONField(null=True, blank=True)
+    changed_fields = models.JSONField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = 'Data Modification'
+        verbose_name_plural = 'Data Modifications'
+        indexes = [
+            models.Index(fields=['model_name', 'timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['operation_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.operation_type} {self.model_name} by {self.user}"
+
+
+class SessionTracker(models.Model):
+    """
+    Model for tracking user sessions.
+    """
+    session_key = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    device_type = models.CharField(max_length=50, blank=True)
+    os = models.CharField(max_length=50, blank=True)
+    browser = models.CharField(max_length=50, blank=True)
+    login_timestamp = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        verbose_name = 'Session Tracker'
+        verbose_name_plural = 'Session Trackers'
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+            models.Index(fields=['login_timestamp']),
+        ]
+
+    def __str__(self):
+        return f"Session {self.session_key} ({self.user})"
+
+
+class TrackingDataRetention(models.Model):
+    """
+    Configuration for data retention policies.
+    """
+    data_type = models.CharField(max_length=50, unique=True)
+    retention_period = models.PositiveIntegerField(help_text="Number of units to retain data")
+    retention_unit = models.CharField(max_length=20, choices=[
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+        ('years', 'Years'),
+    ], default='months')
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Data Retention Policy'
+        verbose_name_plural = 'Data Retention Policies'
+
+    def __str__(self):
+        return f"{self.data_type}: {self.retention_period} {self.retention_unit}"

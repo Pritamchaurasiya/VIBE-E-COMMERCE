@@ -850,3 +850,13 @@ urlpatterns = [
 
 
 
+
+# ============================================
+# NEW CAPABILITY ENDPOINTS
+# ============================================
+from .user_customization import UserCustomizationView, PersonalizedFeedView
+
+urlpatterns += [
+    path('api/v1/user/customization/', UserCustomizationView.as_view(), name='api_user_customization'),
+    path('api/v1/user/feed/', PersonalizedFeedView.as_view(), name='api_personalized_feed'),
+]
