@@ -83,6 +83,7 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
@@ -896,6 +897,14 @@ class InventoryView(APIView):
             )
 
         previous_stock = product.stock_quantity
+        try:
+            new_quantity = int(new_quantity)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Invalid quantity'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         product.stock_quantity = new_quantity
         product.save()
 
@@ -906,8 +915,7 @@ class InventoryView(APIView):
             quantity=new_quantity - previous_stock,
             previous_stock=previous_stock,
             new_stock=new_quantity,
-            notes=notes,
-            created_by=user
+            notes=notes
         )
 
         return Response({
@@ -2365,6 +2373,29 @@ class StartOrderView(APIView):
         total_price = cart.get_total_cost()
         payment_method = data.get('payment_method', 'card')
 
+        # Handle coupon (Phase 2 completion)
+        coupon_code = request.data.get('coupon_code')
+        discount_amount = 0
+        coupon = None
+
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code__iexact=coupon_code, is_active=True)
+                if coupon.is_valid:
+                    if coupon.discount_type == 'percent':
+                        discount_amount = float(total_price) * (float(coupon.discount_value) / 100)
+                    else:
+                        discount_amount = float(coupon.discount_value)
+
+                    # Ensure discount doesn't exceed total
+                    discount_amount = min(discount_amount, float(total_price))
+                    total_price = float(total_price) - discount_amount
+
+                    # Update usage count
+                    Coupon.objects.filter(pk=coupon.pk).update(used_count=models.F('used_count') + 1)
+            except Coupon.DoesNotExist:
+                pass
+
         # Create Order
         user = request.user if request.user.is_authenticated else None
 
@@ -2380,7 +2411,9 @@ class StartOrderView(APIView):
             paid_amount=total_price,
             paid=False,
             payment_method=payment_method,
-            status='pending'
+            status='pending',
+            coupon=coupon,
+            discount_amount=discount_amount
         )
 
         items = []
