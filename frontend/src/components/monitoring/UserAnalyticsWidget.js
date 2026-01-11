@@ -11,6 +11,7 @@ import {
   Heart,
   Search
 } from 'lucide-react';
+import formatCurrency from '../../utils/formatCurrency';
 import './UserAnalyticsWidget.css';
 
 const UserAnalyticsWidget = ({ data, loading, expanded }) => {
@@ -69,13 +70,6 @@ const UserAnalyticsWidget = ({ data, loading, expanded }) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
   };
 
   const getScoreColor = (score) => {
