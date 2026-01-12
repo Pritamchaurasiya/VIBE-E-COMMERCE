@@ -3742,3 +3742,6 @@ __all__ = [
     'tracking_realtime_stats',
 ]
 
+
+# New Capabilities Views (Appended)
+from .api_views_new_capabilities import SupplyChainBatchView, SupplyChainDetailView, DynamicPricingView, InventoryPredictionView

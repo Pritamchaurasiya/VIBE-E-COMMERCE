@@ -47,6 +47,10 @@ const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 
+// New Capabilities
+const SupplyChainTraceability = lazy(() => import("./components/supply_chain/Traceability"));
+const InventoryPrediction = lazy(() => import("./components/admin/InventoryPrediction"));
+
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
 
@@ -82,6 +86,26 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/traceability/:batchNumber"
+            element={
+               <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SupplyChainTraceability />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/admin/inventory-prediction"
+            element={
+               <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <InventoryPrediction />
                 </Box>
               </Slide>
             }
