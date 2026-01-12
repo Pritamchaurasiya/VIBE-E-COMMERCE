@@ -1227,58 +1227,76 @@ class DashboardStatsView(APIView):
         paid_orders = all_orders.filter(paid=True)
 
         # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
+        revenue_stats = paid_orders.aggregate(
+            total=Sum('paid_amount'),
+            monthly=Sum('paid_amount', filter=Q(created_at__gte=thirty_days_ago)),
+            weekly=Sum('paid_amount', filter=Q(created_at__gte=seven_days_ago)),
+            today=Sum('paid_amount', filter=Q(created_at__date=today))
+        )
 
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
+        total_revenue = revenue_stats['total'] or 0
+        monthly_revenue = revenue_stats['monthly'] or 0
+        weekly_revenue = revenue_stats['weekly'] or 0
+        today_revenue = revenue_stats['today'] or 0
 
         # Order counts
+        order_aggregates = all_orders.aggregate(
+            total=Count('id'),
+            paid=Count('id', filter=Q(paid=True)),
+            pending=Count('id', filter=Q(status='pending')),
+            processing=Count('id', filter=Q(status='processing')),
+            shipped=Count('id', filter=Q(status='shipped')),
+            delivered=Count('id', filter=Q(status='delivered')),
+            cancelled=Count('id', filter=Q(status='cancelled')),
+            today=Count('id', filter=Q(created_at__date=today))
+        )
+
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': order_aggregates['total'],
+            'paid': order_aggregates['paid'],
+            'pending': order_aggregates['pending'],
+            'processing': order_aggregates['processing'],
+            'shipped': order_aggregates['shipped'],
+            'delivered': order_aggregates['delivered'],
+            'cancelled': order_aggregates['cancelled'],
+            'today': order_aggregates['today'],
         }
 
         # Products statistics
+        products_aggregates = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(stock_quantity__lte=models.F('low_stock_threshold'), stock_quantity__gt=0))
+        )
+
         products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
-                stock_quantity__lte=models.F('low_stock_threshold'),
-                stock_quantity__gt=0
-            ).count(),
+            'total': products_aggregates['total'],
+            'active': products_aggregates['active'],
+            'out_of_stock': products_aggregates['out_of_stock'],
+            'low_stock': products_aggregates['low_stock'],
         }
 
         # Users statistics (User already imported at top)
+        user_aggregates = User.objects.aggregate(
+            total=Count('id'),
+            new_today=Count('id', filter=Q(date_joined__date=today)),
+            new_this_week=Count('id', filter=Q(date_joined__gte=seven_days_ago)),
+            new_this_month=Count('id', filter=Q(date_joined__gte=thirty_days_ago))
+        )
+
         users_stats = {
-            'total': User.objects.count(),
-            'new_today': User.objects.filter(date_joined__date=today).count(),
-            'new_this_week': User.objects.filter(date_joined__gte=seven_days_ago).count(),
-            'new_this_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
+            'total': user_aggregates['total'],
+            'new_today': user_aggregates['new_today'],
+            'new_this_week': user_aggregates['new_this_week'],
+            'new_this_month': user_aggregates['new_this_month'],
         }
 
         # Vendors statistics
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
