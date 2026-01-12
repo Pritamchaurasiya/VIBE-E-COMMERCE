@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import "../../styles/agri-theme.css";
 import {
   Whatshot,
@@ -141,7 +142,7 @@ const AgriProductCard = ({
 
         {/* Packing Options */}
         {packingOptions.length > 1 && (
-          <div className="agri-product-packing">
+          <div className="agri-product-packing" role="radiogroup" aria-label="Packing size options">
             {packingOptions.slice(0, 3).map((option, optionIndex) => (
               <button
                 type="button"
@@ -151,6 +152,9 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                role="radio"
+                aria-checked={selectedPacking === optionIndex}
+                aria-label={`Select ${option.size} packing`}
               >
                 {option.size}
               </button>
@@ -167,11 +171,11 @@ const AgriProductCard = ({
         <div className="agri-product-pricing">
           <div className="agri-price-row">
             <span className="agri-price-current">
-              ?{currentPrice.toLocaleString()}
+              {formatCurrency(currentPrice)}
             </span>
             {mrp > currentPrice && (
               <>
-                <span className="agri-price-mrp">?{mrp.toLocaleString()}</span>
+                <span className="agri-price-mrp">{formatCurrency(mrp)}</span>
                 <span className="agri-price-discount">
                   {discountPercent}% OFF
                 </span>
@@ -191,7 +195,7 @@ const AgriProductCard = ({
           {/* Bulk Pricing */}
           {showBulkPrice && bulkPricing && (
             <div className="agri-price-bulk">
-              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ?{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
+              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: {formatCurrency(bulkPricing.price)}/unit ({bulkPricing.min_qty}+ units)
             </div>
           )}
         </div>
@@ -202,6 +206,7 @@ const AgriProductCard = ({
           className={`agri-add-to-cart ${isAddingToCart ? "added" : ""}`}
           onClick={handleAddToCart}
           disabled={isAddingToCart}
+          aria-label={isAddingToCart ? `Added ${product.name} to cart` : `Add ${product.name} to cart`}
         >
           {isAddingToCart ? <><Check fontSize="small" /> Added</> : <><Add fontSize="small" /> Add to Cart</>}
         </button>
