@@ -569,3 +569,4 @@ LOGGING = {
 logs_dir = BASE_DIR / 'logs'
 if not logs_dir.exists():
     logs_dir.mkdir(parents=True, exist_ok=True)
+ALLOWED_HOSTS = ['testserver']
