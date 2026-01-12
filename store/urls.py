@@ -850,3 +850,11 @@ urlpatterns = [
 
 
 
+
+# New Capabilities URLS
+urlpatterns += [
+    path('api/v1/supply-chain/batch/', api_views.SupplyChainBatchView.as_view(), name='api_supply_chain_batch'),
+    path('api/v1/supply-chain/batch/<str:batch_number>/', api_views.SupplyChainDetailView.as_view(), name='api_supply_chain_detail'),
+    path('api/v1/dynamic-pricing/<int:product_id>/', api_views.DynamicPricingView.as_view(), name='api_dynamic_pricing'),
+    path('api/v1/inventory-prediction/<int:product_id>/', api_views.InventoryPredictionView.as_view(), name='api_inventory_prediction'),
+]

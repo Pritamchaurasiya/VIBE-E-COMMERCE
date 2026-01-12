@@ -2719,3 +2719,76 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+# Supply Chain Models
+
+class ProductBatch(models.Model):
+    """
+    Model for tracking product batches in the supply chain.
+    """
+    batch_number = models.CharField(max_length=100, unique=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='batches')
+    vendor = models.ForeignKey('Vendor', on_delete=models.CASCADE, related_name='batches')
+    production_date = models.DateField()
+    expiration_date = models.DateField()
+    quantity = models.PositiveIntegerField()
+    current_location = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['batch_number']),
+            models.Index(fields=['product', 'vendor']),
+        ]
+
+    def __str__(self):
+        return self.batch_number
+
+class JourneyPoint(models.Model):
+    """
+    Model for tracking journey points of a product batch.
+    """
+    batch = models.ForeignKey(ProductBatch, on_delete=models.CASCADE, related_name='journey')
+    location = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100)
+    notes = models.TextField(blank=True)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.batch.batch_number} at {self.location}"
+
+class DynamicPricingRule(models.Model):
+    """
+    Model for dynamic pricing rules.
+    """
+    CONDITION_CHOICES = [
+        ('low_stock', 'Low Stock'),
+        ('high_demand', 'High Demand'),
+        ('time_of_day', 'Time of Day'),
+        ('competitor_price', 'Competitor Price'),
+        ('expiration_date', 'Near Expiration'),
+    ]
+
+    name = models.CharField(max_length=100)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='pricing_rules', null=True, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='pricing_rules', null=True, blank=True)
+    min_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    max_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    adjustment_factor = models.DecimalField(max_digits=5, decimal_places=2, help_text="Multiplier (e.g. 1.1 for 10% increase)")
+    condition_type = models.CharField(max_length=50, choices=CONDITION_CHOICES)
+    condition_value = models.JSONField(help_text="Parameters for the condition", default=dict)
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

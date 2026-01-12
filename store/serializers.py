@@ -605,3 +605,20 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+# Supply Chain Serializers (Appended)
+from .models import ProductBatch, JourneyPoint
+
+class JourneyPointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JourneyPoint
+        fields = ['location', 'timestamp', 'status', 'notes', 'latitude', 'longitude']
+
+class ProductBatchSerializer(serializers.ModelSerializer):
+    journey = JourneyPointSerializer(many=True, read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
+    class Meta:
+        model = ProductBatch
+        fields = ['id', 'batch_number', 'product', 'product_name', 'vendor', 'production_date',
+                  'expiration_date', 'quantity', 'current_location', 'journey']
