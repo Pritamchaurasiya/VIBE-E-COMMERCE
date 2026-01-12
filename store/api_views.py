@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -85,7 +85,14 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        # Optimization: Add annotations and prefetch to prevent N+1 queries
+        queryset = Product.objects.select_related('category', 'vendor') \
+            .prefetch_related('images') \
+            .filter(is_active=True) \
+            .annotate(
+                avg_rating=Avg('reviews__rating'),
+                review_count=Count('reviews')
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -94,6 +101,16 @@ class ProductListView(generics.ListAPIView):
         queryset = self._filter_by_brand_crop_disease(queryset)
 
         return self._apply_sorting(queryset)
+
+    def get_serializer_context(self):
+        """Inject wishlist IDs into context for O(1) lookup."""
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
+            )
+        return context
 
     def _filter_by_search(self, queryset):
         query = self.request.query_params.get('q', '')
@@ -167,7 +184,7 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'newest':
             return queryset.order_by('-created_at')
         elif sort == 'rating':
-            return queryset.order_by('-created_at')
+            return queryset.order_by('-avg_rating', '-review_count')
         return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
