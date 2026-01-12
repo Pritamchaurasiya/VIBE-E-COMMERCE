@@ -1,0 +1,4 @@
+## 2025-01-12 - [CSV Injection Vulnerability]
+**Vulnerability:** Found a CSV Injection (Formula Injection) vulnerability in `ExportDataView` where user-controlled fields (`first_name`, `last_name`, etc.) were written directly to CSV without sanitization. Malicious input starting with characters like `=`, `+`, `-`, `@` could execute formulas in Excel when opened by an admin.
+**Learning:** Even with output encoding like `bleach` (which targets XSS/HTML), CSV exports require specific sanitization (prepending `'`) to prevent spreadsheet formula execution. The context of data usage (HTML vs CSV vs SQL) dictates the sanitization strategy.
+**Prevention:** Always sanitize data specifically for the output format. For CSVs, ensure fields are escaped if they start with formula triggers. Added `sanitize_csv_field` utility and applied it to export views.
