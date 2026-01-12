@@ -49,6 +49,8 @@ const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
+const SupplyChainTracker = lazy(() => import("./components/monitoring/SupplyChainTracker"));
+const AnalyticsDashboard = lazy(() => import("./components/monitoring/AnalyticsDashboard"));
 
 const AnimatedBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
@@ -82,6 +84,26 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/monitoring/supply-chain"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SupplyChainTracker />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/monitoring/analytics"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <AnalyticsDashboard />
                 </Box>
               </Slide>
             }

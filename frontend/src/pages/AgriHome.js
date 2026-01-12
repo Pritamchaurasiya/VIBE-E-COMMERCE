@@ -12,7 +12,6 @@ import {
   newlyLaunchedAPI,
   dealOfDayAPI
 } from "../services/api";
-import "../styles/agri-theme.css";
 // Premium MUI Icons
 import {
   Agriculture,

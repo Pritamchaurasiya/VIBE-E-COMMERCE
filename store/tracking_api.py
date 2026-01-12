@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def _get_model(model_name: str):
     """Lazy import of tracking models."""
     # pylint: disable=import-outside-toplevel
-    from . import tracking_models
+    from . import models as tracking_models
     return getattr(tracking_models, model_name)
 
 

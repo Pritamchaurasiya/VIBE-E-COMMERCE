@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { productsAPI } from "../../services/api";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
-import "../../styles/agri-theme.css";
 import { Search, Notifications, ShoppingCart, Spa, AccessTime, FavoriteBorder } from "@mui/icons-material";
 
 /**

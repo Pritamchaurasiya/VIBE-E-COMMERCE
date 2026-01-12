@@ -35,7 +35,9 @@ from .models import (
     Coupon, FlashSale, BulkOrder, InventoryLog, Deal, ProductComparison,
     AdvancedSearch, AnalyticsEvent, VendorAnalytics, Notification,
     Subscription, BuyerInquiry, RFQQuote, VendorVerification, RFQ,
-    AuditLog, SiteSettings, TradeEvent, Crop
+    AuditLog, SiteSettings, TradeEvent, Crop,
+    TrackingConfiguration, TrackingAlert, PerformanceMetric, SystemAccessTracker,
+    SessionTracker
 )
 
 stripe.api_key = settings.STRIPE_API_KEY_HIDDEN

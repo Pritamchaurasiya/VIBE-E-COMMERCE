@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import TopNav from "../components/layout/TopNav";
 import BottomNav from "../components/layout/BottomNav";
 import { useAuth } from "../utils/AuthContext";
-import "../styles/agri-theme.css";
 import {
   Business,
   ShoppingBag,

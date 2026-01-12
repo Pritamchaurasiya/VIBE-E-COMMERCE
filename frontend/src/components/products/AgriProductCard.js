@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
-import "../../styles/agri-theme.css";
 import {
   Whatshot,
   Favorite,

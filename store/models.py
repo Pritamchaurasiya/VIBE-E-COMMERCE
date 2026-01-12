@@ -2656,6 +2656,7 @@ class UserActionTracker(models.Model):
         ('password_change', 'Password Changed'),
         ('email_change', 'Email Changed'),
         ('custom_action', 'Custom Action'),
+        ('data_modification', 'Data Modification'),
     ]
 
     action_type = models.CharField(max_length=20, choices=ACTION_TYPES)
@@ -2689,6 +2690,186 @@ class UserActionTracker(models.Model):
 
     def __str__(self):
         return f"{self.action_type} - {self.user.username if self.user else 'Anonymous'} ({self.action_timestamp})"
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access events (logins, API access, etc.).
+    """
+    ACCESS_TYPES = [
+        ('login_attempt', 'Login Attempt'),
+        ('login_success', 'Login Success'),
+        ('login_failure', 'Login Failure'),
+        ('logout', 'Logout'),
+        ('api_access', 'API Access'),
+        ('admin_access', 'Admin Panel Access'),
+        ('file_access', 'File Access'),
+        ('database_access', 'Database Access'),
+        ('page_access', 'Page Access'),
+        ('sql_injection', 'SQL Injection Attempt'),
+        ('xss_attempt', 'XSS Attempt'),
+        ('csrf_violation', 'CSRF Violation'),
+        ('brute_force', 'Brute Force Attempt'),
+        ('path_traversal', 'Path Traversal Attempt'),
+        ('suspicious_activity', 'Suspicious Activity'),
+        ('error', 'System Error'),
+    ]
+
+    access_type = models.CharField(max_length=30, choices=ACCESS_TYPES)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    session_id = models.CharField(max_length=100, blank=True)
+    resource_accessed = models.CharField(max_length=255, blank=True)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ], default='low')
+    metadata = models.JSONField(default=dict, blank=True)
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'System Access'
+        verbose_name_plural = 'System Accesses'
+        indexes = [
+            models.Index(fields=['access_type', 'access_timestamp']),
+            models.Index(fields=['user', 'access_timestamp']),
+            models.Index(fields=['ip_address', 'access_timestamp']),
+            models.Index(fields=['risk_level', 'access_timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.access_type} - {self.user.username if self.user else 'Anonymous'} ({self.access_timestamp})"
+
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications (Create, Update, Delete).
+    """
+    OPERATION_TYPES = [
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+    ]
+
+    operation_type = models.CharField(max_length=10, choices=OPERATION_TYPES)
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=100, null=True, blank=True)
+    object_repr = models.CharField(max_length=255, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    changes = models.JSONField(default=dict, blank=True)
+    is_sensitive = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Data Modification'
+        verbose_name_plural = 'Data Modifications'
+        indexes = [
+            models.Index(fields=['operation_type', 'timestamp']),
+            models.Index(fields=['model_name', 'timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.operation_type} {self.model_name} by {self.user}"
+
+
+class SessionTracker(models.Model):
+    """
+    Model for tracking user sessions.
+    """
+    session_id = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    device_type = models.CharField(max_length=50, blank=True)
+    browser = models.CharField(max_length=50, blank=True)
+    os = models.CharField(max_length=50, blank=True)
+    login_timestamp = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    login_method = models.CharField(max_length=50, default='password')
+    status = models.CharField(max_length=20, default='active')
+
+    class Meta:
+        verbose_name = 'Session'
+        verbose_name_plural = 'Sessions'
+        indexes = [
+            models.Index(fields=['user', 'login_timestamp']),
+            models.Index(fields=['is_active', 'last_activity']),
+            models.Index(fields=['session_id']),
+        ]
+
+    def __str__(self):
+        return f"Session {self.session_id} - {self.user}"
+
+
+class TrackingDataRetention(models.Model):
+    """
+    Model for managing data retention policies.
+    """
+    DATA_TYPES = [
+        ('file_operations', 'File Operations'),
+        ('user_actions', 'User Actions'),
+        ('system_access', 'System Access'),
+        ('data_modifications', 'Data Modifications'),
+        ('sessions', 'Sessions'),
+        ('performance_metrics', 'Performance Metrics'),
+    ]
+
+    data_type = models.CharField(max_length=50, choices=DATA_TYPES, unique=True)
+    retention_period = models.PositiveIntegerField(help_text="Number of units to retain data")
+    retention_unit = models.CharField(max_length=20, choices=[
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+        ('years', 'Years'),
+    ], default='days')
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Retention Policy'
+        verbose_name_plural = 'Retention Policies'
+
+    def __str__(self):
+        return f"{self.get_data_type_display()} - {self.retention_period} {self.retention_unit}"
+
+
+class TrackingExport(models.Model):
+    """
+    Model for tracking data exports.
+    """
+    export_name = models.CharField(max_length=255)
+    data_type = models.CharField(max_length=50)
+    format = models.CharField(max_length=10, choices=[('json', 'JSON'), ('csv', 'CSV')])
+    file_path = models.CharField(max_length=500, blank=True)
+    file_size = models.BigIntegerField(default=0)
+    record_count = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ], default='pending')
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = 'Data Export'
+        verbose_name_plural = 'Data Exports'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.export_name} ({self.status})"
 
 
 class RecentlyViewed(models.Model):
