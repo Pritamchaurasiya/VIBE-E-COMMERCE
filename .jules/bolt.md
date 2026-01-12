@@ -1,0 +1,3 @@
+## 2024-05-23 - N+1 Queries in Django DRF Views
+**Learning:** Django REST Framework's SerializerMethodField is a common source of N+1 queries. Even if `select_related` is used in the View, methods like `get_average_rating` or `get_images` in the Serializer will trigger a new DB query for every object unless explicitly prefetched or annotated in the View's queryset.
+**Action:** Always verify `SerializerMethodField` implementations. Use `prefetch_related` for related sets (like images) and `annotate` for calculated fields (like counts/averages) in the `get_queryset` method. Use `hasattr` in the serializer to check if the annotation exists before querying the DB.
