@@ -3,7 +3,6 @@ import TopNav from "../components/layout/TopNav";
 import BottomNav from "../components/layout/BottomNav";
 import { useAuth } from "../utils/AuthContext";
 import { notificationsAPI } from "../services/api";
-import "../styles/agri-theme.css";
 import { Notifications, LocalOffer, Info } from "@mui/icons-material";
 
 /**

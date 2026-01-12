@@ -267,7 +267,13 @@ export const analyticsAPI = {
   getUserPreferences: () => api.get("/api/analytics/preferences/"),
   createUserFeedback: (feedbackData) =>
     api.post("/api/analytics/feedback/", feedbackData),
+  getAnalyticsDashboard: () => api.get("/api/analytics/dashboard/"),
+  getRealTimeAnalytics: () => api.get("/api/analytics/realtime/"),
 };
+
+// Export individual functions for easier importing
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
 
 // Real-time Monitoring API
 export const monitoringAPI = {

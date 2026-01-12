@@ -1,7 +1,6 @@
 ﻿import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Store, AccountBalanceWallet, LocalOffer, Person } from "@mui/icons-material";
-import "../../styles/agri-theme.css";
 
 /**
  * AGRIM-Style Bottom Navigation Bar

@@ -9,7 +9,7 @@ from django.contrib import admin
 from django.db.models import Count, Avg
 from django.utils import timezone
 
-from .tracking_models import (
+from .models import (
     TrackingConfiguration, SystemFileTracker, UserActionTracker,
     SystemAccessTracker, DataModificationTracker, SessionTracker,
     PerformanceMetric, TrackingAlert, TrackingDataRetention,

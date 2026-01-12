@@ -52,6 +52,7 @@ import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, selectIsDarkMode } from "../../features/theme/themeSlice";
+import NotificationCenter from "./NotificationCenter";
 
 const Header = () => {
   const { logout, isAuthenticated, user } = useAuth();
@@ -329,17 +330,7 @@ const Header = () => {
 
             {/* Notifications */}
             {isAuthenticated && (
-              <Tooltip title="Notifications">
-                <IconButton
-                  color="inherit"
-                  onClick={handleNotificationsOpen}
-                  aria-label={`${unreadCount} unread notifications`}
-                >
-                  <Badge badgeContent={unreadCount} color="error">
-                    <Notifications />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
+              <NotificationCenter />
             )}
 
             {/* Cart */}
