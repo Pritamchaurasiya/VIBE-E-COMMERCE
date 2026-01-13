@@ -450,13 +450,20 @@ function App() {
       <CartProvider>
         <Router>
           <AnimatedBox>
+            {/* Skip to Main Content Link for Accessibility */}
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             <Header />
             <Box
               component="main"
+              id="main-content"
+              tabIndex="-1"
               sx={{
                 flex: 1,
                 padding: { xs: "10px 0", sm: "20px 0" },
                 transition: "all 0.3s ease-in-out",
+                outline: "none", // Remove default outline on focus
               }}
             >
               <ErrorBoundary>
