@@ -447,39 +447,44 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
         try:
-            product = Product.objects.get(id=product_id)
+            product = Product.objects.select_related('category', 'vendor').get(id=product_id)
         except Product.DoesNotExist:
             return Response({'recommendations': []})
 
         # Get products in same category
-        category_products = Product.objects.filter(
+        category_products = list(Product.objects.select_related('category', 'vendor').filter(
             category=product.category,
             is_active=True
-        ).exclude(id=product.id)[:4]
+        ).exclude(id=product.id)[:4])
+
+        # Create exclusion list
+        excluded_ids = {p.id for p in category_products}
+        excluded_ids.add(product.id)
 
         # Get products from same vendor
-        vendor_products = Product.objects.filter(
+        vendor_products = list(Product.objects.select_related('category', 'vendor').filter(
             vendor=product.vendor,
             is_active=True
-        ).exclude(id=product.id).exclude(id__in=category_products)[:2]
+        ).exclude(id__in=excluded_ids)[:2])
 
-        # Get products in similar price range (Â±20%)
+        excluded_ids.update(p.id for p in vendor_products)
+
+        # Get products in similar price range (±20%)
         price_min = float(product.price) * 0.8
         price_max = float(product.price) * 1.2
-        price_products = Product.objects.filter(
+        price_products = list(Product.objects.select_related('category', 'vendor').filter(
             price__gte=price_min,
             price__lte=price_max,
             is_active=True
-        ).exclude(id=product.id).exclude(
-            id__in=category_products
-        ).exclude(id__in=vendor_products)[:2]
+        ).exclude(id__in=excluded_ids)[:2])
 
         # Combine recommendations
-        all_recommendations = list(category_products) + list(vendor_products) + list(price_products)
+        all_recommendations = category_products + vendor_products + price_products
 
         recommendations = [{
             'id': p.id,
