@@ -64,6 +64,7 @@ import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import LazyImage from "../common/LazyImage";
+import EmptyState from "../common/EmptyState";
 
 const ProductCard = React.memo(
   ({
@@ -1373,6 +1374,21 @@ const ProductList = () => {
                 ))}
               </Grid>
             </Box>
+          ) : products.length === 0 ? (
+            <EmptyState
+              title="No products found"
+              description="We couldn't find any products matching your filters. Try adjusting your search query or filters."
+              action={
+                <Button
+                  variant="outlined"
+                  onClick={clearFilters}
+                  startIcon={<Clear />}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Clear All Filters
+                </Button>
+              }
+            />
           ) : (
             <>
               <Box
