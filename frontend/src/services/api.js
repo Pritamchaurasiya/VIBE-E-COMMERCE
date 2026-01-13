@@ -290,6 +290,10 @@ export const userAnalyticsAPI = {
     api.get(`/api/analytics/segments/${segmentId}/analytics/`),
 };
 
+// Export aliases for backward compatibility
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
+
 // Error Tracking API
 export const errorTrackingAPI = {
   getErrors: (params) => api.get("/api/analytics/errors/", { params }),
