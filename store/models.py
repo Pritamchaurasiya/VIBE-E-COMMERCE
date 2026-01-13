@@ -9,6 +9,7 @@ import logging
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -2342,6 +2343,16 @@ class UserAnalyticsAPIKey(models.Model):
 
     def __str__(self):
         return f"{self.name} API Key"
+
+    def save(self, *args, **kwargs):
+        """Hash secret key before saving."""
+        if self.secret_key and not self.secret_key.startswith(('pbkdf2_', 'argon2', 'bcrypt')):
+            self.secret_key = make_password(self.secret_key)
+        super().save(*args, **kwargs)
+
+    def verify_secret_key(self, raw_key):
+        """Verify provided secret key against stored hash."""
+        return check_password(raw_key, self.secret_key)
 
 class UserAnalyticsWebhook(models.Model):
     """
