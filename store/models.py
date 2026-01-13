@@ -2719,3 +2719,129 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+# ============================================
+# SUPPLY CHAIN TRACEABILITY MODELS
+# ============================================
+
+class ProductBatch(models.Model):
+    """
+    Model for tracking product batches in the supply chain.
+    """
+    STATUS_CHOICES = [
+        ('production', 'In Production'),
+        ('quality_check', 'Quality Check'),
+        ('packaging', 'Packaging'),
+        ('transit', 'In Transit'),
+        ('warehouse', 'In Warehouse'),
+        ('retail', 'At Retailer'),
+        ('sold', 'Sold'),
+        ('consumed', 'Consumed'),
+    ]
+
+    batch_id = models.CharField(max_length=50, unique=True, help_text="Unique Batch ID / Lot Number")
+    product = models.ForeignKey(Product, related_name='batches', on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, related_name='batches', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    production_date = models.DateField()
+    expiration_date = models.DateField(null=True, blank=True)
+    origin_location = models.CharField(max_length=255)
+    current_location = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='production')
+    blockchain_hash = models.CharField(max_length=100, blank=True, help_text="Immutable ledger hash")
+    qr_code = models.ImageField(upload_to='batch_qr/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['batch_id'], name='idx_batch_id'),
+            models.Index(fields=['product', 'status'], name='idx_batch_product_status'),
+        ]
+
+    def __str__(self):
+        return f"Batch {self.batch_id} - {self.product.name}"
+
+class JourneyPoint(models.Model):
+    """
+    Model for tracking journey points/scan events for a batch.
+    """
+    batch = models.ForeignKey(ProductBatch, related_name='journey_points', on_delete=models.CASCADE)
+    location = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=50, help_text="Status at this point (e.g., 'Arrived', 'Departed')")
+    handler = models.CharField(max_length=100, blank=True, help_text="Person or company handling the batch")
+    notes = models.TextField(blank=True)
+    coordinates = models.CharField(max_length=50, blank=True, help_text="Lat,Lng")
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['batch', 'timestamp'], name='idx_journey_batch_time'),
+        ]
+
+    def __str__(self):
+        return f"{self.batch.batch_id} at {self.location}"
+
+# ============================================
+# DYNAMIC PRICING MODELS
+# ============================================
+
+class DynamicPricingRule(models.Model):
+    """
+    Rules for automated price adjustments.
+    """
+    RULE_TYPES = [
+        ('competitor_match', 'Competitor Match'),
+        ('stock_based', 'Stock Level Based'),
+        ('demand_based', 'Demand/Sales Based'),
+        ('time_based', 'Time of Day/Week'),
+    ]
+
+    ADJUSTMENT_TYPES = [
+        ('percentage', 'Percentage'),
+        ('fixed', 'Fixed Amount'),
+    ]
+
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+
+    rule_type = models.CharField(max_length=20, choices=RULE_TYPES)
+    adjustment_type = models.CharField(max_length=20, choices=ADJUSTMENT_TYPES)
+    adjustment_value = models.DecimalField(max_digits=10, decimal_places=2, help_text="Percentage (e.g. 10.0) or Fixed Amount")
+
+    min_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    max_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    threshold_stock = models.IntegerField(null=True, blank=True, help_text="Stock level to trigger rule")
+    threshold_sales_velocity = models.IntegerField(null=True, blank=True, help_text="Sales per day to trigger")
+
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0, help_text="Higher priority rules run first")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+# ============================================
+# INVENTORY PREDICTION MODELS
+# ============================================
+
+class InventoryPrediction(models.Model):
+    """
+    Predicted inventory demand.
+    """
+    product = models.ForeignKey(Product, related_name='predictions', on_delete=models.CASCADE)
+    predicted_date = models.DateField()
+    predicted_demand = models.IntegerField()
+    confidence_score = models.DecimalField(max_digits=5, decimal_places=2, help_text="0.00 to 1.00")
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['predicted_date']
+        unique_together = ('product', 'predicted_date')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.predicted_date}: {self.predicted_demand}"

@@ -850,3 +850,41 @@ urlpatterns = [
 
 
 
+
+# ============================================
+# NEW CAPABILITY ENDPOINTS
+# ============================================
+from .api_views_new_capabilities import (
+    SupplyChainBatchView, SupplyChainDetailView, JourneyPointView,
+    SecurityDashboardView
+)
+
+urlpatterns += [
+    path('api/v1/supply-chain/batch/', SupplyChainBatchView.as_view(), name='api_supply_chain_batch'),
+    path('api/v1/supply-chain/batch/<str:batch_id>/', SupplyChainDetailView.as_view(), name='api_supply_chain_detail'),
+    path('api/v1/supply-chain/batch/<str:batch_id>/journey/', JourneyPointView.as_view(), name='api_journey_point'),
+    path('api/v1/security/dashboard/', SecurityDashboardView.as_view(), name='api_security_dashboard'),
+]
+
+# ============================================
+# DYNAMIC PRICING ENDPOINTS
+# ============================================
+from .api_views_new_capabilities import (
+    DynamicPricingRuleView, DynamicPriceView
+)
+
+urlpatterns += [
+    path('api/v1/dynamic-pricing/rules/', DynamicPricingRuleView.as_view(), name='api_dynamic_pricing_rules'),
+    path('api/v1/dynamic-pricing/calculate/<int:product_id>/', DynamicPriceView.as_view(), name='api_dynamic_price_calculate'),
+]
+
+# ============================================
+# INVENTORY PREDICTION ENDPOINTS
+# ============================================
+from .api_views_new_capabilities import (
+    InventoryPredictionView
+)
+
+urlpatterns += [
+    path('api/v1/inventory-prediction/', InventoryPredictionView.as_view(), name='api_inventory_prediction'),
+]
