@@ -41,6 +41,7 @@ from django.views import View
 # Local imports
 from .cart import Cart
 from .permissions import IsVendorUser
+from .utils.security import sanitize_csv_field
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Wishlist, Review, Coupon, Profile,
     FlashSale, BulkOrder, Notification, Deal, InventoryLog, Contact, Subscription,
@@ -1492,12 +1493,18 @@ class ExportDataView(APIView):
         ])
 
         for order in orders:
+            # Sanitize user input fields to prevent CSV Injection
+            customer_name = sanitize_csv_field(f"{order.first_name} {order.last_name}")
+            email = sanitize_csv_field(order.email)
+            phone = sanitize_csv_field(order.phone)
+            address = sanitize_csv_field(order.address)
+
             writer.writerow([
                 order.id,
-                f"{order.first_name} {order.last_name}",
-                order.email,
-                order.phone,
-                order.address,
+                customer_name,
+                email,
+                phone,
+                address,
                 order.paid_amount or 0,
                 'Paid' if order.paid else 'Unpaid',
                 order.status,

@@ -304,3 +304,33 @@ def check_password_strength(password: str) -> tuple:
         issues.append("Password is too common")
 
     return len(issues) == 0, issues
+
+
+# ============================================================================
+# CSV SECURITY
+# ============================================================================
+
+def sanitize_csv_field(value: Optional[str]) -> str:
+    """
+    Sanitize a field for CSV export to prevent Formula Injection (CSV Injection).
+
+    If the value starts with -, +, =, @, %, or |, it prepends a single quote
+    to force the spreadsheet application to treat it as a string instead of a formula.
+
+    Args:
+        value: The string to sanitize.
+
+    Returns:
+        The sanitized string safe for CSV export.
+    """
+    if value is None:
+        return ""
+
+    value_str = str(value)
+
+    # Check for dangerous characters at the beginning
+    # These characters trigger formula execution in Excel, LibreOffice, etc.
+    if value_str.startswith(('=', '+', '-', '@', '%', '|')):
+        return "'" + value_str
+
+    return value_str
