@@ -605,3 +605,44 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+# ============================================
+# NEW CAPABILITY SERIALIZERS
+# ============================================
+
+from .models import ProductBatch, JourneyPoint
+
+class JourneyPointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JourneyPoint
+        fields = ['id', 'location', 'timestamp', 'status', 'handler', 'notes', 'coordinates']
+
+class ProductBatchSerializer(serializers.ModelSerializer):
+    journey_points = JourneyPointSerializer(many=True, read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    vendor_name = serializers.CharField(source='vendor.name', read_only=True)
+
+    class Meta:
+        model = ProductBatch
+        fields = [
+            'id', 'batch_id', 'product', 'product_name', 'vendor', 'vendor_name',
+            'quantity', 'production_date', 'expiration_date', 'origin_location',
+            'current_location', 'status', 'blockchain_hash', 'qr_code',
+            'created_at', 'updated_at', 'journey_points'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'blockchain_hash', 'qr_code', 'vendor']
+
+
+from .models import DynamicPricingRule
+
+class DynamicPricingRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DynamicPricingRule
+        fields = '__all__'
+
+from .models import InventoryPrediction
+
+class InventoryPredictionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryPrediction
+        fields = ['product', 'predicted_date', 'predicted_demand', 'confidence_score']

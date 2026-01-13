@@ -19,6 +19,8 @@ import DatabaseMetricsWidget from '../components/monitoring/DatabaseMetricsWidge
 import UserSegmentationWidget from '../components/monitoring/UserSegmentationWidget';
 import AnalyticsCharts from '../components/monitoring/AnalyticsCharts';
 import MonitoringAlerts from '../components/monitoring/MonitoringAlerts';
+import SupplyChainTracker from '../components/monitoring/SupplyChainTracker';
+import SecurityDashboard from '../components/monitoring/SecurityDashboard';
 import useWebSocket from '../hooks/useWebSocket';
 import { getAnalyticsDashboard, getRealTimeAnalytics } from '../services/api';
 import './MonitoringDashboard.css';
@@ -117,7 +119,9 @@ const MonitoringDashboard = () => {
     { id: 'system', label: 'System Health', icon: Server },
     { id: 'database', label: 'Database', icon: Database },
     { id: 'segments', label: 'User Segments', icon: PieChart },
-    { id: 'errors', label: 'Error Tracking', icon: AlertTriangle }
+    { id: 'errors', label: 'Error Tracking', icon: AlertTriangle },
+    { id: 'supply_chain', label: 'Supply Chain', icon: Activity },
+    { id: 'security', label: 'Security', icon: Settings }
   ];
 
   const renderTabContent = () => {
@@ -176,6 +180,12 @@ const MonitoringDashboard = () => {
 
       case 'errors':
         return <ErrorTrackingWidget data={dashboardData?.errorTracking} loading={loading} expanded />;
+
+      case 'supply_chain':
+        return <SupplyChainTracker />;
+
+      case 'security':
+        return <SecurityDashboard />;
 
       default:
         return null;
