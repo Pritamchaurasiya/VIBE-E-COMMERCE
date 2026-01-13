@@ -19,17 +19,24 @@ class Cart:
             request.user if request.user and request.user.is_authenticated else None
         )
 
+        # Cache for product objects to avoid repeated database queries
+        self._products_cache = None
+
         if self.user:
             # DB-backed cart for logged-in users
             self.cart_data = {}
             items = CartItem.objects.filter(
                 cart_id=str(self.user.id)
             ).select_related('product')
+
+            cached_products = []
             for item in items:
                 self.cart_data[str(item.product.id)] = {
                     'quantity': item.quantity,
                     'id': str(item.product.id)
                 }
+                cached_products.append(item.product)
+            self._products_cache = cached_products
         else:
             # Session-backed cart for anonymous users
             cart_session = self.session.get(settings.CART_SESSION_ID)
@@ -50,9 +57,17 @@ class Cart:
             if not self.user:
                 self.save()
 
+    def _get_products(self):
+        """
+        Get products in the cart, using cache if available.
+        """
+        if self._products_cache is None:
+            product_ids = self.cart_data.keys()
+            self._products_cache = list(Product.objects.filter(id__in=product_ids))
+        return self._products_cache
+
     def __iter__(self):
-        product_ids = self.cart_data.keys()
-        products = Product.objects.filter(id__in=product_ids)
+        products = self._get_products()
 
         cart_data_copy = self.cart_data.copy()
 
@@ -99,6 +114,7 @@ class Cart:
         """
         Add a product to the cart or update its quantity.
         """
+        self._products_cache = None  # Invalidate cache
         product_id = str(product_id)
 
         if product_id not in self.cart_data:
@@ -118,6 +134,7 @@ class Cart:
         """
         Remove a product from the cart.
         """
+        self._products_cache = None  # Invalidate cache
         product_id = str(product_id)
         if product_id in self.cart_data:
             del self.cart_data[product_id]
@@ -127,6 +144,7 @@ class Cart:
         """
         Remove the cart from the session or DB.
         """
+        self._products_cache = None  # Invalidate cache
         if self.user:
             CartItem.objects.filter(cart_id=str(self.user.id)).delete()
             self.cart_data = {}
@@ -151,8 +169,7 @@ class Cart:
         """
         Calculate the total cost of items in the cart.
         """
-        product_ids = self.cart_data.keys()
-        products = Product.objects.filter(id__in=product_ids)
+        products = self._get_products()
         total = 0
         for product in products:
             quantity = self.cart_data[str(product.id)]['quantity']
