@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -11,6 +11,9 @@ import {
   Divider,
   TextField,
   InputAdornment,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import {
   Facebook,
@@ -53,6 +56,41 @@ FooterLink.propTypes = {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setSnackbar({
+        open: true,
+        message: "Please enter a valid email address",
+        severity: "error",
+      });
+      return;
+    }
+
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      setEmail("");
+      setSnackbar({
+        open: true,
+        message: "Successfully subscribed to newsletter!",
+        severity: "success",
+      });
+    }, 1500);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const socialLinks = [
     { icon: <Facebook />, url: "#", label: "Facebook" },
@@ -230,6 +268,13 @@ const Footer = () => {
                 placeholder="Your email"
                 size="small"
                 fullWidth
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSubscribe(e);
+                  }
+                }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     bgcolor: "rgba(255,255,255,0.1)",
@@ -244,8 +289,18 @@ const Footer = () => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton size="small" sx={{ color: "primary.light" }}>
-                        <Send />
+                      <IconButton
+                        size="small"
+                        sx={{ color: "primary.light" }}
+                        onClick={handleSubscribe}
+                        disabled={loading}
+                        aria-label="Subscribe to newsletter"
+                      >
+                        {loading ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          <Send />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -254,6 +309,22 @@ const Footer = () => {
             </motion.div>
           </Grid>
         </Grid>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            sx={{ width: "100%" }}
+            variant="filled"
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
 
         <Divider sx={{ my: 4, borderColor: "rgba(255,255,255,0.1)" }} />
 
