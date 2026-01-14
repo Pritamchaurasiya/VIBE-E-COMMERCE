@@ -1,0 +1,14 @@
+INFO AXES: BEGIN version 8.1.0, blocking by ip_address
+Creating test database for alias 'default'...
+INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.
+----------------------------------------------------------------------
+Ran 4 tests in 3.948s
+
+OK
+Destroying test database for alias 'default'...
+Found 4 test(s).
+System check identified no issues (0 silenced).

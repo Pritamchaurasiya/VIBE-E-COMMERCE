@@ -8,7 +8,8 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, ForumPost, ForumComment,
+    MarketPrice, Disease
 )
 # Analytics model imports
 from .models import (
@@ -605,3 +606,37 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+
+class ForumPostSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+    like_count = serializers.IntegerField(read_only=True)
+    comment_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ForumPost
+        fields = ['id', 'author', 'title', 'content', 'category', 'image', 'created_at', 'like_count', 'comment_count']
+        read_only_fields = ['created_at', 'author']
+
+
+class ForumCommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = ForumComment
+        fields = ['id', 'post', 'author', 'content', 'created_at']
+        read_only_fields = ['created_at', 'author', 'post']
+
+
+class MarketPriceSerializer(serializers.ModelSerializer):
+    crop_name = serializers.CharField(source='crop.name', read_only=True)
+
+    class Meta:
+        model = MarketPrice
+        fields = ['id', 'crop', 'crop_name', 'market_name', 'location', 'price', 'date', 'trend']
+
+
+class DiseaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Disease
+        fields = ['id', 'name', 'symptoms', 'prevention_tips']

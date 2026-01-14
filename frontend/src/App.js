@@ -46,6 +46,11 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const ForumPage = lazy(() => import("./pages/ForumPage"));
+
+// New Features
+const CropDoctor = lazy(() => import("./features/CropDoctor"));
+const MarketPrices = lazy(() => import("./features/MarketPrices"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -82,6 +87,36 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/crop-doctor"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <CropDoctor />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/market-prices"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <MarketPrices />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/forum"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <ForumPage />
                 </Box>
               </Slide>
             }
