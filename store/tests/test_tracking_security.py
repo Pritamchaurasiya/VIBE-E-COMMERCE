@@ -60,6 +60,10 @@ class InputValidatorTests(TestCase):
         """Test normal text does not trigger SQL detection."""
         self.assertFalse(InputValidator.detect_sql_injection("Hello World"))
 
+    def test_detect_sql_injection_email(self):
+        """Test valid email does not trigger SQL detection."""
+        self.assertFalse(InputValidator.detect_sql_injection("user@example.com"))
+
     def test_detect_xss_script_tag(self):
         """Test XSS script tag detection."""
         self.assertTrue(InputValidator.detect_xss("<script>alert('xss')</script>"))
