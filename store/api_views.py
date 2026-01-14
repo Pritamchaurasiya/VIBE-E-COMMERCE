@@ -1227,32 +1227,39 @@ class DashboardStatsView(APIView):
         paid_orders = all_orders.filter(paid=True)
 
         # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
+        revenue_aggregates = paid_orders.aggregate(
+            total=Sum('paid_amount'),
+            monthly=Sum('paid_amount', filter=Q(created_at__gte=thirty_days_ago)),
+            weekly=Sum('paid_amount', filter=Q(created_at__gte=seven_days_ago)),
+            today=Sum('paid_amount', filter=Q(created_at__date=today))
+        )
 
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
+        total_revenue = revenue_aggregates['total'] or 0
+        monthly_revenue = revenue_aggregates['monthly'] or 0
+        weekly_revenue = revenue_aggregates['weekly'] or 0
+        today_revenue = revenue_aggregates['today'] or 0
 
         # Order counts
+        order_aggregates = all_orders.aggregate(
+            total=Count('id'),
+            paid=Count('id', filter=Q(paid=True)),
+            pending=Count('id', filter=Q(status='pending')),
+            processing=Count('id', filter=Q(status='processing')),
+            shipped=Count('id', filter=Q(status='shipped')),
+            delivered=Count('id', filter=Q(status='delivered')),
+            cancelled=Count('id', filter=Q(status='cancelled')),
+            today=Count('id', filter=Q(created_at__date=today))
+        )
+
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': order_aggregates['total'],
+            'paid': order_aggregates['paid'],
+            'pending': order_aggregates['pending'],
+            'processing': order_aggregates['processing'],
+            'shipped': order_aggregates['shipped'],
+            'delivered': order_aggregates['delivered'],
+            'cancelled': order_aggregates['cancelled'],
+            'today': order_aggregates['today'],
         }
 
         # Products statistics
@@ -1278,7 +1285,7 @@ class DashboardStatsView(APIView):
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
