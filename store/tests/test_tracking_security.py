@@ -6,7 +6,7 @@ and tracking_middleware.py.
 """
 # pylint: disable=no-member
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 from django.contrib.auth.models import User
 
 from store.tracking_service import (
@@ -191,6 +191,11 @@ class EnhancedTrackingServiceTests(TestCase):
         )
         self.factory = RequestFactory()
 
+    @override_settings(CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    })
     def test_is_tracking_enabled_default_false(self):
         """Test tracking is disabled by default."""
         result = EnhancedTrackingService.is_tracking_enabled('nonexistent')
