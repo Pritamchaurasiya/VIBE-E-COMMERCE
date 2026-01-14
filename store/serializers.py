@@ -61,6 +61,16 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_is_in_wishlist(self, obj):
         """Check if product is in user's wishlist."""
+        # Optimization: Check if wishlist existence is annotated
+        if hasattr(obj, 'is_in_wishlist_annotated'):
+             return obj.is_in_wishlist_annotated
+
+        # Optimization: Check for prefetched wishlist queryset
+        if hasattr(obj, 'user_wishlist'):
+            # If we prefetched wishlist filtered by user, we can check here
+            # user_wishlist should be a list of Wishlist objects for this product
+            return len(obj.user_wishlist) > 0
+
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Wishlist.objects.filter(user=request.user, product=obj).exists()
@@ -68,14 +78,29 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         """Get average rating for product."""
-        reviews = obj.reviews.all()
-        if reviews:
-            result = reviews.aggregate(avg_rating=Avg('rating'))
-            return result['avg_rating'] or 0
-        return 0
+        # Optimization: Check for annotated value
+        if hasattr(obj, 'avg_rating'):
+             return obj.avg_rating
+
+        # Optimization: Check if reviews are prefetched to avoid N+1
+        if getattr(obj, '_prefetched_objects_cache', {}) and 'reviews' in obj._prefetched_objects_cache:
+             reviews = list(obj.reviews.all())
+             if not reviews: return 0
+             return sum(r.rating for r in reviews) / len(reviews)
+
+        # Fallback to DB query
+        return obj.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
 
     def get_review_count(self, obj):
         """Get review count for product."""
+        # Optimization: Check for annotated value
+        if hasattr(obj, 'review_count_annotated'):
+            return obj.review_count_annotated
+
+        # Optimization: Check if reviews are prefetched
+        if getattr(obj, '_prefetched_objects_cache', {}) and 'reviews' in obj._prefetched_objects_cache:
+            return len(obj.reviews.all())
+
         return obj.reviews.count()
 
 
