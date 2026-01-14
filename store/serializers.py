@@ -470,18 +470,42 @@ class UserAnalyticsIntegrationSerializer(serializers.ModelSerializer):
 
 class UserAnalyticsAPIKeySerializer(serializers.ModelSerializer):
     """Serializer for UserAnalyticsAPIKey model."""
+    secret_key = serializers.CharField(write_only=True, required=False)
+    plain_secret_key = serializers.CharField(read_only=True)
 
     class Meta:
         """Meta class for UserAnalyticsAPIKeySerializer."""
         model = UserAnalyticsAPIKey
         fields = [
-            'id', 'name', 'api_key', 'secret_key', 'permissions',
+            'id', 'name', 'api_key', 'secret_key', 'plain_secret_key', 'permissions',
             'is_active', 'created_at', 'expires_at', 'last_used',
             'usage_count'
         ]
         read_only_fields = [
-            'id', 'created_at', 'last_used', 'usage_count'
+            'id', 'created_at', 'last_used', 'usage_count', 'api_key'
         ]
+
+    def create(self, validated_data):
+        """Create new API key with secure hash."""
+        import secrets
+        import string
+
+        # Remove secret_key if present in validated_data (we generate it)
+        validated_data.pop('secret_key', None)
+
+        # Generate keys
+        api_key = 'vk_' + secrets.token_urlsafe(16)
+        raw_secret_key = 'vs_' + secrets.token_urlsafe(32)
+
+        # Create instance
+        instance = UserAnalyticsAPIKey(**validated_data)
+        instance.api_key = api_key
+        instance.set_secret_key(raw_secret_key)
+        instance.save()
+
+        # Attach plain key to instance for one-time display
+        instance.plain_secret_key = raw_secret_key
+        return instance
 
 class UserAnalyticsWebhookSerializer(serializers.ModelSerializer):
     """Serializer for UserAnalyticsWebhook model."""
