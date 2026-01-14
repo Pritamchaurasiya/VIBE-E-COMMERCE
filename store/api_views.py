@@ -376,7 +376,15 @@ class OrderListView(generics.ListAPIView):
         return Order.objects.filter(
             user=self.request.user
         ).prefetch_related(
-            'items__product__vendor', 'items__product__category'
+            'items__product__vendor',
+            'items__product__category',
+            'items__product__images',
+            # Optimization for wishlist:
+            models.Prefetch(
+                'items__product__wishlisted_by',
+                queryset=Wishlist.objects.filter(user=self.request.user),
+                to_attr='user_wishlist'
+            )
         ).order_by('-created_at')
 
 
