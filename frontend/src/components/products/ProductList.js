@@ -58,6 +58,7 @@ import {
   FlashOn,
   Star,
   Warning,
+  SearchOff,
 } from "@mui/icons-material";
 import { productsAPI, wishlistAPI } from "../../services/api";
 import { useAuth } from "../../utils/AuthContext";
@@ -1225,7 +1226,7 @@ const ProductList = () => {
                   color="text.secondary"
                   sx={{ mt: 1 }}
                 >
-                  Ã¢â€šÂ¹{priceRange[0]} - Ã¢â€šÂ¹{priceRange[1]}
+                  ₹{priceRange[0]} - ₹{priceRange[1]}
                 </Typography>
               </Box>
 
@@ -1372,6 +1373,47 @@ const ProductList = () => {
                   </Grid>
                 ))}
               </Grid>
+            </Box>
+          ) : !error && products.length === 0 ? (
+            <Box
+              sx={{
+                textAlign: "center",
+                py: 8,
+                px: 2,
+                backgroundColor: "background.paper",
+                borderRadius: 4,
+                border: "1px dashed",
+                borderColor: "divider",
+                mt: 4,
+              }}
+            >
+              <SearchOff
+                sx={{
+                  fontSize: 64,
+                  color: "text.secondary",
+                  mb: 2,
+                  opacity: 0.5,
+                }}
+              />
+              <Typography variant="h5" gutterBottom fontWeight="600">
+                No products found
+              </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ mb: 3, maxWidth: 400, mx: "auto" }}
+              >
+                We couldn't find any products matching your current filters. Try
+                adjusting your search or clearing some filters.
+              </Typography>
+              <Button
+                variant="outlined"
+                onClick={clearFilters}
+                startIcon={<Clear />}
+                sx={{ borderRadius: 2 }}
+              >
+                Clear All Filters
+              </Button>
             </Box>
           ) : (
             <>
@@ -1664,7 +1706,7 @@ const ProductList = () => {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
               >
                 <Typography variant="h6" color="primary" fontWeight="bold">
-                  Ã¢â€šÂ¹{hoverPreview.product.price}
+                  ₹{hoverPreview.product.price}
                 </Typography>
                 {hoverPreview.product.mrp &&
                   hoverPreview.product.mrp > hoverPreview.product.price && (
@@ -1673,7 +1715,7 @@ const ProductList = () => {
                       sx={{ textDecoration: "line-through" }}
                       color="text.secondary"
                     >
-                      Ã¢â€šÂ¹{hoverPreview.product.mrp}
+                      ₹{hoverPreview.product.mrp}
                     </Typography>
                   )}
                 {hoverPreview.product.discount_percentage > 0 && (
@@ -1917,7 +1959,7 @@ const FiltersDrawer = React.memo(
               sx={{ color: "primary.main" }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Ã¢â€šÂ¹{priceRange[0]} - Ã¢â€šÂ¹{priceRange[1]}
+              ₹{priceRange[0]} - ₹{priceRange[1]}
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -2094,7 +2136,7 @@ const QuickViewDialog = React.memo(
                   sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
                 >
                   <Typography variant="h4" color="primary" fontWeight="bold">
-                    Ã¢â€šÂ¹{quickViewProduct.price}
+                    ₹{quickViewProduct.price}
                   </Typography>
                   {quickViewProduct.mrp &&
                     quickViewProduct.mrp > quickViewProduct.price && (
@@ -2103,7 +2145,7 @@ const QuickViewDialog = React.memo(
                         sx={{ textDecoration: "line-through" }}
                         color="text.secondary"
                       >
-                        Ã¢â€šÂ¹{quickViewProduct.mrp}
+                        ₹{quickViewProduct.mrp}
                       </Typography>
                     )}
                 </Box>
