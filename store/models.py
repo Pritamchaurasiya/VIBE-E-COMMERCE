@@ -2343,6 +2343,33 @@ class UserAnalyticsAPIKey(models.Model):
     def __str__(self):
         return f"{self.name} API Key"
 
+    def set_secret_key(self, raw_key):
+        """
+        Hashes and sets the secret key.
+        """
+        from django.contrib.auth.hashers import make_password
+        self.secret_key = make_password(raw_key)
+
+    def verify_secret_key(self, raw_key):
+        """
+        Verifies the provided secret key against the stored hash.
+        Handles backward compatibility for plaintext keys.
+        """
+        from django.contrib.auth.hashers import check_password, make_password
+
+        # Try verifying as hash
+        if check_password(raw_key, self.secret_key):
+            return True
+
+        # Fallback: Check if stored as plaintext (Legacy)
+        if self.secret_key == raw_key:
+            # Auto-migrate to hash
+            self.secret_key = make_password(raw_key)
+            self.save(update_fields=['secret_key'])
+            return True
+
+        return False
+
 class UserAnalyticsWebhook(models.Model):
     """
     Model for managing analytics webhooks.
