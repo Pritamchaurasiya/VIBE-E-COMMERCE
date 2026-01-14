@@ -133,6 +133,7 @@ const ProductCard = React.memo(
             onChange={() => onSelect(product.id)}
             size="small"
             onClick={(e) => e.stopPropagation()}
+                inputProps={{ 'aria-label': 'Select product' }}
             sx={{
               backgroundColor: "rgba(255,255,255,0.8)",
               backdropFilter: "blur(8px)",
@@ -176,6 +177,7 @@ const ProductCard = React.memo(
                 e.stopPropagation();
                 onToggleWishlist(product.id, product.is_in_wishlist);
               }}
+              aria-label={product.is_in_wishlist ? "Remove from Wishlist" : "Add to Wishlist"}
             >
               {product.is_in_wishlist ? (
                 <Favorite color="error" fontSize="small" />
@@ -459,6 +461,7 @@ const ProductCard = React.memo(
                   }}
                   color="default"
                   size="small"
+                  aria-label="Quick View"
                   sx={{
                     border: "1px solid",
                     borderColor: "divider",
@@ -684,6 +687,7 @@ const ProductListItem = React.memo(
                       <IconButton
                         onClick={() => onQuickView(product)}
                         size="small"
+                        aria-label="Quick View"
                         sx={{ border: "1px solid", borderColor: "divider" }}
                       >
                         <Visibility />
@@ -1508,6 +1512,7 @@ const ProductList = () => {
           <Fab
             color="primary"
             size="medium"
+            aria-label="Compare Selected"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1529,6 +1534,7 @@ const ProductList = () => {
           <Fab
             color="secondary"
             size="medium"
+            aria-label="View Cart"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1549,6 +1555,7 @@ const ProductList = () => {
         <Fab
           color="default"
           size="small"
+          aria-label="Scroll to Top"
           sx={{
             borderRadius: 3,
             boxShadow: 4,

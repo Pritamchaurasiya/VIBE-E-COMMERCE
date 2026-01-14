@@ -47,8 +47,10 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment, OTPVerification,
+    UserAnalyticsDashboard
 )
+from .utils.otp import generate_otp, send_otp, verify_otp
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
     WishlistSerializer, ReviewSerializer, FlashSaleSerializer, BulkOrderSerializer,
@@ -610,8 +612,16 @@ class RegisterView(APIView):
             last_name=last_name
         )
 
-        # Create Profile and UserCoin
-        Profile.objects.create(user=user, shop_name=shop_name, role=role)
+        # Update Profile (created by signal) and create UserCoin
+        if hasattr(user, 'profile'):
+            profile = user.profile
+            profile.shop_name = shop_name
+            profile.role = role
+            profile.save()
+        else:
+            # Fallback if signal didn't run
+            Profile.objects.create(user=user, shop_name=shop_name, role=role)
+
         UserCoin.objects.create(user=user)
 
         logger.info("New user registered: %s", username)
@@ -1833,9 +1843,37 @@ class HealthCheckView(APIView):
                 cursor.execute("SELECT 1")
             health['components']['database'] = {'status': 'healthy'}
         except Exception as e:  # pylint: disable=broad-exception-caught
-            # Deliberately catching all exceptions to report health status
             health['components']['database'] = {'status': 'unhealthy', 'error': str(e)}
             health['status'] = 'degraded'
+
+        # Cache check (Redis)
+        try:
+            from django.core.cache import cache
+            cache.set('health_check', 'ok', 30)
+            if cache.get('health_check') == 'ok':
+                health['components']['cache'] = {'status': 'healthy'}
+            else:
+                health['components']['cache'] = {'status': 'unhealthy', 'error': 'Cache set/get failed'}
+                health['status'] = 'degraded'
+        except Exception as e:
+            health['components']['cache'] = {'status': 'unhealthy', 'error': str(e)}
+            health['status'] = 'degraded'
+
+        # Disk Usage Check
+        try:
+            import shutil
+            total, used, free = shutil.disk_usage("/")
+            health['components']['disk'] = {
+                'status': 'healthy',
+                'free_gb': round(free / (1024**3), 2),
+                'total_gb': round(total / (1024**3), 2),
+                'percent_used': round((used / total) * 100, 1)
+            }
+            if (used / total) > 0.9:
+                 health['components']['disk']['status'] = 'warning'
+                 health['components']['disk']['message'] = 'Disk usage > 90%'
+        except Exception as e:
+            health['components']['disk'] = {'status': 'unknown', 'error': str(e)}
 
         # Check counts
         health['components']['stats'] = {
@@ -1845,6 +1883,98 @@ class HealthCheckView(APIView):
         }
 
         return Response(health)
+
+
+class RequestOTPView(APIView):
+    """API view to request an OTP."""
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AnonRateThrottle]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        purpose = request.data.get('purpose', 'login')
+
+        if not phone:
+            return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp = generate_otp()
+        expiry = timezone.now() + timedelta(minutes=10)
+
+        OTPVerification.objects.create(
+            phone=phone,
+            otp=otp,
+            purpose=purpose,
+            expires_at=expiry
+        )
+
+        send_otp(phone, otp, purpose)
+
+        return Response({'success': True, 'message': 'OTP sent successfully'})
+
+
+class VerifyOTPView(APIView):
+    """API view to verify an OTP."""
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AnonRateThrottle]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        otp = request.data.get('otp')
+        purpose = request.data.get('purpose', 'login')
+
+        if not phone or not otp:
+            return Response({'error': 'Phone and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_valid, message = verify_otp(phone, otp, purpose)
+
+        if is_valid:
+            # If login purpose, we might want to return a token if user exists
+            token = None
+            if purpose == 'login':
+                try:
+                    # Assuming phone is stored in Profile or User model.
+                    # For now checking if a user exists with this email (using phone as email for simplicity if it contains @)
+                    if '@' in phone:
+                        user = User.objects.get(email=phone)
+                        login(request, user)
+                        token_obj, _ = Token.objects.get_or_create(user=user)
+                        token = token_obj.key
+                except User.DoesNotExist:
+                    pass
+
+            return Response({'success': True, 'message': 'OTP verified', 'token': token})
+        else:
+            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DashboardConfigView(APIView):
+    """API view to manage user dashboard configuration."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Get dashboard configuration."""
+        dashboard_name = request.query_params.get('name', 'default')
+        try:
+            config = UserAnalyticsDashboard.objects.get(user=request.user, dashboard_name=dashboard_name)
+            return Response({'configuration': config.configuration})
+        except UserAnalyticsDashboard.DoesNotExist:
+            return Response({'configuration': None})  # Or default config
+
+    def post(self, request):
+        """Save dashboard configuration."""
+        dashboard_name = request.data.get('name', 'default')
+        configuration = request.data.get('configuration')
+
+        if not configuration:
+             return Response({'error': 'Configuration required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        obj, created = UserAnalyticsDashboard.objects.update_or_create(
+            user=request.user,
+            dashboard_name=dashboard_name,
+            defaults={'configuration': configuration}
+        )
+
+        return Response({'success': True})
 
 
 class PostgreSQLAnalyticsView(View):
