@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -176,6 +176,11 @@ const ProductCard = React.memo(
                 e.stopPropagation();
                 onToggleWishlist(product.id, product.is_in_wishlist);
               }}
+              aria-label={
+                product.is_in_wishlist
+                  ? "Remove from wishlist"
+                  : "Add to wishlist"
+              }
             >
               {product.is_in_wishlist ? (
                 <Favorite color="error" fontSize="small" />
@@ -457,6 +462,7 @@ const ProductCard = React.memo(
                     e.stopPropagation();
                     onQuickView(product);
                   }}
+                  aria-label="Quick view"
                   color="default"
                   size="small"
                   sx={{
@@ -683,6 +689,7 @@ const ProductListItem = React.memo(
                       </Button>
                       <IconButton
                         onClick={() => onQuickView(product)}
+                        aria-label="Quick view"
                         size="small"
                         sx={{ border: "1px solid", borderColor: "divider" }}
                       >
@@ -1508,6 +1515,7 @@ const ProductList = () => {
           <Fab
             color="primary"
             size="medium"
+            aria-label="Compare selected products"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1529,6 +1537,7 @@ const ProductList = () => {
           <Fab
             color="secondary"
             size="medium"
+            aria-label="View shopping cart"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1549,6 +1558,7 @@ const ProductList = () => {
         <Fab
           color="default"
           size="small"
+          aria-label="Scroll to top"
           sx={{
             borderRadius: 3,
             boxShadow: 4,
@@ -1615,6 +1625,7 @@ const ProductList = () => {
             {/* Close button */}
             <IconButton
               onClick={() => setHoverPreview({ product: null, anchorEl: null })}
+              aria-label="Close preview"
               sx={{
                 position: "absolute",
                 top: 8,
