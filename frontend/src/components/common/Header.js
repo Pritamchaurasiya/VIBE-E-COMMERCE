@@ -46,6 +46,7 @@ import {
   Compare,
   ContactSupport,
   Info,
+  Mic,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -123,6 +124,21 @@ const Header = () => {
     },
     [searchQuery, navigate],
   );
+
+  const handleVoiceSearch = useCallback(() => {
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        navigate(`/products?q=${encodeURIComponent(transcript)}`);
+      };
+      recognition.start();
+    } else {
+      alert("Voice search not supported in this browser.");
+    }
+  }, [navigate]);
 
   const toggleMobileDrawer = useCallback(() => {
     setMobileDrawerOpen((prev) => !prev);
@@ -302,6 +318,9 @@ const Header = () => {
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
               />
+              <IconButton size="small" onClick={handleVoiceSearch} aria-label="voice search">
+                <Mic sx={{ color: "white" }} fontSize="small" />
+              </IconButton>
             </Box>
 
             {/* Theme Toggle */}

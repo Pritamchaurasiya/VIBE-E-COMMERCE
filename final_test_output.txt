@@ -1,0 +1,827 @@
+INFO AXES: BEGIN version 8.1.0, blocking by ip_address
+Creating test database for alias 'default'...
+INFO Profile created for user: authuser
+INFO AXES: User login failed, running database handler for failure.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:23:33.782491+00:00
+WARNING AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/api/v1/auth/login/"}. Created new record in the database.
+WARNING Failed login attempt for username: authuser
+WARNING Unauthorized: /api/v1/auth/login/
+.INFO Profile created for user: authuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/api/v1/auth/login/"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:23:35.517657+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/api/v1/auth/login/"} from database.
+INFO User authuser logged in successfully
+.INFO Profile created for user: authuser
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:23:36.382346+00:00
+INFO AXES: Successful logout by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/api/v1/auth/logout/"}.
+.INFO Profile created for user: authuser
+ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+WARNING Forbidden: /api/v1/auth/register/
+FINFO Profile created for user: authuser
+ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+WARNING Forbidden: /api/v1/auth/register/
+F....ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+WARNING Forbidden: /api/v1/cart/
+F....INFO Profile created for user: orderuser
+INFO New order created: #1
+.INFO Profile created for user: orderuser
+INFO New order created: #1
+.INFO Profile created for user: orderuser
+INFO New order created: #1
+WARNING Unauthorized: /api/v1/orders/
+.INFO Profile created for user: orderuser
+INFO New order created: #1
+INFO Profile created for user: otheruser
+WARNING Not Found: /api/v1/orders/1/
+.....WARNING Not Found: /api/v1/products/non-existent/
+...INFO Profile created for user: reviewer
+.INFO Profile created for user: reviewer
+WARNING Unauthorized: /api/v1/products/review-product/reviews/
+.INFO Profile created for user: reviewer
+..INFO Profile created for user: profileuser
+.INFO Profile created for user: profileuser
+WARNING Unauthorized: /api/v1/profile/
+...INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+WARNING Unauthorized: /api/v1/wishlist/
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.......F.............WARNING Unknown metric: nonexistent
+....INFO Profile created for user: bulkuser
+.INFO Profile created for user: bulkuser
+...........INFO Profile created for user: notifyuser
+.INFO Profile created for user: notifyuser
+.INFO Profile created for user: testuser
+INFO New order created: #1
+.INFO Profile created for user: testuser
+INFO New order created: #1
+.......INFO Profile created for user: profileuser
+.INFO Profile created for user: reviewer
+.INFO Profile created for user: reviewer
+..INFO Profile created for user: vendoruser
+.INFO Profile created for user: wishlistuser
+.INFO Profile created for user: wishlistuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: superadmin
+INFO Profile created for user: adminuser
+.INFO Profile created for user: superadmin
+INFO Profile created for user: adminuser
+.INFO Profile created for user: superadmin
+INFO Profile created for user: adminuser
+INFO Profile created for user: regular
+INFO Profile created for user: staffuser
+WARNING Permission denied: staffuser lacks view_tracking_data
+WARNING Permission denied: staffuser lacks view_tracking_data
+EERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+INFO Admin action logged: superadmin test1 Model1
+INFO Admin action logged: trackingadmin test2 Model2
+INFO Profile created for user: securityadmin
+EERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+WARNING Permission denied: contentadmin lacks view_tracking_data
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+INFO Admin action logged: superadmin create TestModel
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+INFO Admin action logged: superadmin test_action TestModel
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:24:45.135110+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:24:46.046874+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR Error creating alert: TrackingAlert() got unexpected keyword arguments: 'triggered_by'
+WARNING Forbidden (Permission denied): /secure-admin/tracking/audit/
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 192, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 190, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/contrib/admin/sites.py", line 246, in inner
+    return view(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/store/admin_permissions.py", line 275, in dispatch
+    raise PermissionDenied(_("You don't have permission to access this feature."))
+django.core.exceptions.PermissionDenied: You don't have permission to access this feature.
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+WARNING Suspicious admin access attempt by trackingadmin
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+WARNING Tracking access denied: contentadmin lacks tracking permissions
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:00.746736+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO Admin action logged: trackingadmin update TrackingConfiguration
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: contentadmin
+INFO Profile created for user: regularuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:05.091652+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:05.967998+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:06.831080+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR Error creating alert: TrackingAlert() got unexpected keyword arguments: 'triggered_by'
+WARNING Forbidden (Permission denied): /secure-admin/tracking/dashboard/
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 192, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 190, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/contrib/admin/sites.py", line 246, in inner
+    return view(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/store/admin_permissions.py", line 300, in dispatch
+    raise PermissionDenied(_("You don't have permission to access tracking features."))
+django.core.exceptions.PermissionDenied: You don't have permission to access tracking features.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:06.845208+00:00
+INFO AXES: Successful logout by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO Profile created for user: regular
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:10.313329+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR Error creating alert: TrackingAlert() got unexpected keyword arguments: 'triggered_by'
+WARNING Forbidden (Permission denied): /secure-admin/api/tracking/stats/
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 192, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 190, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/contrib/admin/sites.py", line 246, in inner
+    return view(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/store/admin_permissions.py", line 275, in dispatch
+    raise PermissionDenied(_("You don't have permission to access this feature."))
+django.core.exceptions.PermissionDenied: You don't have permission to access this feature.
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:11.160195+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:13.780657+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO Admin action logged: trackingadmin update TrackingConfiguration
+INFO Profile created for user: contentadmin
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:15.487357+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR Error creating alert: TrackingAlert() got unexpected keyword arguments: 'triggered_by'
+WARNING Forbidden (Permission denied): /secure-admin/tracking/config/
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 192, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 190, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/contrib/admin/sites.py", line 246, in inner
+    return view(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/store/admin_permissions.py", line 300, in dispatch
+    raise PermissionDenied(_("You don't have permission to access tracking features."))
+django.core.exceptions.PermissionDenied: You don't have permission to access tracking features.
+.ERROR Error setting up permissions for TrackingConfiguration: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemFileTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for UserActionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SystemAccessTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for DataModificationTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for SessionTracker: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for PerformanceMetric: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingAlert: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for TrackingDataRetention: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+ERROR Error setting up permissions for AdminTrackingAudit: UNIQUE constraint failed: auth_permission.content_type_id, auth_permission.codename
+INFO Set up super_admin role with 428 permissions
+INFO Set up tracking_admin role with 6 permissions
+INFO Set up content_admin role with 15 permissions
+INFO Set up order_admin role with 8 permissions
+INFO Set up security_admin role with 6 permissions
+INFO Set up reporting_admin role with 8 permissions
+INFO Profile created for user: superadmin
+INFO Profile created for user: trackingadmin
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:18.116771+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:18.986547+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO Profile created for user: regular
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:20.679283+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+ERROR Error creating alert: TrackingAlert() got unexpected keyword arguments: 'triggered_by'
+WARNING Forbidden (Permission denied): /secure-admin/tracking/alerts/
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 192, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/utils/decorators.py", line 190, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/decorators/cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/contrib/admin/sites.py", line 246, in inner
+    return view(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/store/admin_permissions.py", line 300, in dispatch
+    raise PermissionDenied(_("You don't have permission to access tracking features."))
+django.core.exceptions.PermissionDenied: You don't have permission to access tracking features.
+......INFO Profile created for user: testuser
+...........................INFO Profile created for user: integrationuser
+.INFO Profile created for user: integrationuser
+ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+........WARNING IP 10.0.0.99 locked out due to 5 failed login attempts
+..WARNING IP 10.0.0.100 locked out due to 5 failed login attempts
+...INFO Profile created for user: csrfuser2
+.INFO Profile created for user: csrfuser
+...ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+.ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+.ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+...INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+.INFO Profile created for user: silentuser
+........INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+...........................INFO Profile created for user: adminuser
+INFO Profile created for user: regularuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:41.891239+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.INFO Profile created for user: adminuser
+INFO Profile created for user: regularuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:44.477096+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.INFO Profile created for user: authtest
+INFO AXES: User login failed, running database handler for failure.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:46.187303+00:00
+WARNING AXES: New login failure by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/login/"}. Created new record in the database.
+.INFO Profile created for user: authtest
+.INFO Profile created for user: authtest
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/login/"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:48.753835+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/login/"} from database.
+.INFO Profile created for user: authtest
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:50.432692+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:50.456628+00:00
+INFO AXES: Successful logout by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "/logout/"}.
+.INFO Profile created for user: authtest
+.INFO Profile created for user: authtest
+ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+WARNING Forbidden: /signup/
+F...WARNING Method Not Allowed (GET): /cart/update/1/increment/
+FINFO Profile created for user: checkoutuser
+.INFO Profile created for user: checkoutuser
+.ERROR Error logging security event: 'WSGIRequest' object has no attribute 'session'
+WARNING Forbidden: /contact/
+F.INFO Profile created for user: dashboarduser
+INFO New order created: #1
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:55.807168+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.INFO Profile created for user: dashboarduser
+INFO New order created: #1
+.INFO Profile created for user: dashboarduser
+INFO New order created: #1
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:25:58.404582+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.....INFO Profile created for user: productviewer
+.INFO Profile created for user: productviewer
+.INFO Profile created for user: productviewer
+.INFO Profile created for user: productviewer
+..........INFO Profile created for user: wishlistuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:26:04.227202+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.INFO Profile created for user: wishlistuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:26:05.938784+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.INFO Profile created for user: wishlistuser
+.INFO Profile created for user: wishlistuser
+INFO AXES: Successful login by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"}.
+INFO AXES: Cleaned up 0 expired access attempts from database that were older than 2026-01-14 15:26:08.513706+00:00
+INFO AXES: Reset 0 access attempts from database.
+INFO AXES: Deleted 0 failed login attempts by {username: "********************", ip_address: "********************", user_agent: "<unknown>", path_info: "<unknown>"} from database.
+.
+======================================================================
+ERROR: test_permission_decorator_edge_cases (store.tests.test_secure_admin.AdminPermissionFrameworkTestCase.test_permission_decorator_edge_cases)
+Test edge cases for permission decorators.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_secure_admin.py", line 667, in test_permission_decorator_edge_cases
+    result = test_view(request)
+             ^^^^^^^^^^^^^^^^^^
+  File "/app/store/admin_permissions.py", line 197, in _wrapped_view
+    raise PermissionDenied(_("You don't have permission to perform this action."))
+django.core.exceptions.PermissionDenied: You don't have permission to perform this action.
+
+======================================================================
+ERROR: test_admin_audit_view (store.tests.test_secure_admin.SecureAdminSystemTestCase.test_admin_audit_view)
+Test admin audit view access.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: auth_group.name
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/app/store/tests/test_secure_admin.py", line 288, in test_admin_audit_view
+    security_group = Group.objects.create(name='security_admin')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/query.py", line 665, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/base.py", line 902, in save
+    self.save_base(
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/base.py", line 1008, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/base.py", line 1210, in _do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/query.py", line 1873, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: UNIQUE constraint failed: auth_group.name
+
+======================================================================
+FAIL: test_register (store.tests.test_api.AuthAPITest.test_register)
+Test user registration.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_api.py", line 682, in test_register
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+AssertionError: 403 != 201
+
+======================================================================
+FAIL: test_register_password_mismatch (store.tests.test_api.AuthAPITest.test_register_password_mismatch)
+Test registration with mismatched passwords.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_api.py", line 698, in test_register_password_mismatch
+    self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
+AssertionError: 403 not found in [201, 400]
+
+======================================================================
+FAIL: test_cart_update_quantity (store.tests.test_api.CartAPITest.test_cart_update_quantity)
+Test updating cart quantity.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_api.py", line 302, in test_cart_update_quantity
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+AssertionError: 403 != 200
+
+======================================================================
+FAIL: test_detect_anomaly_outlier (store.tests.test_enhanced_consumers.MLAnalyticsEngineTestCase.test_detect_anomaly_outlier)
+Test anomaly detection with outlier value.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_enhanced_consumers.py", line 162, in test_detect_anomaly_outlier
+    self.assertTrue(result.is_anomaly)
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_signup_success (store.tests.test_views.AuthenticationViewTest.test_signup_success)
+Test successful signup.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_views.py", line 368, in test_signup_success
+    self.assertEqual(response.status_code, 302)  # Redirect on success
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 403 != 302
+
+======================================================================
+FAIL: test_cart_update (store.tests.test_views.CartViewTest.test_cart_update)
+Test updating cart quantity.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_views.py", line 317, in test_cart_update
+    self.assertIn(response.status_code, [200, 302])
+AssertionError: 405 not found in [200, 302]
+
+======================================================================
+FAIL: test_contact_form_submission (store.tests.test_views.ContactViewTest.test_contact_form_submission)
+Test contact form submission.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_views.py", line 518, in test_contact_form_submission
+    self.assertIn(response.status_code, [200, 302])
+AssertionError: 403 not found in [200, 302]
+
+----------------------------------------------------------------------
+Ran 264 tests in 156.677s
+
+FAILED (failures=7, errors=2)
+Destroying test database for alias 'default'...
+Found 264 test(s).
+System check identified no issues (0 silenced).

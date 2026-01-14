@@ -1,0 +1,30 @@
+INFO AXES: BEGIN version 8.1.0, blocking by ip_address
+Creating test database for alias 'default'...
+INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+.INFO Profile created for user: testuser
+FINFO Profile created for user: testuser
+F
+======================================================================
+FAIL: test_forum_posts (store.tests.test_new_features.NewFeaturesAPITest.test_forum_posts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_new_features.py", line 29, in test_forum_posts
+    self.assertEqual(len(response.data), 1)
+AssertionError: 4 != 1
+
+======================================================================
+FAIL: test_market_prices (store.tests.test_new_features.NewFeaturesAPITest.test_market_prices)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/store/tests/test_new_features.py", line 21, in test_market_prices
+    self.assertEqual(len(response.data), 1)
+AssertionError: 4 != 1
+
+----------------------------------------------------------------------
+Ran 4 tests in 3.560s
+
+FAILED (failures=2)
+Destroying test database for alias 'default'...
+Found 4 test(s).
+System check identified no issues (0 silenced).

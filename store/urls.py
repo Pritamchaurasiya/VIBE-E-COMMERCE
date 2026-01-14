@@ -5,6 +5,8 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from . import api_views
+from . import api_views_ai
+from . import api_views_community
 from . import recommendations_api
 from . import notifications_api
 from . import wishlist_api
@@ -541,6 +543,33 @@ urlpatterns = [
         'api/analytics/dashboard/',
         api_views.AnalyticsDashboardView.as_view(),
         name='api_analytics_dashboard'
+    ),
+
+    # ====== AI & COMMUNITY API ENDPOINTS ======
+    path(
+        'api/v1/ai/diagnose/',
+        api_views_ai.DiseaseDiagnosisView.as_view(),
+        name='api_disease_diagnosis'
+    ),
+    path(
+        'api/v1/community/posts/',
+        api_views_community.ForumPostListCreateView.as_view(),
+        name='api_forum_posts'
+    ),
+    path(
+        'api/v1/community/posts/<int:pk>/',
+        api_views_community.ForumPostDetailView.as_view(),
+        name='api_forum_post_detail'
+    ),
+    path(
+        'api/v1/community/posts/<int:post_id>/comments/',
+        api_views_community.ForumCommentCreateView.as_view(),
+        name='api_forum_post_comments'
+    ),
+    path(
+        'api/v1/market/prices/',
+        api_views_community.MarketPriceListView.as_view(),
+        name='api_market_prices'
     ),
 
     # ====== TRACKING SYSTEM API ENDPOINTS ======
