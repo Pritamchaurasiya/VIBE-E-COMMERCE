@@ -944,26 +944,32 @@ class VendorAnalyticsAPIView(APIView):
         # Get vendor products with optimized query
         products = Product.objects.filter(vendor=vendor).select_related('category')
 
-        # Get orders for this vendor's products
-        order_items = OrderItem.objects.filter(
+        # Get base queryset for this vendor's products
+        order_items_qs = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
+        # Calculate metrics using database aggregation
+        # Optimize: Calculate revenue in DB instead of Python loop to avoid loading all items
+        revenue_metrics = order_items_qs.aggregate(
+            total=Sum(models.F('price') * models.F('quantity')),
+            monthly=Sum(
+                models.F('price') * models.F('quantity'),
+                filter=Q(order__created_at__gte=thirty_days_ago)
+            ),
+            weekly=Sum(
+                models.F('price') * models.F('quantity'),
+                filter=Q(order__created_at__gte=seven_days_ago)
+            )
         )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+
+        total_revenue = revenue_metrics['total'] or 0
+        monthly_revenue = revenue_metrics['monthly'] or 0
+        weekly_revenue = revenue_metrics['weekly'] or 0
+
+        # Reuse queryset for count, it won't load items
+        order_items = order_items_qs
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
