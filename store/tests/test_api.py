@@ -497,6 +497,11 @@ class CouponAPITest(TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='couponuser',
+            password=TEST_PASSWORD
+        )
+        self.client.force_authenticate(user=self.user)
         self.valid_coupon = Coupon.objects.create(
             code='VALID20',
             discount_type='percent',
