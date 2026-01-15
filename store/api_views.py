@@ -83,9 +83,15 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
+
+        queryset = queryset.annotate(
+            avg_rating=models.Avg('reviews__rating'),
+            review_count_annotated=models.Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -169,6 +175,14 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'rating':
             return queryset.order_by('-created_at')
         return queryset.order_by('-created_at')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+        return context
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
