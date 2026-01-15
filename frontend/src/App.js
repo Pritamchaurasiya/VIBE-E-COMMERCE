@@ -450,9 +450,14 @@ function App() {
       <CartProvider>
         <Router>
           <AnimatedBox>
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             <Header />
             <Box
+              id="main-content"
               component="main"
+              tabIndex="-1"
               sx={{
                 flex: 1,
                 padding: { xs: "10px 0", sm: "20px 0" },
