@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,9 +84,17 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimize by prefetching images and annotating review stats
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            avg_rating=models.Avg('reviews__rating'),
+            review_count_annotated=models.Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -94,6 +103,16 @@ class ProductListView(generics.ListAPIView):
         queryset = self._filter_by_brand_crop_disease(queryset)
 
         return self._apply_sorting(queryset)
+
+    def get_serializer_context(self):
+        """Add wishlist product IDs to context for O(1) lookup."""
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            wishlist_product_ids = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+            context['wishlist_product_ids'] = wishlist_product_ids
+        return context
 
     def _filter_by_search(self, queryset):
         query = self.request.query_params.get('q', '')
@@ -198,6 +217,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -208,6 +228,7 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
@@ -215,10 +236,12 @@ class VendorDetailView(generics.RetrieveAPIView):
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
+    permission_classes = [permissions.AllowAny]
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -447,6 +470,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
