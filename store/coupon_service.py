@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import F, Q
 
 logger = logging.getLogger(__name__)
 
@@ -259,6 +259,7 @@ class CouponService:
     def apply_coupon(self, code: str) -> Tuple[bool, str]:
         """
         Apply a coupon (increment usage count).
+        Uses atomic update to prevent race conditions.
 
         Args:
             code: Coupon code to apply
@@ -269,14 +270,40 @@ class CouponService:
         Coupon = self._get_coupon_model()
 
         try:
-            # pylint: disable=no-member
+            # Atomic update with check for max_uses
+            # We filter for coupons that are active AND have used_count < max_uses
+            # OR max_uses is 0 (unlimited) - assuming 0 means unlimited based on common logic,
+            # but model default is 100. Let's assume max_uses > 0 based on existing logic.
+            # The existing logic was: if coupon.used_count >= coupon.max_uses: fail.
+
+            # Update:
+            updated_count = Coupon.objects.filter(
+                code__iexact=code.strip(),
+                is_active=True
+            ).filter(
+                Q(max_uses=0) | Q(used_count__lt=F('max_uses'))
+            ).update(used_count=F('used_count') + 1)
+
+            if updated_count == 1:
+                logger.info("Coupon %s applied successfully", code)
+                return True, "Coupon applied successfully"
+
+            # If we didn't update, check why
+            coupon_exists = Coupon.objects.filter(code__iexact=code.strip()).exists()
+            if not coupon_exists:
+                 return False, "Coupon not found"
+
+            # Check if it was because of limit
             coupon = Coupon.objects.get(code__iexact=code.strip())
-            coupon.used_count += 1
-            coupon.save(update_fields=['used_count'])
-            logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
-            return True, "Coupon applied successfully"
-        except Coupon.DoesNotExist:
-            return False, "Coupon not found"
+
+            if not coupon.is_active:
+                 return False, "This coupon is no longer active"
+
+            if coupon.max_uses > 0 and coupon.used_count >= coupon.max_uses:
+                 return False, "This coupon has reached its usage limit"
+
+            return False, "Error applying coupon"
+
         except Exception as exc:
             logger.error("Error applying coupon: %s", exc)
             return False, "Error applying coupon"
