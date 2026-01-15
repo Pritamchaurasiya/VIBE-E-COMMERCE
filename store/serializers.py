@@ -482,6 +482,9 @@ class UserAnalyticsAPIKeySerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 'created_at', 'last_used', 'usage_count'
         ]
+        extra_kwargs = {
+            'secret_key': {'write_only': True}
+        }
 
 class UserAnalyticsWebhookSerializer(serializers.ModelSerializer):
     """Serializer for UserAnalyticsWebhook model."""
