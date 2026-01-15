@@ -133,6 +133,7 @@ const ProductCard = React.memo(
             onChange={() => onSelect(product.id)}
             size="small"
             onClick={(e) => e.stopPropagation()}
+            inputProps={{ "aria-label": `Select ${product.name} to compare` }}
             sx={{
               backgroundColor: "rgba(255,255,255,0.8)",
               backdropFilter: "blur(8px)",
@@ -535,6 +536,7 @@ const ProductListItem = React.memo(
                   checked={selectedProducts.includes(product.id)}
                   onChange={() => onSelect(product.id)}
                   size="small"
+                  inputProps={{ "aria-label": `Select ${product.name} to compare` }}
                   sx={{
                     position: "absolute",
                     top: 8,
@@ -1508,6 +1510,7 @@ const ProductList = () => {
           <Fab
             color="primary"
             size="medium"
+            aria-label="Compare selected products"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1529,6 +1532,7 @@ const ProductList = () => {
           <Fab
             color="secondary"
             size="medium"
+            aria-label="View shopping cart"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1549,6 +1553,7 @@ const ProductList = () => {
         <Fab
           color="default"
           size="small"
+          aria-label="Scroll to top"
           sx={{
             borderRadius: 3,
             boxShadow: 4,
