@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -945,25 +945,27 @@ class VendorAnalyticsAPIView(APIView):
         products = Product.objects.filter(vendor=vendor).select_related('category')
 
         # Get orders for this vendor's products
-        order_items = OrderItem.objects.filter(
+        order_items_qs = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
+        # Calculate metrics using DB aggregation
+        metrics = order_items_qs.aggregate(
+            total_revenue=Sum(F('price') * F('quantity')),
+            monthly_revenue=Sum(
+                F('price') * F('quantity'),
+                filter=Q(order__created_at__gte=thirty_days_ago)
+            ),
+            weekly_revenue=Sum(
+                F('price') * F('quantity'),
+                filter=Q(order__created_at__gte=seven_days_ago)
+            )
         )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+
+        total_revenue = metrics['total_revenue'] or 0
+        monthly_revenue = metrics['monthly_revenue'] or 0
+        weekly_revenue = metrics['weekly_revenue'] or 0
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
@@ -996,7 +998,7 @@ class VendorAnalyticsAPIView(APIView):
                 'weekly': round(weekly_revenue, 2),
             },
             'orders': {
-                'total': order_items.values('order').distinct().count(),
+                'total': order_items_qs.values('order').distinct().count(),
                 'pending_bulk_orders': pending_bulk,
             },
             'reviews': {
