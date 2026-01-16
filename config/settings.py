@@ -194,6 +194,14 @@ if DATABASE_ENGINE == 'postgresql':
     # Atomic requests for data integrity
     DATABASES['default']['ATOMIC_REQUESTS'] = True
 
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+if is_package_installed('axes'):
+    AUTHENTICATION_BACKENDS.insert(0, 'axes.backends.AxesStandaloneBackend')
+
 # Password validation - OWASP recommends minimum 10 characters
 AUTH_PASSWORD_VALIDATORS = [
     {
