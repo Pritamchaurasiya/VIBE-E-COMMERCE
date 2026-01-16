@@ -100,8 +100,10 @@ LOGIN_URL = 'login'
 SESSION_COOKIE_AGE = 86400
 
 MIDDLEWARE = [
+    'store.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
+    'store.middleware.RequestLoggingMiddleware',
     'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
