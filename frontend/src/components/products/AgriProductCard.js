@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
+import { Tooltip } from "@mui/material";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
 import "../../styles/agri-theme.css";
@@ -103,13 +104,15 @@ const AgriProductCard = ({
       </div>
 
       {/* Wishlist Button */}
-      <button
-        className={`agri-product-wishlist ${isInWishlist ? "active" : ""}`}
-        onClick={handleWishlistClick}
-        aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-      >
-        {isInWishlist ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
-      </button>
+      <Tooltip title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"} arrow>
+        <button
+          className={`agri-product-wishlist ${isInWishlist ? "active" : ""}`}
+          onClick={handleWishlistClick}
+          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          {isInWishlist ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
+        </button>
+      </Tooltip>
 
       {/* Product Image */}
       <Link
