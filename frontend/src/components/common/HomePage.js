@@ -268,6 +268,7 @@ const HomePage = () => {
                   placeholder="What are you looking for?"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  inputProps={{ "aria-label": "Search products" }}
                 />
                 <IconButton
                   type="submit"
@@ -567,6 +568,11 @@ const HomePage = () => {
                               product.is_in_wishlist,
                               e,
                             )
+                          }
+                          aria-label={
+                            product.is_in_wishlist
+                              ? "Remove from wishlist"
+                              : "Add to wishlist"
                           }
                           sx={{
                             position: "absolute",
