@@ -47,7 +47,7 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment, OTPVerification
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -3742,3 +3742,92 @@ __all__ = [
     'tracking_realtime_stats',
 ]
 
+
+class SendOTPView(APIView):
+    """API view to send OTP for 2FA or verification."""
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AnonRateThrottle]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        purpose = request.data.get('purpose', 'login')
+
+        if not phone:
+            return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate 6 digit OTP
+        import random
+        otp = str(random.randint(100000, 999999))
+
+        # Create or update OTP record
+        # In a real app, send this via SMS
+        expires_at = timezone.now() + timedelta(minutes=10)
+
+        OTPVerification.objects.create(
+            phone=phone,
+            otp=otp,
+            purpose=purpose,
+            expires_at=expires_at
+        )
+
+        # For development/demo, we return the OTP. In prod, DO NOT return it.
+        return Response({
+            'success': True,
+            'message': 'OTP sent successfully',
+            'debug_otp': otp
+        })
+
+class VerifyOTPView(APIView):
+    """API view to verify OTP."""
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AnonRateThrottle]
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        otp = request.data.get('otp')
+        purpose = request.data.get('purpose', 'login')
+
+        if not phone or not otp:
+            return Response({'error': 'Phone and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            record = OTPVerification.objects.filter(
+                phone=phone,
+                purpose=purpose,
+                is_verified=False,
+                expires_at__gt=timezone.now()
+            ).latest('created_at')
+
+            if record.otp == otp:
+                record.is_verified = True
+                record.save()
+
+                # If login purpose, we might issue a token here if we linked phone to user
+                return Response({'success': True, 'message': 'OTP verified successfully'})
+            else:
+                record.attempts += 1
+                record.save()
+                return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except OTPVerification.DoesNotExist:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+class SecurityDashboardView(APIView):
+    """API view for user security settings and history."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # Get recent sessions
+        sessions = UserSession.objects.filter(user=user).order_by('-started_at')[:5]
+        session_data = UserSessionSerializer(sessions, many=True).data
+
+        # Get login history (from audit logs or similar if available, or just sessions)
+        # Using UserSession as a proxy for login history
+
+        return Response({
+            'two_factor_enabled': False, # Placeholder until User model has this field
+            'recent_sessions': session_data,
+            'password_last_changed': 'N/A' # Placeholder
+        })

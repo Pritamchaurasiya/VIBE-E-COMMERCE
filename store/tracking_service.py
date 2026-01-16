@@ -3,9 +3,6 @@ Enhanced Tracking Service Module
 
 This module provides a comprehensive, secure, and performant tracking service
 with caching, rate limiting, input validation, and batch processing capabilities.
-
-IMPORTANT: This module uses tracking_models.py. If you get duplicate model errors,
-remove the tracking-related models from store/models.py (lines ~2360-2503).
 """
 
 import logging
@@ -274,17 +271,6 @@ class UserAgentParser:
 class EnhancedTrackingService:
     """
     Enhanced tracking service with caching, rate limiting, and security features.
-
-    Features:
-    - Configuration caching for performance
-    - Rate limiting to prevent abuse
-    - Input validation and sanitization
-    - Batch processing for high-volume operations
-    - Comprehensive error handling
-    - Thread-safe operations
-
-    Note: This service works with tracking_models.py. Import models lazily
-    to avoid circular import issues.
     """
 
     _rate_limiter = RateLimiter()
@@ -295,8 +281,8 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
-        return getattr(tracking_models, model_name)
+        from . import models
+        return getattr(models, model_name)
 
     @classmethod
     def get_tracking_config(cls, category: str):
@@ -544,7 +530,12 @@ class EnhancedTrackingService:
     @transaction.atomic
     def cleanup_old_tracking_data(cls, batch_size: int = BATCH_SIZE) -> int:
         """Clean up old tracking data based on retention policies."""
-        TrackingDataRetention = cls._get_model('TrackingDataRetention')
+        try:
+            TrackingDataRetention = cls._get_model('TrackingDataRetention')
+        except AttributeError:
+            logger.warning("TrackingDataRetention model not found. Skipping cleanup.")
+            return 0
+
         # pylint: disable=no-member
         retention_policies = TrackingDataRetention.objects.filter(
             auto_cleanup_enabled=True,
@@ -576,7 +567,11 @@ class EnhancedTrackingService:
                 continue
 
             model_name, timestamp_field = mapping
-            model = cls._get_model(model_name)
+            try:
+                model = cls._get_model(model_name)
+            except AttributeError:
+                continue
+
             filter_kwargs = {f'{timestamp_field}__date__lt': cutoff_date}
 
             try:
