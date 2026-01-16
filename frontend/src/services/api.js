@@ -330,3 +330,7 @@ export const businessIntelligenceAPI = {
 
 // Export all APIs
 export default api;
+
+// Backward compatibility exports for dashboards
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
