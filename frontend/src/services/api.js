@@ -328,5 +328,8 @@ export const businessIntelligenceAPI = {
     api.get("/api/analytics/churn-analysis/", { params }),
 };
 
+// Export missing function for frontend build
+export const getAnalyticsDashboard = () => api.get("/api/analytics/dashboard/");
+
 // Export all APIs
 export default api;

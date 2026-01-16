@@ -1243,27 +1243,47 @@ class DashboardStatsView(APIView):
             created_at__date=today
         ).aggregate(total=Sum('paid_amount'))['total'] or 0
 
-        # Order counts
+        # Optimized order counts using aggregation (Bolt ⚡ Optimization)
+        # Reduces 8 queries to 1
+        orders_agg = all_orders.aggregate(
+            total=Count('id'),
+            paid=Count('id', filter=Q(paid=True)),
+            pending=Count('id', filter=Q(status='pending')),
+            processing=Count('id', filter=Q(status='processing')),
+            shipped=Count('id', filter=Q(status='shipped')),
+            delivered=Count('id', filter=Q(status='delivered')),
+            cancelled=Count('id', filter=Q(status='cancelled')),
+            today=Count('id', filter=Q(created_at__date=today))
+        )
+
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': orders_agg['total'],
+            'paid': orders_agg['paid'],
+            'pending': orders_agg['pending'],
+            'processing': orders_agg['processing'],
+            'shipped': orders_agg['shipped'],
+            'delivered': orders_agg['delivered'],
+            'cancelled': orders_agg['cancelled'],
+            'today': orders_agg['today'],
         }
 
-        # Products statistics
-        products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
+        # Optimized products statistics (Bolt ⚡ Optimization)
+        # Reduces 4 queries to 1
+        products_agg = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(
                 stock_quantity__lte=models.F('low_stock_threshold'),
                 stock_quantity__gt=0
-            ).count(),
+            ))
+        )
+
+        products_stats = {
+            'total': products_agg['total'],
+            'active': products_agg['active'],
+            'out_of_stock': products_agg['out_of_stock'],
+            'low_stock': products_agg['low_stock'],
         }
 
         # Users statistics (User already imported at top)
@@ -1278,7 +1298,7 @@ class DashboardStatsView(APIView):
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
