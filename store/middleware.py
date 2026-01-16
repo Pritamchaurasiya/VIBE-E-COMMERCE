@@ -76,6 +76,11 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             'magnetometer=(), microphone=(), payment=*, usb=()'
         )
 
+        # Additional Headers
+        response['X-Content-Type-Options'] = 'nosniff'
+        response['X-Frame-Options'] = 'DENY'
+        response['X-XSS-Protection'] = '1; mode=block'
+
         return response
 
 

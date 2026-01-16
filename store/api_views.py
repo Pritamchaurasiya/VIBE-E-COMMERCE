@@ -82,10 +82,16 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = ProductSerializer
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            avg_rating=models.Avg('reviews__rating'),
+            review_count_annotated=models.Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -171,6 +177,25 @@ class ProductListView(generics.ListAPIView):
         return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
+        # Log search analytics
+        query = request.query_params.get('q', '').strip()
+        if query:
+            try:
+                # Get IP address safely
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR')
+
+                AnalyticsEvent.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    session_id=request.session.session_key or 'unknown',
+                    event_type='search',
+                    data={'query': query},
+                    ip_address=ip,
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+            except Exception as e:
+                logger.warning("Failed to log search analytics: %s", e)
+
         queryset = self.get_queryset()
         limit = request.query_params.get('limit')
         if limit:
@@ -195,7 +220,10 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
-    queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+    queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True).annotate(
+        avg_rating=models.Avg('reviews__rating'),
+        review_count_annotated=models.Count('reviews')
+    ).prefetch_related('images')
     serializer_class = ProductSerializer
     lookup_field = 'slug'
 
@@ -663,6 +691,20 @@ class UserProfileView(APIView):
                 'role': profile.role,
             }
 
+        # Calculate profile completeness
+        total_fields = 7  # first_name, last_name, email, shop_name, gst_number, city, address
+        filled_fields = 0
+        if user.first_name: filled_fields += 1
+        if user.last_name: filled_fields += 1
+        if user.email: filled_fields += 1
+        if profile:
+            if profile.shop_name: filled_fields += 1
+            if profile.gst_number: filled_fields += 1
+            if profile.city: filled_fields += 1
+            if profile.address: filled_fields += 1
+
+        completeness = int((filled_fields / total_fields) * 100)
+
         return Response({
             'user': {
                 'id': user.id,
@@ -675,7 +717,8 @@ class UserProfileView(APIView):
                 'role': profile.role if profile else 'retailer',
                 'coin_balance': coins.balance if coins else 0
             },
-            'profile': profile_data
+            'profile': profile_data,
+            'completeness': completeness
         })
 
     def put(self, request):
