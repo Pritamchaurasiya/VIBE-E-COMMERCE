@@ -850,3 +850,10 @@ urlpatterns = [
 
 
 
+
+# Append new URLs
+urlpatterns += [
+    path('api/v1/auth/send-otp/', api_views.SendOTPView.as_view(), name='api_send_otp'),
+    path('api/v1/auth/verify-otp/', api_views.VerifyOTPView.as_view(), name='api_verify_otp'),
+    path('api/v1/security/dashboard/', api_views.SecurityDashboardView.as_view(), name='api_security_dashboard'),
+]

@@ -50,6 +50,10 @@ const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
 
+// New Capability Pages
+const AnalyticsDashboard = lazy(() => import("./pages/AnalyticsDashboard"));
+const SecurityDashboard = lazy(() => import("./pages/SecurityDashboard"));
+
 const AnimatedBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
   display: "flex",
@@ -82,6 +86,26 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <AnalyticsDashboard />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/security"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SecurityDashboard />
                 </Box>
               </Slide>
             }
