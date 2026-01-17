@@ -87,6 +87,12 @@ class ProductListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
 
+        # Optimize by annotating review stats to avoid N+1 queries
+        queryset = queryset.annotate(
+            avg_rating=models.Avg('reviews__rating'),
+            review_count_annotated=models.Count('reviews')
+        )
+
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
         queryset = self._filter_by_price(queryset)
