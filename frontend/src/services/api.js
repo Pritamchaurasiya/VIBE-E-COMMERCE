@@ -330,3 +330,6 @@ export const businessIntelligenceAPI = {
 
 // Export all APIs
 export default api;
+
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;

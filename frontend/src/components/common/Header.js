@@ -287,7 +287,14 @@ const Header = () => {
                 },
               }}
             >
-              <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
+              <IconButton
+                type="submit"
+                size="small"
+                sx={{ p: 0.5, color: "white", mr: 0.5 }}
+                aria-label="search products"
+              >
+                <SearchIcon fontSize="small" />
+              </IconButton>
               <InputBase
                 placeholder="Search products..."
                 value={searchQuery}
@@ -301,6 +308,18 @@ const Header = () => {
                   flex: 1,
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
+                endAdornment={
+                  searchQuery && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearchQuery("")}
+                      sx={{ color: "white", p: 0.5 }}
+                      aria-label="clear search"
+                    >
+                      <Close fontSize="small" />
+                    </IconButton>
+                  )
+                }
               />
             </Box>
 
