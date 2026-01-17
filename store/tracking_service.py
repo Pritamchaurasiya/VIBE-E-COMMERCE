@@ -295,7 +295,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
@@ -359,7 +359,7 @@ class EnhancedTrackingService:
                 request.META.get('HTTP_USER_AGENT', ''),
                 MAX_USER_AGENT_LENGTH
             ),
-            'session_id': getattr(request.session, 'session_key', '') or '',
+            'session_id': getattr(getattr(request, 'session', None), 'session_key', '') or '',
             'path': request.path,
             'method': request.method,
         }
@@ -511,7 +511,7 @@ class EnhancedTrackingService:
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
+                metadata=InputValidator.sanitize_metadata(triggered_by or {}),
                 **kwargs
             )
         except Exception as exc:

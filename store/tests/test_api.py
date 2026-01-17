@@ -35,6 +35,8 @@ class CategoryAPITest(TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_authenticate(user=self.user)
         Category.objects.create(name='Electronics', slug='electronics')
         Category.objects.create(name='Clothing', slug='clothing')
 
@@ -55,6 +57,8 @@ class ProductAPITest(TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_authenticate(user=self.user)
         self.vendor = Vendor.objects.create(
             name='Test Vendor',
             slug='test-vendor',
@@ -148,6 +152,8 @@ class VendorAPITest(TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_authenticate(user=self.user)
         self.vendor = Vendor.objects.create(
             name='Test Vendor',
             slug='test-vendor',
@@ -253,6 +259,8 @@ class CartAPITest(TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_authenticate(user=self.user)
         self.vendor = Vendor.objects.create(
             name='Test Vendor',
             slug='test-vendor',
