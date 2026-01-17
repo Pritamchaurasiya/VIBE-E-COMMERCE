@@ -57,10 +57,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         """Get product images."""
+        # This will use prefetch cache if available
         return [{'image': img.image.url, 'alt_text': img.alt_text} for img in obj.images.all()]
 
     def get_is_in_wishlist(self, obj):
         """Check if product is in user's wishlist."""
+        # Optimization: Use pre-fetched set from context if available
+        wishlist_ids = self.context.get('wishlist_product_ids')
+        if wishlist_ids is not None:
+            return obj.id in wishlist_ids
+
+        # Fallback to DB query
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Wishlist.objects.filter(user=request.user, product=obj).exists()
@@ -68,6 +75,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         """Get average rating for product."""
+        # Optimization: Use annotation if available
+        if hasattr(obj, 'avg_rating'):
+            return obj.avg_rating or 0
+
+        # Fallback to DB query
         reviews = obj.reviews.all()
         if reviews:
             result = reviews.aggregate(avg_rating=Avg('rating'))
@@ -76,6 +88,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_review_count(self, obj):
         """Get review count for product."""
+        # Optimization: Use annotation if available
+        if hasattr(obj, 'review_count_annotated'):
+            return obj.review_count_annotated
+
+        # Fallback to DB query
         return obj.reviews.count()
 
 
