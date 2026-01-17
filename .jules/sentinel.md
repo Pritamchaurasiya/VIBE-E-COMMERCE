@@ -1,0 +1,4 @@
+## 2025-02-14 - Insecure Coupon Validation
+**Vulnerability:** The `ApplyCouponView` in `store/api_views.py` and `apply_coupon` in `store/views.py` previously accepted a `cart_total` parameter from the client request body. This allowed an attacker to send a request with an arbitrary `cart_total` (e.g., $1000) while having an empty cart, successfully bypassing the `min_order_value` check and receiving a valid discount response.
+**Learning:** Never trust client-provided data for critical business logic calculations like pricing or discount validation. Always recalculate totals on the server side using the session or database state.
+**Prevention:** Modified both views to instantiate the `Cart` object from the request and use `cart.get_total_cost()` to determine the actual cart value, ignoring the client-provided `cart_total`.
