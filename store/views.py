@@ -1329,6 +1329,11 @@ EXPORT_HANDLERS = {
 def admin_export_data(request):
     """Export data as CSV."""
     export_type = request.GET.get('type', 'orders')
+
+    # Validate export_type against whitelist to prevent header injection
+    if export_type not in EXPORT_HANDLERS:
+        export_type = 'orders'
+
     date_str = timezone.now().strftime("%Y%m%d")
 
     response = HttpResponse(content_type='text/csv')
