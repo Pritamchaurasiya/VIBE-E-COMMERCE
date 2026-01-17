@@ -304,7 +304,11 @@ const Login = () => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        aria-label="toggle password visibility"
+                        aria-label={
+                          showPassword
+                            ? "hide password"
+                            : "show password"
+                        }
                         onClick={handleTogglePasswordVisibility}
                         edge="end"
                       >

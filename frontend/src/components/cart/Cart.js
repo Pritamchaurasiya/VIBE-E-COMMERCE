@@ -459,15 +459,21 @@ const Cart = () => {
                               width: "fit-content",
                             }}
                           >
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleQuantityChange(item.id, item.quantity - 1)
-                              }
-                              disabled={loading}
-                            >
-                              <Remove />
-                            </IconButton>
+                            <Tooltip title="Decrease quantity">
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity - 1,
+                                  )
+                                }
+                                disabled={loading}
+                                aria-label="decrease quantity"
+                              >
+                                <Remove />
+                              </IconButton>
+                            </Tooltip>
                             <TextField
                               size="small"
                               value={item.quantity}
@@ -483,6 +489,7 @@ const Cart = () => {
                               inputProps={{
                                 min: 1,
                                 style: { textAlign: "center", width: 60 },
+                                "aria-label": "Quantity",
                               }}
                               disabled={loading}
                               variant="standard"
@@ -492,15 +499,21 @@ const Cart = () => {
                                 },
                               }}
                             />
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleQuantityChange(item.id, item.quantity + 1)
-                              }
-                              disabled={loading}
-                            >
-                              <Add />
-                            </IconButton>
+                            <Tooltip title="Increase quantity">
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity + 1,
+                                  )
+                                }
+                                disabled={loading}
+                                aria-label="increase quantity"
+                              >
+                                <Add />
+                              </IconButton>
+                            </Tooltip>
                           </Box>
                         </Grid>
 
@@ -520,6 +533,7 @@ const Cart = () => {
                               color="error"
                               onClick={() => handleRemoveItem(item.id)}
                               disabled={loading}
+                              aria-label="remove item"
                               sx={{
                                 "&:hover": {
                                   backgroundColor: "error.main",
