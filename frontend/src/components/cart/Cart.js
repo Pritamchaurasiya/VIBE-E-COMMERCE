@@ -297,6 +297,9 @@ const Cart = () => {
                         selectedItems.length < cart.items.length
                       }
                       onChange={handleSelectAll}
+                      inputProps={{
+                        "aria-label": "Select all items",
+                      }}
                     />
                     <Typography variant="body2" fontWeight="600">
                       Select All ({cart.items.length})
@@ -373,6 +376,9 @@ const Cart = () => {
                           <Checkbox
                             checked={selectedItems.includes(item.id)}
                             onChange={() => handleSelectItem(item.id)}
+                            inputProps={{
+                              "aria-label": `Select ${item.name}`,
+                            }}
                           />
                         </Grid>
 
@@ -465,6 +471,7 @@ const Cart = () => {
                                 handleQuantityChange(item.id, item.quantity - 1)
                               }
                               disabled={loading}
+                              aria-label={`Decrease quantity of ${item.name}`}
                             >
                               <Remove />
                             </IconButton>
@@ -483,6 +490,7 @@ const Cart = () => {
                               inputProps={{
                                 min: 1,
                                 style: { textAlign: "center", width: 60 },
+                                "aria-label": `Quantity for ${item.name}`,
                               }}
                               disabled={loading}
                               variant="standard"
@@ -498,6 +506,7 @@ const Cart = () => {
                                 handleQuantityChange(item.id, item.quantity + 1)
                               }
                               disabled={loading}
+                              aria-label={`Increase quantity of ${item.name}`}
                             >
                               <Add />
                             </IconButton>
@@ -520,6 +529,7 @@ const Cart = () => {
                               color="error"
                               onClick={() => handleRemoveItem(item.id)}
                               disabled={loading}
+                              aria-label={`Remove ${item.name} from cart`}
                               sx={{
                                 "&:hover": {
                                   backgroundColor: "error.main",
