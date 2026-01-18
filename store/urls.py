@@ -411,6 +411,7 @@ urlpatterns = [
     # ====== AGRIM-STYLE API ENDPOINTS ======
     # Crops API
     path('api/v1/crops/', api_views.CropListView.as_view(), name='api_crops'),
+    path('api/v1/crop-calendar/', api_views.CropCalendarView.as_view(), name='api_crop_calendar'),
     path(
         'api/v1/crops/<slug:crop_slug>/products/',
         api_views.ProductsByCropView.as_view(),

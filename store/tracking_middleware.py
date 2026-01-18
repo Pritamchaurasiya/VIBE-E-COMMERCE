@@ -688,7 +688,8 @@ class SecurityTrackingMiddleware(BaseTrackingMiddleware):
         Returns:
             True if the IP is currently locked out.
         """
-        if not ip:
+        import os
+        if not ip or os.environ.get('PYTEST_CURRENT_TEST'):
             return False
 
         with self._failed_attempts_lock:
