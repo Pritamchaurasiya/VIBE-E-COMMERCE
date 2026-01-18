@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Prefetch, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -373,11 +373,29 @@ class OrderListView(generics.ListAPIView):
 
     def get_queryset(self):
         """Get user's orders."""
+        # Optimized queryset to prevent N+1 queries for product details, images, and reviews
+        products_qs = Product.objects.select_related(
+            'category', 'vendor'
+        ).annotate(
+            avg_rating=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews')
+        ).prefetch_related('images')
+
         return Order.objects.filter(
             user=self.request.user
         ).prefetch_related(
-            'items__product__vendor', 'items__product__category'
+            Prefetch('items__product', queryset=products_qs)
         ).order_by('-created_at')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+        else:
+            context['wishlist_product_ids'] = set()
+        return context
 
 
 class OrderDetailView(generics.RetrieveAPIView):
@@ -386,9 +404,26 @@ class OrderDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        products_qs = Product.objects.select_related(
+            'category', 'vendor'
+        ).annotate(
+            avg_rating=Avg('reviews__rating'),
+            review_count_annotated=Count('reviews')
+        ).prefetch_related('images')
+
         return Order.objects.filter(user=self.request.user).prefetch_related(
-            'items__product__vendor', 'items__product__category'
+            Prefetch('items__product', queryset=products_qs)
         )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user).values_list('product_id', flat=True)
+            )
+        else:
+            context['wishlist_product_ids'] = set()
+        return context
 
 
 class ApplyCouponView(APIView):
