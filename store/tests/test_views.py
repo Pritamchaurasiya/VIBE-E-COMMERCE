@@ -10,7 +10,7 @@ variables via TEST_USER_PASSWORD constant from test_config.py.
 """
 # pylint: disable=no-member
 from decimal import Decimal
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from store.models import (
@@ -307,7 +307,7 @@ class CartViewTest(TestCase):
             reverse('cart_add', kwargs={'product_id': self.product.id})
         )
         # Update quantity (increment)
-        response = self.client.get(
+        response = self.client.post(
             reverse('cart_update', kwargs={
                 'product_id': self.product.id,
                 'action': 'increment'
@@ -317,6 +317,7 @@ class CartViewTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
 
 
+@override_settings(AXES_ENABLED=False)
 class AuthenticationViewTest(TestCase):
     """Test cases for authentication views."""
 
@@ -359,12 +360,16 @@ class AuthenticationViewTest(TestCase):
 
     def test_signup_success(self):
         """Test successful signup."""
-        response = self.client.post(reverse('signup'), {
-            'username': 'newuser',
-            'email': 'new@example.com',
-            'password1': 'complexpassword123',
-            'password2': 'complexpassword123'
-        })
+        response = self.client.post(
+            reverse('signup'),
+            {
+                'username': 'newuser',
+                'email': 'new@example.com',
+                'password1': 'complexpassword123',
+                'password2': 'complexpassword123'
+            },
+            HTTP_REFERER='http://testserver/signup/'
+        )
         self.assertEqual(response.status_code, 302)  # Redirect on success
         self.assertTrue(User.objects.filter(username='newuser').exists())
 
@@ -509,11 +514,15 @@ class ContactViewTest(TestCase):
 
     def test_contact_form_submission(self):
         """Test contact form submission."""
-        response = self.client.post(reverse('contact'), {
-            'name': 'Test Contact',
-            'email': 'contact@example.com',
-            'message': 'This is a test message.'
-        })
+        response = self.client.post(
+            reverse('contact'),
+            {
+                'name': 'Test Contact',
+                'email': 'contact@example.com',
+                'message': 'This is a test message.'
+            },
+            HTTP_REFERER='http://testserver/contact/'
+        )
         # Should redirect on success or stay on page with message
         self.assertIn(response.status_code, [200, 302])
 

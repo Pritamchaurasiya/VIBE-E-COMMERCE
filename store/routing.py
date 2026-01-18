@@ -6,12 +6,14 @@ from django.urls import path
 # Try to import consumers, but handle if channels is not installed
 try:
     from . import consumers
+    from . import enhanced_consumers
 
     websocket_urlpatterns = [
         path('ws/notifications/', consumers.NotificationConsumer.as_asgi()),
         path('ws/cart/', consumers.CartConsumer.as_asgi()),
         path('ws/orders/<int:order_id>/', consumers.OrderTrackingConsumer.as_asgi()),
         path('ws/monitoring/', consumers.MonitoringConsumer.as_asgi()),
+        path('ws/enhanced-monitoring/', enhanced_consumers.EnhancedMonitoringConsumer.as_asgi()),
     ]
 except (ImportError, AttributeError):
     # Channels not installed or consumers not available

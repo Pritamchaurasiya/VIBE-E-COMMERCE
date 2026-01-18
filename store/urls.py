@@ -5,6 +5,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from . import api_views
+from . import dashboard_api
 from . import recommendations_api
 from . import notifications_api
 from . import wishlist_api
@@ -273,6 +274,18 @@ urlpatterns = [
         name='api_vendor_analytics'
     ),
 
+    # Vendor Dashboard Customization API
+    path(
+        'api/v1/vendor/dashboard-config/',
+        dashboard_api.VendorDashboardConfigView.as_view(),
+        name='api_vendor_dashboard_config'
+    ),
+    path(
+        'api/v1/vendor/dashboard-config/<int:pk>/',
+        dashboard_api.VendorDashboardDetailView.as_view(),
+        name='api_vendor_dashboard_detail'
+    ),
+
     # Trending Products API
     path(
         'api/v1/trending/',
@@ -423,6 +436,11 @@ urlpatterns = [
         'api/v1/diseases/<slug:disease_slug>/products/',
         api_views.ProductsByDiseaseView.as_view(),
         name='api_products_by_disease'
+    ),
+    path(
+        'api/v1/diseases/detect/',
+        api_views.DiseaseDetectionView.as_view(),
+        name='api_disease_detection'
     ),
 
     # Location-based API
