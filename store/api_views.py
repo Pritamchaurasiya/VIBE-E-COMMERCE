@@ -289,19 +289,22 @@ class CartView(APIView):
         """Get cart contents."""
         cart = Cart(request)
         items = []
+        total_cost = 0.0
         for item in cart:
+            item_total = float(item['total_price'])
+            total_cost += item_total
             items.append({
                 'id': item['product'].id,
                 'name': item['product'].name,
                 'price': float(item['product'].price),
                 'quantity': item['quantity'],
-                'total_price': float(item['total_price']),
+                'total_price': item_total,
                 'image': item['product'].image.url if item['product'].image else None
             })
 
         return Response({
             'items': items,
-            'total_cost': float(cart.get_total_cost()),
+            'total_cost': total_cost,
             'item_count': len(cart)
         })
 
