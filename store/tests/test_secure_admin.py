@@ -285,7 +285,7 @@ class SecureAdminSystemTestCase(TestCase):
             password=TEST_USER_PASSWORD,
             is_staff=True
         )
-        security_group = Group.objects.create(name='security_admin')
+        security_group, _ = Group.objects.get_or_create(name='security_admin')
         security_admin.groups.add(security_group)
 
         # Add view audit permission

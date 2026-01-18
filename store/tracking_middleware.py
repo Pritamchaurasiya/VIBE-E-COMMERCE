@@ -816,6 +816,7 @@ class SecurityTrackingMiddleware(BaseTrackingMiddleware):
         Returns:
             HttpResponse with 403 status.
         """
+        logger.error(f"BLOCKING REQUEST: {message}")
         return HttpResponse(
             message,
             status=403,
