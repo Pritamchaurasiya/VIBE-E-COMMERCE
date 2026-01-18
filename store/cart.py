@@ -14,6 +14,7 @@ class Cart:
     def __init__(self, request):
         self.session = request.session
         self.request = request
+        self.products_cache = {}
         # Check if user is authenticated (works for Session and Token auth)
         self.user = (
             request.user if request.user and request.user.is_authenticated else None
@@ -26,10 +27,13 @@ class Cart:
                 cart_id=str(self.user.id)
             ).select_related('product')
             for item in items:
-                self.cart_data[str(item.product.id)] = {
+                pid = str(item.product.id)
+                self.cart_data[pid] = {
                     'quantity': item.quantity,
-                    'id': str(item.product.id)
+                    'id': pid
                 }
+                # Pre-populate cache with products fetched via select_related
+                self.products_cache[pid] = item.product
         else:
             # Session-backed cart for anonymous users
             cart_session = self.session.get(settings.CART_SESSION_ID)
@@ -50,19 +54,27 @@ class Cart:
             if not self.user:
                 self.save()
 
+    def _fetch_products(self):
+        """Fetch products that are not yet in the cache."""
+        product_ids = list(self.cart_data.keys())
+        missing_ids = [pid for pid in product_ids if pid not in self.products_cache]
+
+        if missing_ids:
+            products = Product.objects.filter(id__in=missing_ids)
+            for product in products:
+                self.products_cache[str(product.id)] = product
+
     def __iter__(self):
-        product_ids = self.cart_data.keys()
-        products = Product.objects.filter(id__in=product_ids)
+        self._fetch_products()
 
         cart_data_copy = self.cart_data.copy()
 
-        for product in products:
-            cart_data_copy[str(product.id)]['product'] = product
-
-        for item in cart_data_copy.values():
-            if 'product' in item:
+        for pid, item in cart_data_copy.items():
+            product = self.products_cache.get(pid)
+            if product:
+                item['product'] = product
                 item['price'] = self._calculate_unit_price(
-                    item['product'], item['quantity']
+                    product, item['quantity']
                 )
                 item['total_price'] = item['price'] * item['quantity']
                 yield item
@@ -121,6 +133,9 @@ class Cart:
         product_id = str(product_id)
         if product_id in self.cart_data:
             del self.cart_data[product_id]
+            # Also remove from cache if present
+            if product_id in self.products_cache:
+                del self.products_cache[product_id]
             self.save()
 
     def clear(self):
@@ -133,6 +148,7 @@ class Cart:
         else:
             del self.session[settings.CART_SESSION_ID]
             self.session.modified = True
+        self.products_cache = {}
 
     def _calculate_unit_price(self, product, quantity):
         """
@@ -151,11 +167,12 @@ class Cart:
         """
         Calculate the total cost of items in the cart.
         """
-        product_ids = self.cart_data.keys()
-        products = Product.objects.filter(id__in=product_ids)
+        self._fetch_products()
         total = 0
-        for product in products:
-            quantity = self.cart_data[str(product.id)]['quantity']
-            unit_price = self._calculate_unit_price(product, quantity)
-            total += unit_price * quantity
+        for pid, item in self.cart_data.items():
+            product = self.products_cache.get(pid)
+            if product:
+                quantity = item['quantity']
+                unit_price = self._calculate_unit_price(product, quantity)
+                total += unit_price * quantity
         return total
