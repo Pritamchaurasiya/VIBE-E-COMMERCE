@@ -37,6 +37,7 @@ from .models import (
     Subscription, BuyerInquiry, RFQQuote, VendorVerification, RFQ,
     AuditLog, SiteSettings, TradeEvent, Crop
 )
+from .utils import sanitize_for_csv
 
 stripe.api_key = settings.STRIPE_API_KEY_HIDDEN
 
@@ -1252,9 +1253,9 @@ def _export_orders(writer):
     for order in orders:
         writer.writerow([
             order.id,
-            f"{order.first_name} {order.last_name}",
-            order.email,
-            order.phone,
+            sanitize_for_csv(f"{order.first_name} {order.last_name}"),
+            sanitize_for_csv(order.email),
+            sanitize_for_csv(order.phone),
             order.paid_amount or 0,
             order.status,
             order.payment_method,
@@ -1272,9 +1273,9 @@ def _export_products(writer):
     for product in products:
         writer.writerow([
             product.id,
-            product.name,
-            product.category.name,
-            product.vendor.name,
+            sanitize_for_csv(product.name),
+            sanitize_for_csv(product.category.name),
+            sanitize_for_csv(product.vendor.name),
             product.price,
             product.mrp or '',
             product.stock_quantity,
@@ -1291,8 +1292,8 @@ def _export_vendors(writer):
     for vendor in vendors:
         writer.writerow([
             vendor.id,
-            vendor.name,
-            vendor.city,
+            sanitize_for_csv(vendor.name),
+            sanitize_for_csv(vendor.city),
             vendor.products_count,
         ])
 
@@ -1307,10 +1308,10 @@ def _export_users(writer):
     for user in users:
         writer.writerow([
             user.id,
-            user.username,
-            user.email,
-            user.first_name,
-            user.last_name,
+            sanitize_for_csv(user.username),
+            sanitize_for_csv(user.email),
+            sanitize_for_csv(user.first_name),
+            sanitize_for_csv(user.last_name),
             user.date_joined.strftime('%Y-%m-%d'),
             'Yes' if user.is_active else 'No',
         ])

@@ -30,6 +30,7 @@ from .security import (
     sanitize_html,
     sanitize_filename,
     sanitize_search_query,
+    sanitize_for_csv,
     rate_limit,
     get_client_ip,
     generate_secure_token,
@@ -56,6 +57,22 @@ from .performance import (
     LazyObject,
 )
 
+# Helpers (moved from utils.py)
+try:
+    from .helpers import (
+        create_notification,
+        send_order_confirmation_email,
+        send_order_status_update_email,
+        update_product_stock,
+        check_low_stock_products,
+        calculate_order_total,
+        get_product_recommendations,
+        format_currency,
+        validate_coupon,
+    )
+except ImportError:
+    pass
+
 __all__ = [
     # Cache utilities
     'CACHE_TTL_SHORT',
@@ -76,6 +93,7 @@ __all__ = [
     'sanitize_html',
     'sanitize_filename',
     'sanitize_search_query',
+    'sanitize_for_csv',
     'rate_limit',
     'get_client_ip',
     'generate_secure_token',
@@ -97,4 +115,14 @@ __all__ = [
     'batch_processor',
     'queryset_iterator',
     'LazyObject',
+    # Helpers
+    'create_notification',
+    'send_order_confirmation_email',
+    'send_order_status_update_email',
+    'update_product_stock',
+    'check_low_stock_products',
+    'calculate_order_total',
+    'get_product_recommendations',
+    'format_currency',
+    'validate_coupon',
 ]

@@ -1,7 +1,5 @@
 """
-Utility functions and helpers for the store app.
-
-This module provides common utility functions used across the application.
+Helper functions for the store app.
 """
 # pylint: disable=no-member
 
@@ -17,7 +15,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from django.db.models import F
 
-from .models import Notification, Product, Order, InventoryLog, Coupon
+from store.models import Notification, Product, Order, InventoryLog, Coupon
 
 logger = logging.getLogger(__name__)
 
