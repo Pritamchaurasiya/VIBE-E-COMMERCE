@@ -46,6 +46,8 @@ import {
   Compare,
   ContactSupport,
   Info,
+  AccessTime,
+  Mic,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -71,6 +73,7 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  const [isListening, setIsListening] = useState(false);
 
   // Sample notifications - would come from API in production
   const notifications = [
@@ -136,6 +139,39 @@ const Header = () => {
     setNotificationsAnchor(null);
   }, []);
 
+  const handleVoiceSearch = useCallback(() => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Voice search is not supported in this browser.");
+      return;
+    }
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+      navigate(`/products?q=${encodeURIComponent(transcript)}`);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  }, [navigate]);
+
   const isActiveRoute = useCallback(
     (path) => {
       return (
@@ -148,6 +184,7 @@ const Header = () => {
   const navigationItems = [
     { label: "Home", path: "/", icon: <Home /> },
     { label: "Products", path: "/products", icon: <Store /> },
+    { label: "Calendar", path: "/calendar", icon: <AccessTime /> },
     { label: "Vendors", path: "/vendors", icon: <Category /> },
     { label: "Compare", path: "/compare", icon: <Compare /> },
     { label: "About", path: "/about", icon: <Info /> },
@@ -289,7 +326,7 @@ const Header = () => {
             >
               <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
               <InputBase
-                placeholder="Search products..."
+                placeholder={isListening ? "Listening..." : "Search products..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 inputProps={{
@@ -302,6 +339,14 @@ const Header = () => {
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
               />
+              <IconButton
+                size="small"
+                onClick={handleVoiceSearch}
+                color={isListening ? "secondary" : "inherit"}
+                sx={{ ml: 1, color: isListening ? "#ff4081" : "white" }}
+              >
+                <Mic fontSize="small" />
+              </IconButton>
             </Box>
 
             {/* Theme Toggle */}

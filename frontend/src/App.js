@@ -18,6 +18,7 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import ScrollToTop from "./components/common/ScrollToTop";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import OfflineIndicator from "./components/common/OfflineIndicator";
 
 // Lazy loaded components for code splitting
 // const HomePage = lazy(() => import("./components/common/HomePage")); // Switched to AgriHome
@@ -46,6 +47,8 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const CropCalendar = lazy(() => import("./pages/CropCalendar"));
+const VendorDashboard = lazy(() => import("./pages/VendorDashboard"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -82,6 +85,26 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/vendor/dashboard"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <VendorDashboard />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <CropCalendar />
                 </Box>
               </Slide>
             }
@@ -465,6 +488,7 @@ function App() {
             </Box>
             <Footer />
             <ScrollToTop />
+            <OfflineIndicator />
           </AnimatedBox>
         </Router>
       </CartProvider>

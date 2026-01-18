@@ -295,8 +295,8 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
-        return getattr(tracking_models, model_name)
+        from . import models
+        return getattr(models, model_name)
 
     @classmethod
     def get_tracking_config(cls, category: str):
@@ -353,13 +353,16 @@ class EnhancedTrackingService:
         if forwarded_for:
             ip_address = forwarded_for.split(',')[0].strip()
 
+        session = getattr(request, 'session', None)
+        session_id = getattr(session, 'session_key', '') if session else ''
+
         return {
             'ip_address': InputValidator.validate_ip_address(ip_address),
             'user_agent': InputValidator.sanitize_string(
                 request.META.get('HTTP_USER_AGENT', ''),
                 MAX_USER_AGENT_LENGTH
             ),
-            'session_id': getattr(request.session, 'session_key', '') or '',
+            'session_id': session_id or '',
             'path': request.path,
             'method': request.method,
         }
@@ -505,13 +508,19 @@ class EnhancedTrackingService:
         """Create a tracking alert."""
         try:
             TrackingAlert = cls._get_model('TrackingAlert')
+
+            # Merge triggered_by into metadata
+            metadata = kwargs.pop('metadata', {})
+            if triggered_by:
+                metadata['triggered_by'] = InputValidator.sanitize_metadata(triggered_by)
+
             # pylint: disable=no-member
             return TrackingAlert.objects.create(
                 alert_type=alert_type,
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
+                metadata=metadata,
                 **kwargs
             )
         except Exception as exc:
