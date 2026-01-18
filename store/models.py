@@ -9,6 +9,7 @@ import logging
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -2325,7 +2326,7 @@ class UserAnalyticsAPIKey(models.Model):
     """
     name = models.CharField(max_length=100)
     api_key = models.CharField(max_length=100, unique=True)
-    secret_key = models.CharField(max_length=100, blank=True)
+    secret_key = models.CharField(max_length=255, blank=True)
     permissions = models.JSONField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -2342,6 +2343,21 @@ class UserAnalyticsAPIKey(models.Model):
 
     def __str__(self):
         return f"{self.name} API Key"
+
+    def save(self, *args, **kwargs):
+        """Hash secret key before saving."""
+        if self.secret_key:
+            try:
+                identify_hasher(self.secret_key)
+            except ValueError:
+                # Not a valid hash, so it's a raw key. Hash it.
+                self._raw_secret_key = self.secret_key
+                self.secret_key = make_password(self.secret_key)
+        super().save(*args, **kwargs)
+
+    def verify_secret(self, raw_secret):
+        """Verify the secret key."""
+        return check_password(raw_secret, self.secret_key)
 
 class UserAnalyticsWebhook(models.Model):
     """

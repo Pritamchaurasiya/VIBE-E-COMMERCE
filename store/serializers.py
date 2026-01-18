@@ -470,18 +470,24 @@ class UserAnalyticsIntegrationSerializer(serializers.ModelSerializer):
 
 class UserAnalyticsAPIKeySerializer(serializers.ModelSerializer):
     """Serializer for UserAnalyticsAPIKey model."""
+    secret_key = serializers.CharField(write_only=True, required=False)
+    plain_secret_key = serializers.SerializerMethodField()
 
     class Meta:
         """Meta class for UserAnalyticsAPIKeySerializer."""
         model = UserAnalyticsAPIKey
         fields = [
-            'id', 'name', 'api_key', 'secret_key', 'permissions',
+            'id', 'name', 'api_key', 'secret_key', 'plain_secret_key', 'permissions',
             'is_active', 'created_at', 'expires_at', 'last_used',
             'usage_count'
         ]
         read_only_fields = [
-            'id', 'created_at', 'last_used', 'usage_count'
+            'id', 'created_at', 'last_used', 'usage_count', 'plain_secret_key'
         ]
+
+    def get_plain_secret_key(self, obj):
+        """Return the plain secret key only upon creation."""
+        return getattr(obj, '_raw_secret_key', None)
 
 class UserAnalyticsWebhookSerializer(serializers.ModelSerializer):
     """Serializer for UserAnalyticsWebhook model."""
