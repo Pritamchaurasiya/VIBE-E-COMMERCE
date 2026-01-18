@@ -698,7 +698,10 @@ def apply_coupon(request):
     try:
         data = json.loads(request.body)
         code = data.get('code', '').strip().upper()
-        cart_total = data.get('cart_total', 0)
+
+        # Calculate cart total server-side
+        cart = Cart(request)
+        cart_total = float(cart.get_total_cost())
 
         if not code:
             return JsonResponse({'success': False, 'error': 'Please enter a coupon code'})
