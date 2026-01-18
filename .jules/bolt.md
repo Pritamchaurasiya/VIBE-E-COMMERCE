@@ -1,0 +1,3 @@
+## 2025-02-18 - Optimize Order List API
+**Learning:** `SerializerMethodField` in DRF often causes N+1 queries if the underlying data isn't prefetched. For `ProductSerializer`, `get_images`, `get_average_rating`, and `get_review_count` were causing N+1 queries for every product in the Order List. `prefetch_related` with `queryset` annotation is a powerful way to solve this while keeping the serializer logic clean. Injecting data into serializer context (like `wishlist_product_ids`) is also very effective for bulk checks.
+**Action:** Always check `SerializerMethodField` implementations for N+1 queries. Use `Prefetch` objects to optimize nested lookups with annotations.
