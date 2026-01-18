@@ -1222,63 +1222,48 @@ class DashboardStatsView(APIView):
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Orders statistics
-        all_orders = Order.objects.all()
-        paid_orders = all_orders.filter(paid=True)
-
-        # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
-
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        # Order counts
-        orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
-        }
+        # Orders statistics with conditional aggregation
+        orders_data = Order.objects.aggregate(
+            # Revenue
+            total_revenue=Sum('paid_amount', filter=Q(paid=True)),
+            monthly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=thirty_days_ago)),
+            weekly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=seven_days_ago)),
+            today_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__date=today)),
+            # Counts
+            total=Count('id'),
+            paid=Count('id', filter=Q(paid=True)),
+            pending=Count('id', filter=Q(status='pending')),
+            processing=Count('id', filter=Q(status='processing')),
+            shipped=Count('id', filter=Q(status='shipped')),
+            delivered=Count('id', filter=Q(status='delivered')),
+            cancelled=Count('id', filter=Q(status='cancelled')),
+            today=Count('id', filter=Q(created_at__date=today)),
+        )
 
         # Products statistics
-        products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
+        products_data = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(
                 stock_quantity__lte=models.F('low_stock_threshold'),
                 stock_quantity__gt=0
-            ).count(),
-        }
+            )),
+        )
 
-        # Users statistics (User already imported at top)
-        users_stats = {
-            'total': User.objects.count(),
-            'new_today': User.objects.filter(date_joined__date=today).count(),
-            'new_this_week': User.objects.filter(date_joined__gte=seven_days_ago).count(),
-            'new_this_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
-        }
+        # Users statistics
+        users_data = User.objects.aggregate(
+            total=Count('id'),
+            new_today=Count('id', filter=Q(date_joined__date=today)),
+            new_this_week=Count('id', filter=Q(date_joined__gte=seven_days_ago)),
+            new_this_month=Count('id', filter=Q(date_joined__gte=thirty_days_ago)),
+        )
 
         # Vendors statistics
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
@@ -1297,14 +1282,33 @@ class DashboardStatsView(APIView):
 
         return Response({
             'revenue': {
-                'total': float(total_revenue),
-                'monthly': float(monthly_revenue),
-                'weekly': float(weekly_revenue),
-                'today': float(today_revenue),
+                'total': float(orders_data['total_revenue'] or 0),
+                'monthly': float(orders_data['monthly_revenue'] or 0),
+                'weekly': float(orders_data['weekly_revenue'] or 0),
+                'today': float(orders_data['today_revenue'] or 0),
             },
-            'orders': orders_stats,
-            'products': products_stats,
-            'users': users_stats,
+            'orders': {
+                'total': orders_data['total'],
+                'paid': orders_data['paid'],
+                'pending': orders_data['pending'],
+                'processing': orders_data['processing'],
+                'shipped': orders_data['shipped'],
+                'delivered': orders_data['delivered'],
+                'cancelled': orders_data['cancelled'],
+                'today': orders_data['today'],
+            },
+            'products': {
+                'total': products_data['total'],
+                'active': products_data['active'],
+                'out_of_stock': products_data['out_of_stock'],
+                'low_stock': products_data['low_stock'],
+            },
+            'users': {
+                'total': users_data['total'],
+                'new_today': users_data['new_today'],
+                'new_this_week': users_data['new_this_week'],
+                'new_this_month': users_data['new_this_month'],
+            },
             'vendors': vendors_stats,
             'recent_orders': list(recent_orders),
             'top_products': list(top_products),
