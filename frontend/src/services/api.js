@@ -100,6 +100,12 @@ export const reviewsAPI = {
     api.post(`/api/v1/products/${productSlug}/reviews/`, reviewData),
 };
 
+export const qnaAPI = {
+  getQuestions: (productId) => api.get(`/api/v1/products/${productId}/questions/`),
+  askQuestion: (productId, content) => api.post(`/api/v1/products/${productId}/questions/`, { content }),
+  answerQuestion: (questionId, content) => api.post(`/api/v1/questions/${questionId}/answers/`, { content }),
+};
+
 export const couponsAPI = {
   applyCoupon: (code, cartTotal) =>
     api.post("/api/v1/apply-coupon/", { code, cart_total: cartTotal }),
@@ -137,6 +143,20 @@ export const recentlyViewedAPI = {
     api.get("/api/v1/recently-viewed/", { params: { limit } }),
   addToRecentlyViewed: (productId) =>
     api.post("/api/v1/recently-viewed/", { product_id: productId }),
+};
+
+// ML API
+export const mlAPI = {
+  predictPrice: (productId) => api.get(`/api/v1/ml/price-prediction/${productId}/`),
+  getCropAdvice: () => api.get("/api/v1/ml/crop-advice/"),
+};
+
+// Addresses API
+export const addressesAPI = {
+  getAddresses: () => api.get("/api/v1/addresses/"),
+  createAddress: (data) => api.post("/api/v1/addresses/", data),
+  updateAddress: (id, data) => api.put(`/api/v1/addresses/${id}/`, data),
+  deleteAddress: (id) => api.delete(`/api/v1/addresses/${id}/`),
 };
 
 // New Vendor API

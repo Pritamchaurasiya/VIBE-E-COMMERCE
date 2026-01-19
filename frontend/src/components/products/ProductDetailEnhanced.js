@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {
   Favorite, FavoriteBorder, Add, Remove, Share, LocalShipping, Verified, Star, ThumbUp, ExpandMore,
-  ShoppingCart, ViewInAr, Fullscreen, FullscreenExit, CameraAlt, ZoomIn, ZoomOut
+  ShoppingCart, ViewInAr, Fullscreen, FullscreenExit, CameraAlt, ZoomIn, ZoomOut, TrendingUp, TrendingDown, TrendingFlat
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../utils/AuthContext';
@@ -15,10 +15,12 @@ import { useCart } from '../../utils/CartContext';
 import ScrollAnimation from '../common/ScrollAnimation';
 import { fetchProductById, selectCurrentProduct, selectProductStatus } from '../../features/products/productSlice';
 import LazyImage from '../common/LazyImage';
+import { mlAPI } from '../../services/api';
 
 // Lazy load heavy components
 const Product3DViewer = lazy(() => import('./Product3DViewer'));
 const ProductRecommendations = lazy(() => import('./ProductRecommendations'));
+const ProductQnA = lazy(() => import('./ProductQnA'));
 
 const ProductDetailEnhanced = () => {
   const { slug } = useParams();
@@ -41,10 +43,19 @@ const ProductDetailEnhanced = () => {
   });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [pricePrediction, setPricePrediction] = useState(null);
 
   useEffect(() => {
     dispatch(fetchProductById(slug));
   }, [dispatch, slug]);
+
+  useEffect(() => {
+    if (product?.id) {
+      mlAPI.predictPrice(product.id)
+        .then(res => setPricePrediction(res.data))
+        .catch(err => console.error("ML Prediction failed", err));
+    }
+  }, [product]);
 
   const handleQuantityChange = (change) => {
     setQuantity(Math.max(1, quantity + change));
@@ -411,6 +422,30 @@ const ProductDetailEnhanced = () => {
                   Inclusive of all taxes
                 </Typography>
 
+                {/* ML Price Prediction */}
+                {pricePrediction && (
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'primary.50', borderRadius: 2, border: '1px solid', borderColor: 'primary.100' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      {pricePrediction.trend_analysis?.trend === 'increasing' ? (
+                        <TrendingUp color="error" />
+                      ) : pricePrediction.trend_analysis?.trend === 'decreasing' ? (
+                        <TrendingDown color="success" />
+                      ) : (
+                        <TrendingFlat color="action" />
+                      )}
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        AI Price Forecast
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {pricePrediction.forecast_msg}
+                    </Typography>
+                    <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'text.disabled' }}>
+                      Confidence: {pricePrediction.prediction?.confidence}%
+                    </Typography>
+                  </Box>
+                )}
+
                 {product.bulk_price && product.bulk_min_quantity && (
                   <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f0f9f0', borderRadius: 2, border: '1px dashed #2e7d32' }}>
                      <Typography variant="subtitle2" color="primary" fontWeight="bold">
@@ -557,6 +592,7 @@ const ProductDetailEnhanced = () => {
               <Tab label="Description" />
               <Tab label="Specifications" />
               <Tab label="Reviews" />
+              <Tab label="Q&A" />
             </Tabs>
 
             {/* Tab Content */}
@@ -726,6 +762,14 @@ const ProductDetailEnhanced = () => {
                     ))}
                   </Box>
                 )}
+              </Box>
+            )}
+
+            {activeTab === 3 && (
+              <Box sx={{ p: 4 }}>
+                <Suspense fallback={<Skeleton variant="rectangular" height={200} />}>
+                  <ProductQnA productId={product.id} />
+                </Suspense>
               </Box>
             )}
           </Paper>

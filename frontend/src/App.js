@@ -18,6 +18,7 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import ScrollToTop from "./components/common/ScrollToTop";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import OfflineIndicator from "./components/common/OfflineIndicator";
 
 // Lazy loaded components for code splitting
 // const HomePage = lazy(() => import("./components/common/HomePage")); // Switched to AgriHome
@@ -450,6 +451,7 @@ function App() {
       <CartProvider>
         <Router>
           <AnimatedBox>
+            <OfflineIndicator />
             <Header />
             <Box
               component="main"

@@ -32,7 +32,8 @@ import {
 import { loadStripe } from "@stripe/stripe-js";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
-import { ordersAPI } from "../../services/api";
+import { ordersAPI, addressesAPI } from "../../services/api";
+import { MenuItem, Select, InputLabel } from "@mui/material";
 
 const steps = ["Shipping", "Payment", "Review"];
 
@@ -85,6 +86,8 @@ const Checkout = () => {
   const [completed, setCompleted] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState("");
 
   const [formData, setFormData] = useState({
     // Shipping Information
@@ -114,6 +117,37 @@ const Checkout = () => {
   });
 
   const [formErrors, setFormErrors] = useState({});
+
+  React.useEffect(() => {
+    if (user) {
+      addressesAPI.getAddresses()
+        .then(res => setAddresses(res.data.results || res.data))
+        .catch(console.error);
+    }
+  }, [user]);
+
+  const handleAddressSelect = (e) => {
+    const addrId = e.target.value;
+    setSelectedAddress(addrId);
+    if (addrId === 'new') {
+        setFormData({
+            ...formData,
+            address: "", address2: "", city: "", state: "", zipcode: ""
+        });
+        return;
+    }
+    const addr = addresses.find(a => a.id === parseInt(addrId));
+    if (addr) {
+      setFormData({
+        ...formData,
+        address: addr.address_line1,
+        address2: addr.address_line2,
+        city: addr.city,
+        state: addr.state,
+        zipcode: addr.zipcode
+      });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
@@ -212,6 +246,24 @@ const Checkout = () => {
               Shipping Information
             </Typography>
             <Divider sx={{ mb: 3 }} />
+
+            {addresses.length > 0 && (
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                    <InputLabel>Saved Addresses</InputLabel>
+                    <Select
+                        value={selectedAddress}
+                        label="Saved Addresses"
+                        onChange={handleAddressSelect}
+                    >
+                        <MenuItem value="new">Use New Address</MenuItem>
+                        {addresses.map((addr) => (
+                            <MenuItem key={addr.id} value={addr.id}>
+                                {addr.title}: {addr.address_line1}, {addr.city}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            )}
 
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>

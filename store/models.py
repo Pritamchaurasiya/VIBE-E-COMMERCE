@@ -35,6 +35,9 @@ class Vendor(models.Model):
     website = models.URLField(blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     total_products = models.PositiveIntegerField(default=0)
+    established_date = models.DateField(null=True, blank=True, help_text="Date when vendor started business")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
@@ -333,6 +336,33 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+class UserAddress(models.Model):
+    """
+    Model for storing user addresses.
+    """
+    user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
+    title = models.CharField(max_length=100, help_text="Home, Work, etc.")
+    address_line1 = models.CharField(max_length=255)
+    address_line2 = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zipcode = models.CharField(max_length=20)
+    country = models.CharField(max_length=100, default='India')
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = 'User Addresses'
+        ordering = ['-is_default', '-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.user.username}"
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            UserAddress.objects.filter(user=self.user).update(is_default=False)
+        super().save(*args, **kwargs)
 
 class Order(models.Model):
     """
@@ -2719,3 +2749,36 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class Question(models.Model):
+    """
+    Model for product Q&A questions.
+    """
+    product = models.ForeignKey(Product, related_name='questions', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Q: {self.content[:50]}..."
+
+class Answer(models.Model):
+    """
+    Model for product Q&A answers.
+    """
+    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_vendor_reply = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-is_vendor_reply', '-created_at']
+
+    def __str__(self):
+        return f"A: {self.content[:50]}..."
