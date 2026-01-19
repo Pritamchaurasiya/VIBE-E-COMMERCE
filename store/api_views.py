@@ -1222,64 +1222,84 @@ class DashboardStatsView(APIView):
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Orders statistics
-        all_orders = Order.objects.all()
-        paid_orders = all_orders.filter(paid=True)
+        # Optimize Orders aggregation (Counts + Revenue)
+        orders_agg = Order.objects.aggregate(
+            count_total=Count('id'),
+            count_paid=Count('id', filter=Q(paid=True)),
+            count_pending=Count('id', filter=Q(status='pending')),
+            count_processing=Count('id', filter=Q(status='processing')),
+            count_shipped=Count('id', filter=Q(status='shipped')),
+            count_delivered=Count('id', filter=Q(status='delivered')),
+            count_cancelled=Count('id', filter=Q(status='cancelled')),
+            count_today=Count('id', filter=Q(created_at__date=today)),
+            # Revenue (Sum of paid_amount for paid orders)
+            rev_total=Sum('paid_amount', filter=Q(paid=True)),
+            rev_monthly=Sum('paid_amount', filter=Q(paid=True, created_at__gte=thirty_days_ago)),
+            rev_weekly=Sum('paid_amount', filter=Q(paid=True, created_at__gte=seven_days_ago)),
+            rev_today=Sum('paid_amount', filter=Q(paid=True, created_at__date=today)),
+        )
 
-        # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
-
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        # Order counts
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': orders_agg['count_total'],
+            'paid': orders_agg['count_paid'],
+            'pending': orders_agg['count_pending'],
+            'processing': orders_agg['count_processing'],
+            'shipped': orders_agg['count_shipped'],
+            'delivered': orders_agg['count_delivered'],
+            'cancelled': orders_agg['count_cancelled'],
+            'today': orders_agg['count_today'],
         }
 
-        # Products statistics
-        products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
+        revenue_stats = {
+            'total': float(orders_agg['rev_total'] or 0),
+            'monthly': float(orders_agg['rev_monthly'] or 0),
+            'weekly': float(orders_agg['rev_weekly'] or 0),
+            'today': float(orders_agg['rev_today'] or 0),
+        }
+
+        # Optimize Products aggregation
+        products_agg = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(
                 stock_quantity__lte=models.F('low_stock_threshold'),
                 stock_quantity__gt=0
-            ).count(),
+            )),
+        )
+
+        products_stats = {
+            'total': products_agg['total'],
+            'active': products_agg['active'],
+            'out_of_stock': products_agg['out_of_stock'],
+            'low_stock': products_agg['low_stock'],
         }
 
-        # Users statistics (User already imported at top)
+        # Optimize Users aggregation
+        users_agg = User.objects.aggregate(
+            total=Count('id'),
+            new_today=Count('id', filter=Q(date_joined__date=today)),
+            new_this_week=Count('id', filter=Q(date_joined__gte=seven_days_ago)),
+            new_this_month=Count('id', filter=Q(date_joined__gte=thirty_days_ago)),
+        )
+
         users_stats = {
-            'total': User.objects.count(),
-            'new_today': User.objects.filter(date_joined__date=today).count(),
-            'new_this_week': User.objects.filter(date_joined__gte=seven_days_ago).count(),
-            'new_this_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
+            'total': users_agg['total'],
+            'new_today': users_agg['new_today'],
+            'new_this_week': users_agg['new_this_week'],
+            'new_this_month': users_agg['new_this_month'],
         }
 
-        # Vendors statistics
+        # Optimize Vendors aggregation
+        # with_products: Vendors that have at least one product
+        vendors_agg = Vendor.objects.aggregate(
+            total=Count('id', distinct=True),
+            with_products=Count('products__vendor', distinct=True)
+        )
+
         vendors_stats = {
-            'total': Vendor.objects.count(),
-            'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
-            ).filter(product_count__gt=0).count(),
+            'total': vendors_agg['total'],
+            'with_products': vendors_agg['with_products'],
         }
 
         # Recent orders
@@ -1296,12 +1316,7 @@ class DashboardStatsView(APIView):
         ).order_by('-total_sold')[:10]
 
         return Response({
-            'revenue': {
-                'total': float(total_revenue),
-                'monthly': float(monthly_revenue),
-                'weekly': float(weekly_revenue),
-                'today': float(today_revenue),
-            },
+            'revenue': revenue_stats,
             'orders': orders_stats,
             'products': products_stats,
             'users': users_stats,
