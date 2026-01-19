@@ -4,13 +4,21 @@ Cart test module for VIBE E-Commerce.
 Tests for cart functionality including adding, updating, and removing products.
 """
 # pylint: disable=no-member
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.auth.models import User, AnonymousUser
 from store.models import Product, Category, Vendor
 from store.cart import Cart
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class CartTestCase(TestCase):
     """Test cases for Cart functionality."""
 
