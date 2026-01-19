@@ -18,6 +18,7 @@ class Cart:
         self.user = (
             request.user if request.user and request.user.is_authenticated else None
         )
+        self.products_cache = {}
 
         if self.user:
             # DB-backed cart for logged-in users
@@ -30,6 +31,8 @@ class Cart:
                     'quantity': item.quantity,
                     'id': str(item.product.id)
                 }
+                # Pre-populate cache since we already fetched the product
+                self.products_cache[str(item.product.id)] = item.product
         else:
             # Session-backed cart for anonymous users
             cart_session = self.session.get(settings.CART_SESSION_ID)
@@ -50,14 +53,24 @@ class Cart:
             if not self.user:
                 self.save()
 
-    def __iter__(self):
+    def _ensure_products_cached(self):
+        """Helper to fetch and cache products that are not yet in the cache."""
         product_ids = self.cart_data.keys()
-        products = Product.objects.filter(id__in=product_ids)
+        missing_ids = [pid for pid in product_ids if pid not in self.products_cache]
+
+        if missing_ids:
+            products = Product.objects.filter(id__in=missing_ids)
+            for product in products:
+                self.products_cache[str(product.id)] = product
+
+    def __iter__(self):
+        self._ensure_products_cached()
 
         cart_data_copy = self.cart_data.copy()
 
-        for product in products:
-            cart_data_copy[str(product.id)]['product'] = product
+        for pid, item in cart_data_copy.items():
+            if pid in self.products_cache:
+                item['product'] = self.products_cache[pid]
 
         for item in cart_data_copy.values():
             if 'product' in item:
@@ -134,6 +147,8 @@ class Cart:
             del self.session[settings.CART_SESSION_ID]
             self.session.modified = True
 
+        self.products_cache = {}
+
     def _calculate_unit_price(self, product, quantity):
         """
         Calculate unit price based on quantity (Bulk Pricing).
@@ -151,11 +166,13 @@ class Cart:
         """
         Calculate the total cost of items in the cart.
         """
-        product_ids = self.cart_data.keys()
-        products = Product.objects.filter(id__in=product_ids)
+        self._ensure_products_cached()
+
         total = 0
-        for product in products:
-            quantity = self.cart_data[str(product.id)]['quantity']
-            unit_price = self._calculate_unit_price(product, quantity)
-            total += unit_price * quantity
+        for pid, item_data in self.cart_data.items():
+            if pid in self.products_cache:
+                product = self.products_cache[pid]
+                quantity = item_data['quantity']
+                unit_price = self._calculate_unit_price(product, quantity)
+                total += unit_price * quantity
         return total
