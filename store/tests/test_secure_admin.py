@@ -285,7 +285,7 @@ class SecureAdminSystemTestCase(TestCase):
             password=TEST_USER_PASSWORD,
             is_staff=True
         )
-        security_group = Group.objects.create(name='security_admin')
+        security_group, _ = Group.objects.get_or_create(name='security_admin')
         security_admin.groups.add(security_group)
 
         # Add view audit permission
@@ -663,6 +663,9 @@ class AdminPermissionFrameworkTestCase(TestCase):
         staff_user.user_permissions.add(
             Permission.objects.get(codename='view_tracking_data')
         )
+        # Reload user to update permission cache
+        staff_user = User.objects.get(pk=staff_user.pk)
+        request.user = staff_user
 
         result = test_view(request)
         self.assertEqual(result, "Success")

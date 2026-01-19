@@ -232,8 +232,8 @@ class UserAgentParser:
     OS_PATTERNS = {
         'Windows': re.compile(r'Windows', re.IGNORECASE),
         'macOS': re.compile(r'Mac OS X|Macintosh', re.IGNORECASE),
-        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'Android': re.compile(r'Android', re.IGNORECASE),
+        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'iOS': re.compile(r'iPhone|iPad|iPod', re.IGNORECASE),
     }
 
@@ -295,7 +295,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
@@ -629,39 +629,34 @@ class EnhancedTrackingService:
         """Get tracking system statistics."""
         try:
             last_24h = timezone.now() - timedelta(hours=24)
+            stats = {}
 
-            SystemFileTracker = cls._get_model('SystemFileTracker')
-            UserActionTracker = cls._get_model('UserActionTracker')
-            SystemAccessTracker = cls._get_model('SystemAccessTracker')
-            DataModificationTracker = cls._get_model('DataModificationTracker')
-            SessionTracker = cls._get_model('SessionTracker')
-            TrackingAlert = cls._get_model('TrackingAlert')
+            # Helper to safely get count
+            def get_count(model_name, filter_kwargs):
+                try:
+                    model = cls._get_model(model_name)
+                    # pylint: disable=no-member
+                    return model.objects.filter(**filter_kwargs).count()
+                except (AttributeError, ImportError):
+                    return 0
 
-            # pylint: disable=no-member
-            stats = {
-                'file_operations_24h': SystemFileTracker.objects.filter(
-                    operation_timestamp__gte=last_24h
-                ).count(),
-                'user_actions_24h': UserActionTracker.objects.filter(
-                    action_timestamp__gte=last_24h
-                ).count(),
-                'system_access_24h': SystemAccessTracker.objects.filter(
-                    access_timestamp__gte=last_24h
-                ).count(),
-                'data_modifications_24h': DataModificationTracker.objects.filter(
-                    timestamp__gte=last_24h
-                ).count(),
-                'active_sessions': SessionTracker.objects.filter(
-                    is_active=True
-                ).count(),
-                'active_alerts': TrackingAlert.objects.filter(
-                    status='active'
-                ).count(),
-                'high_risk_events_24h': SystemAccessTracker.objects.filter(
-                    access_timestamp__gte=last_24h,
-                    risk_level__in=['high', 'critical']
-                ).count(),
-            }
+            stats['file_operations_24h'] = get_count('SystemFileTracker', {'operation_timestamp__gte': last_24h})
+            stats['user_actions_24h'] = get_count('UserActionTracker', {'action_timestamp__gte': last_24h})
+
+            # Map SessionTracker to UserSession if needed
+            stats['active_sessions'] = get_count('UserSession', {'is_active': True})
+            if stats['active_sessions'] == 0:
+                 stats['active_sessions'] = get_count('SessionTracker', {'is_active': True})
+
+            stats['active_alerts'] = get_count('TrackingAlert', {'status': 'active'})
+
+            # These models might be missing in store/models.py
+            stats['system_access_24h'] = get_count('SystemAccessTracker', {'access_timestamp__gte': last_24h})
+            stats['data_modifications_24h'] = get_count('DataModificationTracker', {'timestamp__gte': last_24h})
+            stats['high_risk_events_24h'] = get_count('SystemAccessTracker', {
+                'access_timestamp__gte': last_24h,
+                'risk_level__in': ['high', 'critical']
+            })
 
             return stats
         except Exception as exc:

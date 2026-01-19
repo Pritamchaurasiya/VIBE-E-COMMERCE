@@ -11,7 +11,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-from store.enhanced_consumers import (
+from store.monitoring_config import (
     MonitoringConfig,
     SamplingConfig,
     MetricType,
@@ -152,9 +152,9 @@ class MLAnalyticsEngineTestCase(TestCase):
 
     def test_detect_anomaly_outlier(self):
         """Test anomaly detection with outlier value."""
-        # Add stable data
+        # Add stable data with slight variance to avoid zero std dev
         for i in range(20):
-            self.engine.add_data_point('test_metric', 50.0)
+            self.engine.add_data_point('test_metric', 50.0 + (i % 2))
 
         # Test extreme value
         result = self.engine.detect_anomaly('test_metric', 500.0)
