@@ -46,6 +46,7 @@ import {
   Compare,
   ContactSupport,
   Info,
+  Mic,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -71,6 +72,34 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+
+  const startVoiceSearch = () => {
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        navigate(`/products?q=${encodeURIComponent(transcript)}`);
+      };
+
+      recognition.start();
+    } else {
+      alert('Voice search is not supported in this browser.');
+    }
+  };
 
   // Sample notifications - would come from API in production
   const notifications = [
@@ -302,6 +331,9 @@ const Header = () => {
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
               />
+              <IconButton onClick={startVoiceSearch} size="small" sx={{ color: isListening ? 'error.main' : 'white' }}>
+                <Mic />
+              </IconButton>
             </Box>
 
             {/* Theme Toggle */}

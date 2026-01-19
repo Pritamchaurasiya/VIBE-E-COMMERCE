@@ -14,6 +14,7 @@ from . import review_api
 from . import flash_sale_api
 from . import coupon_api
 from . import wishlist_price_alert_api
+from . import ml_api
 
 urlpatterns = [
     path('', views.frontpage, name='frontpage'),
@@ -213,6 +214,18 @@ urlpatterns = [
         name='api_reviews'
     ),
 
+    # Q&A API
+    path(
+        'api/v1/products/<int:product_id>/questions/',
+        api_views.ProductQuestionList.as_view(),
+        name='api_product_questions'
+    ),
+    path(
+        'api/v1/questions/<int:question_id>/answers/',
+        api_views.QuestionAnswerCreate.as_view(),
+        name='api_question_answers'
+    ),
+
     # Orders API
     path('api/v1/orders/', api_views.OrderListView.as_view(), name='api_orders'),
     path('api/v1/orders/<int:pk>/', api_views.OrderDetailView.as_view(), name='api_order_detail'),
@@ -234,6 +247,10 @@ urlpatterns = [
 
     # User Profile API
     path('api/v1/profile/', api_views.UserProfileView.as_view(), name='api_profile'),
+
+    # User Addresses API
+    path('api/v1/addresses/', api_views.UserAddressList.as_view(), name='api_address_list'),
+    path('api/v1/addresses/<int:pk>/', api_views.UserAddressDetail.as_view(), name='api_address_detail'),
 
     # ====== NEW ENHANCED API ENDPOINTS ======
     # Flash Sales API
@@ -845,6 +862,18 @@ urlpatterns = [
         'api/v1/wishlist/price-alerts/check/',
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
+    ),
+
+    # ====== ML API ENDPOINTS ======
+    path(
+        'api/v1/ml/price-prediction/<int:product_id>/',
+        ml_api.predict_price,
+        name='api_ml_price_prediction'
+    ),
+    path(
+        'api/v1/ml/crop-advice/',
+        ml_api.crop_advice,
+        name='api_ml_crop_advice'
     ),
 ]
 

@@ -47,15 +47,17 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment, UserAddress,
+    Question, Answer
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
     WishlistSerializer, ReviewSerializer, FlashSaleSerializer, BulkOrderSerializer,
-    NotificationSerializer, DealSerializer,
+    NotificationSerializer, DealSerializer, UserAddressSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer, QuestionSerializer,
+    AnswerSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
@@ -331,6 +333,40 @@ class CartView(APIView):
         cart = Cart(request)
         cart.clear()
         return Response({'message': 'Cart cleared'})
+
+
+class ProductQuestionList(generics.ListCreateAPIView):
+    """API view for product questions."""
+    serializer_class = QuestionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Question.objects.filter(
+            product_id=self.kwargs['product_id']
+        ).prefetch_related('answers__user').order_by('-created_at')
+
+    def perform_create(self, serializer):
+        product = get_object_or_404(Product, id=self.kwargs['product_id'])
+        serializer.save(user=self.request.user, product=product)
+
+
+class QuestionAnswerCreate(generics.CreateAPIView):
+    """API view for answering questions."""
+    serializer_class = AnswerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        question = get_object_or_404(Question, id=self.kwargs['question_id'])
+        # Check if user is the vendor of the product
+        is_vendor = False
+        if hasattr(self.request.user, 'vendor'):
+            is_vendor = self.request.user.vendor == question.product.vendor
+
+        serializer.save(
+            user=self.request.user,
+            question=question,
+            is_vendor_reply=is_vendor
+        )
 
 
 class ReviewListView(generics.ListCreateAPIView):
@@ -638,6 +674,27 @@ class RegisterView(APIView):
             'token': token.key,
             'user': user_data
         }, status=status.HTTP_201_CREATED)
+
+
+class UserAddressList(generics.ListCreateAPIView):
+    """API view for listing and creating user addresses."""
+    serializer_class = UserAddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class UserAddressDetail(generics.RetrieveUpdateDestroyAPIView):
+    """API view for retrieving, updating, and deleting user addresses."""
+    serializer_class = UserAddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserAddress.objects.filter(user=self.request.user)
 
 
 class UserProfileView(APIView):

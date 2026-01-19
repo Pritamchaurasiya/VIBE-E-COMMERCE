@@ -8,7 +8,7 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, UserAddress, Question, Answer
 )
 # Analytics model imports
 from .models import (
@@ -32,7 +32,11 @@ class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         """Meta class for VendorSerializer."""
         model = Vendor
-        fields = ['id', 'name', 'slug', 'logo', 'city']
+        fields = [
+            'id', 'name', 'slug', 'logo', 'city', 'description',
+            'website', 'phone', 'email', 'rating', 'established_date',
+            'latitude', 'longitude'
+        ]
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -144,6 +148,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             'user', 'shop_name', 'gst_number', 'address', 'city',
             'state', 'pincode', 'credit_limit', 'credit_used', 'is_kyc_verified'
+        ]
+
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    """Serializer for UserAddress model."""
+    class Meta:
+        """Meta class for UserAddressSerializer."""
+        model = UserAddress
+        fields = [
+            'id', 'title', 'address_line1', 'address_line2',
+            'city', 'state', 'zipcode', 'country', 'is_default'
         ]
 
 
@@ -605,3 +620,22 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+
+class AnswerSerializer(serializers.ModelSerializer):
+    """Serializer for Q&A answers."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Answer
+        fields = ['id', 'user', 'content', 'created_at', 'is_vendor_reply']
+
+
+class QuestionSerializer(serializers.ModelSerializer):
+    """Serializer for Q&A questions."""
+    user = serializers.StringRelatedField(read_only=True)
+    answers = AnswerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ['id', 'user', 'content', 'created_at', 'answers']

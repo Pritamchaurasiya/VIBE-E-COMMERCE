@@ -331,15 +331,36 @@ const VendorDetail = () => {
                     "This vendor specializes in providing quality agricultural products and equipment to farmers and businesses across the region."}
                 </Typography>
 
-                {vendor.business_details && (
+                {vendor.established_date && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="h6" gutterBottom>
-                      Business Details
+                      Established
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {vendor.business_details}
+                      Since {new Date(vendor.established_date).toLocaleDateString()}
                     </Typography>
                   </Box>
+                )}
+
+                {/* Map Placeholder */}
+                {(vendor.latitude || vendor.longitude) && (
+                   <Box sx={{ mb: 3, mt: 3 }}>
+                     <Typography variant="h6" gutterBottom>Location Map</Typography>
+                     <Box sx={{
+                       height: 300,
+                       bgcolor: '#e0e0e0',
+                       borderRadius: 2,
+                       display: 'flex',
+                       alignItems: 'center',
+                       justifyContent: 'center',
+                       backgroundImage: 'url(/placeholder-map.png)',
+                       backgroundSize: 'cover'
+                     }}>
+                        <Button variant="contained" startIcon={<LocationOn />} href={`https://maps.google.com/?q=${vendor.latitude},${vendor.longitude}`} target="_blank">
+                           View on Google Maps
+                        </Button>
+                     </Box>
+                   </Box>
                 )}
 
                 {/* Key Stats */}
