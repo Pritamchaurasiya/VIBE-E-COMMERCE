@@ -83,9 +83,17 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = queryset.prefetch_related('images')
+
+        # Annotate with review aggregation to avoid N+1 queries
+        queryset = queryset.annotate(
+            annotated_avg_rating=models.Avg('reviews__rating'),
+            annotated_review_count=models.Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -185,11 +193,23 @@ class ProductListView(generics.ListAPIView):
         else:
             # Use pagination
             page = self.paginate_queryset(queryset)
+
+            # Pre-fetch user wishlist for performance
+            wishlist_product_ids = set()
+            if request.user.is_authenticated:
+                wishlist_product_ids = set(
+                    Wishlist.objects.filter(user=request.user)
+                    .values_list('product_id', flat=True)
+                )
+
+            context = self.get_serializer_context()
+            context['wishlist_product_ids'] = wishlist_product_ids
+
             if page is not None:
-                serializer = self.get_serializer(page, many=True)
+                serializer = self.get_serializer(page, many=True, context=context)
                 return self.get_paginated_response(serializer.data)
 
-            serializer = self.get_serializer(queryset, many=True)
+            serializer = self.get_serializer(queryset, many=True, context=context)
             return Response(serializer.data)
 
 
