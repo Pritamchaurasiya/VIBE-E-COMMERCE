@@ -20,6 +20,7 @@ Version: 2.0.0
 """
 # pylint: disable=no-member,protected-access
 
+import os
 import time
 import threading
 from unittest.mock import patch, MagicMock
@@ -348,6 +349,11 @@ class SecurityTrackingMiddlewareTests(TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
+        # Unset PYTEST_CURRENT_TEST to ensure middleware blocks requests
+        self._original_env = os.environ.get('PYTEST_CURRENT_TEST')
+        if 'PYTEST_CURRENT_TEST' in os.environ:
+            del os.environ['PYTEST_CURRENT_TEST']
+
         self.factory = RequestFactory()
         self.middleware = SecurityTrackingMiddleware(get_response_mock)
         # Clear failed attempts between tests
@@ -356,6 +362,9 @@ class SecurityTrackingMiddlewareTests(TestCase):
 
     def tearDown(self):
         """Clean up after tests."""
+        if self._original_env:
+            os.environ['PYTEST_CURRENT_TEST'] = self._original_env
+
         with self.middleware._failed_attempts_lock:
             self.middleware._failed_attempts.clear()
 
@@ -840,11 +849,20 @@ class MiddlewareIntegrationTests(TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
+        # Unset PYTEST_CURRENT_TEST for integration tests too
+        self._original_env = os.environ.get('PYTEST_CURRENT_TEST')
+        if 'PYTEST_CURRENT_TEST' in os.environ:
+            del os.environ['PYTEST_CURRENT_TEST']
+
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
             username='integrationuser',
             password='testpass123'  # nosec - test credential
         )
+
+    def tearDown(self):
+        if self._original_env:
+            os.environ['PYTEST_CURRENT_TEST'] = self._original_env
 
     @patch('store.tracking_middleware.EnhancedTrackingService.track_system_access')
     @patch('store.tracking_middleware.EnhancedTrackingService.record_performance_metric')
