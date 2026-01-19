@@ -52,6 +52,7 @@ import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, selectIsDarkMode } from "../../features/theme/themeSlice";
+import SearchAutocomplete from "./SearchAutocomplete";
 
 const Header = () => {
   const { logout, isAuthenticated, user } = useAuth();
@@ -269,38 +270,16 @@ const Header = () => {
 
             {/* Search Bar */}
             <Box
-              component="form"
-              onSubmit={handleSearch}
               sx={{
-                display: { xs: "none", sm: "flex" },
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                borderRadius: 2,
-                px: 1.5,
-                py: 0.5,
+                display: { xs: "none", sm: "block" },
                 mr: 2,
                 minWidth: { sm: 180, md: 280 },
-                transition: "all 0.3s ease",
-                "&:hover, &:focus-within": {
-                  backgroundColor: "rgba(255, 255, 255, 0.25)",
-                  boxShadow: "0 0 0 2px rgba(255,255,255,0.2)",
-                },
               }}
             >
-              <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
-              <InputBase
+              <SearchAutocomplete
                 placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                inputProps={{
-                  "aria-label": "search products",
-                  role: "searchbox",
-                }}
-                sx={{
-                  color: "white",
-                  flex: 1,
-                  "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
-                }}
+                onSearch={(q) => navigate(`/products?q=${encodeURIComponent(q)}`)}
+                fullWidth
               />
             </Box>
 
