@@ -19,6 +19,7 @@ import {
   Popper,
   Fade,
   ClickAwayListener,
+  Link,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -200,7 +201,11 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    aria-label="Clear search query"
+                  >
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
@@ -345,17 +350,15 @@ const SearchAutocomplete = ({
                       <Typography variant="overline" color="text.secondary">
                         Recent Searches
                       </Typography>
-                      <Typography
+                      <Link
+                        component="button"
                         variant="caption"
                         color="primary"
-                        sx={{
-                          cursor: "pointer",
-                          "&:hover": { textDecoration: "underline" },
-                        }}
+                        underline="hover"
                         onClick={clearHistory}
                       >
                         Clear
-                      </Typography>
+                      </Link>
                     </Box>
                     <List dense>
                       {searchHistory.map((term) => (
