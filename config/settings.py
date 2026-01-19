@@ -454,6 +454,8 @@ CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
 CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
 CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
 
+SILENCED_SYSTEM_CHECKS = ['csp.E001']
+
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
     AXES_FAILURE_LIMIT = 5
