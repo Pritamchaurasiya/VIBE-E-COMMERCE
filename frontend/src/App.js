@@ -46,6 +46,8 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const SoilHealth = lazy(() => import("./pages/SoilHealth"));
+const VendorDashboard = lazy(() => import("./pages/VendorDashboard"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -82,6 +84,16 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/vendor/dashboard"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <VendorDashboard />
                 </Box>
               </Slide>
             }
@@ -373,6 +385,16 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
                 <Box>
                   <NotificationsPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/soil-health"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SoilHealth />
                 </Box>
               </Slide>
             }

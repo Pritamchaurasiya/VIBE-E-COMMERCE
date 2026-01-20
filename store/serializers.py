@@ -137,14 +137,22 @@ class OrderSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     """Serializer for Profile model."""
     user = serializers.StringRelatedField(read_only=True)
+    coins = serializers.SerializerMethodField()
 
     class Meta:
         """Meta class for ProfileSerializer."""
         model = Profile
         fields = [
             'user', 'shop_name', 'gst_number', 'address', 'city',
-            'state', 'pincode', 'credit_limit', 'credit_used', 'is_kyc_verified'
+            'state', 'pincode', 'credit_limit', 'credit_used', 'is_kyc_verified',
+            'coins'
         ]
+
+    def get_coins(self, obj):
+        """Get user coins balance."""
+        if hasattr(obj.user, 'coins'):
+            return obj.user.coins.balance
+        return 0
 
 
 class CouponSerializer(serializers.ModelSerializer):
