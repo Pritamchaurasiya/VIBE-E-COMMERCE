@@ -46,6 +46,8 @@ import {
   Compare,
   ContactSupport,
   Info,
+  MonetizationOn,
+  Science,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -148,6 +150,7 @@ const Header = () => {
   const navigationItems = [
     { label: "Home", path: "/", icon: <Home /> },
     { label: "Products", path: "/products", icon: <Store /> },
+    { label: "Soil Health", path: "/soil-health", icon: <Science /> },
     { label: "Vendors", path: "/vendors", icon: <Category /> },
     { label: "Compare", path: "/compare", icon: <Compare /> },
     { label: "About", path: "/about", icon: <Info /> },
@@ -368,6 +371,28 @@ const Header = () => {
                 >
                   <Favorite />
                 </IconButton>
+              </Tooltip>
+            )}
+
+            {/* Coins Display */}
+            {isAuthenticated && (
+              <Tooltip title="Loyalty Points">
+                <Chip
+                  icon={<MonetizationOn sx={{ color: '#FFD700 !important' }} />}
+                  label={user?.coin_balance || 0}
+                  variant="outlined"
+                  sx={{
+                    color: 'white',
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    mr: 1,
+                    display: { xs: 'none', md: 'flex' },
+                    cursor: 'pointer',
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255,255,255,0.1)'
+                    }
+                  }}
+                />
               </Tooltip>
             )}
 

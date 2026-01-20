@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import TopNav from "../components/layout/TopNav";
 import BottomNav from "../components/layout/BottomNav";
 import AgriProductCard from "../components/products/AgriProductCard";
+import WeatherWidget from "../components/common/WeatherWidget";
 import {
   productsAPI,
   wishlistAPI,
@@ -232,6 +233,8 @@ const AgriHome = () => {
 
       <main className="agri-main">
         <div className="agri-container">
+          <WeatherWidget />
+
           {/* ===== PROMO BANNER CAROUSEL ===== */}
           <section className="agri-promo-carousel">
             <div

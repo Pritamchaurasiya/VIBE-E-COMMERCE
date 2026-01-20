@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 from .models import (
     Order, OrderItem, Product, Profile, Review, BulkOrder,
-    Notification, VendorVerification
+    Notification, VendorVerification, UserCoin
 )
 from django.utils import timezone
 
@@ -29,7 +29,8 @@ def create_user_profile(sender, instance, created, **kwargs):
     """
     if created:
         Profile.objects.get_or_create(user=instance)
-        logger.info("Profile created for user: %s", instance.username)
+        UserCoin.objects.get_or_create(user=instance)
+        logger.info("Profile and UserCoin created for user: %s", instance.username)
 
 
 @receiver(post_save, sender=Order)
@@ -52,6 +53,24 @@ def order_status_changed(sender, instance, created, **kwargs):
         # Status update notification
         if instance.user and hasattr(instance, '_previous_status'):
             if instance.status != instance._previous_status:
+                # Award coins if order is delivered
+                if instance.status == 'delivered' and instance.paid_amount:
+                    try:
+                        coins_to_add = int(instance.paid_amount * 0.1) # 1 coin per 10 currency units (assuming int math)
+                        if coins_to_add > 0:
+                            user_coin, _ = UserCoin.objects.get_or_create(user=instance.user)
+                            user_coin.add_coins(coins_to_add, reason=f"Order #{instance.id} Delivered")
+
+                            Notification.objects.create(
+                                user=instance.user,
+                                notification_type='promotion',
+                                title='Coins Earned!',
+                                message=f'You earned {coins_to_add} coins from order #{instance.id}.',
+                                link='/account/'
+                            )
+                    except Exception as e:
+                        logger.error(f"Error adding coins for order {instance.id}: {e}")
+
                 Notification.objects.create(
                     user=instance.user,
                     notification_type='order',

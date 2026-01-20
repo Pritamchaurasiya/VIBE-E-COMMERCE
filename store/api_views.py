@@ -981,7 +981,18 @@ class VendorAnalyticsAPIView(APIView):
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
+        # Daily sales (last 30 days)
+        daily_sales = OrderItem.objects.filter(
+            vendor=vendor,
+            order__paid=True,
+            order__created_at__gte=thirty_days_ago
+        ).extra(select={'date': 'DATE(store_order.created_at)'}).values('date').annotate(
+            sales=Sum(models.F('price') * models.F('quantity')),
+            orders=Count('order', distinct=True)
+        ).order_by('date')
+
         return Response({
+            'daily_sales': list(daily_sales),
             'overview': {
                 'total_products': products.count(),
                 'active_products': products.filter(is_active=True).count(),

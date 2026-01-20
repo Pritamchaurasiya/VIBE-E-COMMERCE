@@ -56,7 +56,30 @@ from .performance import (
     LazyObject,
 )
 
+# General utilities (moved from store/utils.py)
+from .general import (
+    create_notification,
+    send_order_confirmation_email,
+    send_order_status_update_email,
+    update_product_stock,
+    check_low_stock_products,
+    calculate_order_total,
+    get_product_recommendations,
+    format_currency,
+    validate_coupon,
+)
+
 __all__ = [
+    # General utilities
+    'create_notification',
+    'send_order_confirmation_email',
+    'send_order_status_update_email',
+    'update_product_stock',
+    'check_low_stock_products',
+    'calculate_order_total',
+    'get_product_recommendations',
+    'format_currency',
+    'validate_coupon',
     # Cache utilities
     'CACHE_TTL_SHORT',
     'CACHE_TTL_MEDIUM',

@@ -14,6 +14,8 @@ from . import review_api
 from . import flash_sale_api
 from . import coupon_api
 from . import wishlist_price_alert_api
+from . import weather_api
+from . import soil_api
 
 urlpatterns = [
     path('', views.frontpage, name='frontpage'),
@@ -845,6 +847,20 @@ urlpatterns = [
         'api/v1/wishlist/price-alerts/check/',
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
+    ),
+
+    # ====== WEATHER API ======
+    path(
+        'api/v1/weather/',
+        weather_api.WeatherView.as_view(),
+        name='api_weather'
+    ),
+
+    # ====== SOIL HEALTH API ======
+    path(
+        'api/v1/soil-health/',
+        soil_api.SoilHealthView.as_view(),
+        name='api_soil_health'
     ),
 ]
 
