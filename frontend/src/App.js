@@ -12,6 +12,7 @@ import { AnimatePresence } from "framer-motion";
 // Context
 import { AuthProvider } from "./utils/AuthContext";
 import { CartProvider } from "./utils/CartContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Components
 import Header from "./components/common/Header";
@@ -21,6 +22,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 
 // Lazy loaded components for code splitting
 // const HomePage = lazy(() => import("./components/common/HomePage")); // Switched to AgriHome
+const AnalyticsDashboard = lazy(() => import("./components/admin/AnalyticsDashboard"));
 const ProductList = lazy(() => import("./components/products/ProductList"));
 const ProductDetail = lazy(() => import("./components/products/ProductDetailEnhanced"));
 const ProductComparison = lazy(
@@ -82,6 +84,16 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <AnalyticsDashboard />
                 </Box>
               </Slide>
             }
@@ -446,10 +458,11 @@ const AnimatedRoutes = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <AnimatedBox>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <AnimatedBox>
             <Header />
             <Box
               component="main"
@@ -464,11 +477,12 @@ function App() {
               </ErrorBoundary>
             </Box>
             <Footer />
-            <ScrollToTop />
-          </AnimatedBox>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+              <ScrollToTop />
+            </AnimatedBox>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
