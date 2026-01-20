@@ -141,7 +141,11 @@ const AgriProductCard = ({
 
         {/* Packing Options */}
         {packingOptions.length > 1 && (
-          <div className="agri-product-packing">
+          <div
+            className="agri-product-packing"
+            role="group"
+            aria-label="Packing options"
+          >
             {packingOptions.slice(0, 3).map((option, optionIndex) => (
               <button
                 type="button"
@@ -151,12 +155,17 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={`Select ${option.size} packing`}
               >
                 {option.size}
               </button>
             ))}
             {packingOptions.length > 3 && (
-              <span className="agri-packing-option agri-packing-more">
+              <span
+                className="agri-packing-option agri-packing-more"
+                title={`${packingOptions.length - 3} more packing options available`}
+              >
                 +{packingOptions.length - 3} more
               </span>
             )}
