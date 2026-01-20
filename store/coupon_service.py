@@ -267,16 +267,26 @@ class CouponService:
             Tuple of (success, message)
         """
         Coupon = self._get_coupon_model()
+        from django.db.models import F
 
         try:
             # pylint: disable=no-member
-            coupon = Coupon.objects.get(code__iexact=code.strip())
-            coupon.used_count += 1
-            coupon.save(update_fields=['used_count'])
-            logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
-            return True, "Coupon applied successfully"
-        except Coupon.DoesNotExist:
-            return False, "Coupon not found"
+            # Use atomic update with condition to prevent race condition
+            rows_updated = Coupon.objects.filter(
+                code__iexact=code.strip(),
+                used_count__lt=F('max_uses')
+            ).update(used_count=F('used_count') + 1)
+
+            if rows_updated == 1:
+                logger.info("Coupon %s applied successfully", code)
+                return True, "Coupon applied successfully"
+
+            # If no rows updated, check why
+            if not Coupon.objects.filter(code__iexact=code.strip()).exists():
+                return False, "Coupon not found"
+
+            return False, "Coupon usage limit reached"
+
         except Exception as exc:
             logger.error("Error applying coupon: %s", exc)
             return False, "Error applying coupon"
