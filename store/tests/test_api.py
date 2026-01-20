@@ -13,7 +13,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
@@ -28,7 +28,18 @@ from store.tests.test_config import TEST_USER_PASSWORD, TEST_WRONG_PASSWORD
 # nosec B105, B106 - Test-only credentials
 TEST_PASSWORD = TEST_USER_PASSWORD  # noqa: S105  # nosec B105
 
+# Override settings to use local memory cache and database session
+TEST_SETTINGS = {
+    'CACHES': {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    },
+    'SESSION_ENGINE': 'django.contrib.sessions.backends.db',
+    'AXES_ENABLED': False, # Disable axes to prevent lockouts during tests
+}
 
+@override_settings(**TEST_SETTINGS)
 class CategoryAPITest(TestCase):
     """Test cases for Category API endpoints."""
 
@@ -49,6 +60,7 @@ class CategoryAPITest(TestCase):
             self.assertGreaterEqual(len(response.data), 2)
 
 
+@override_settings(**TEST_SETTINGS)
 class ProductAPITest(TestCase):
     """Test cases for Product API endpoints."""
 
@@ -142,6 +154,7 @@ class ProductAPITest(TestCase):
         self.assertGreaterEqual(response.data['count'], 1)
 
 
+@override_settings(**TEST_SETTINGS)
 class VendorAPITest(TestCase):
     """Test cases for Vendor API endpoints."""
 
@@ -174,6 +187,7 @@ class VendorAPITest(TestCase):
         self.assertEqual(response.data['city'], 'Mumbai')
 
 
+@override_settings(**TEST_SETTINGS)
 class WishlistAPITest(TestCase):
     """Test cases for Wishlist API endpoints."""
 
@@ -247,6 +261,7 @@ class WishlistAPITest(TestCase):
         )
 
 
+@override_settings(**TEST_SETTINGS)
 class CartAPITest(TestCase):
     """Test cases for Cart API endpoints."""
 
@@ -333,6 +348,7 @@ class CartAPITest(TestCase):
         self.assertEqual(get_response.data['item_count'], 0)
 
 
+@override_settings(**TEST_SETTINGS)
 class ReviewAPITest(TestCase):
     """Test cases for Review API endpoints."""
 
@@ -405,6 +421,7 @@ class ReviewAPITest(TestCase):
         )
 
 
+@override_settings(**TEST_SETTINGS)
 class OrderAPITest(TestCase):
     """Test cases for Order API endpoints."""
 
@@ -491,6 +508,7 @@ class OrderAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+@override_settings(**TEST_SETTINGS)
 class CouponAPITest(TestCase):
     """Test cases for Coupon API endpoints."""
 
@@ -543,6 +561,7 @@ class CouponAPITest(TestCase):
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST])
 
 
+@override_settings(**TEST_SETTINGS)
 class RecommendationsAPITest(TestCase):
     """Test cases for Recommendations API endpoints."""
 
@@ -586,6 +605,7 @@ class RecommendationsAPITest(TestCase):
         self.assertIn('recommendations', response.data)
 
 
+@override_settings(**TEST_SETTINGS)
 class SearchAPITest(TestCase):
     """Test cases for Search API endpoints."""
 
@@ -627,6 +647,7 @@ class SearchAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+@override_settings(**TEST_SETTINGS)
 class AuthAPITest(TestCase):
     """Test cases for Authentication API endpoints."""
 
@@ -698,6 +719,7 @@ class AuthAPITest(TestCase):
         self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST])
 
 
+@override_settings(**TEST_SETTINGS)
 class UserProfileAPITest(TestCase):
     """Test cases for User Profile API endpoints."""
 
