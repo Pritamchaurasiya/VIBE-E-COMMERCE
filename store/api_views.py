@@ -60,6 +60,7 @@ from .serializers import (
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
 )
+from .utils.security import sanitize_for_csv
 
 logger = logging.getLogger(__name__)
 
@@ -1494,10 +1495,10 @@ class ExportDataView(APIView):
         for order in orders:
             writer.writerow([
                 order.id,
-                f"{order.first_name} {order.last_name}",
-                order.email,
-                order.phone,
-                order.address,
+                sanitize_for_csv(f"{order.first_name} {order.last_name}"),
+                sanitize_for_csv(order.email),
+                sanitize_for_csv(order.phone),
+                sanitize_for_csv(order.address),
                 order.paid_amount or 0,
                 'Paid' if order.paid else 'Unpaid',
                 order.status,
@@ -1556,10 +1557,10 @@ class ExportDataView(APIView):
         for user in users:
             writer.writerow([
                 user.id,
-                user.username,
-                user.email,
-                user.first_name,
-                user.last_name,
+                sanitize_for_csv(user.username),
+                sanitize_for_csv(user.email),
+                sanitize_for_csv(user.first_name),
+                sanitize_for_csv(user.last_name),
                 user.date_joined.strftime('%Y-%m-%d'),
                 'Yes' if user.is_active else 'No'
             ])
@@ -1579,8 +1580,8 @@ class ExportDataView(APIView):
         for vendor in vendors:
             writer.writerow([
                 vendor.id,
-                vendor.name,
-                vendor.city,
+                sanitize_for_csv(vendor.name),
+                sanitize_for_csv(vendor.city),
                 vendor.products.count()
             ])
 

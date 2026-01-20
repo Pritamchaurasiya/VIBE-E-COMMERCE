@@ -51,20 +51,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleTheme, selectIsDarkMode } from "../../features/theme/themeSlice";
+import { useTheme } from "../../context/ThemeContext";
 
 const Header = () => {
   const { logout, isAuthenticated, user } = useAuth();
   const { cart } = useCart();
   const dispatch = useDispatch();
-  const isDarkMode = useSelector(selectIsDarkMode);
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
   const navigate = useNavigate();
   const location = useLocation();
   const muiTheme = useMuiTheme();
   useMediaQuery(muiTheme.breakpoints.down("md"));
 
   const handleToggleTheme = () => {
-    dispatch(toggleTheme());
+    toggleTheme();
   };
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -160,6 +161,8 @@ const Header = () => {
     { label: "Wishlist", path: "/wishlist", icon: <Favorite /> },
     { label: "Messages", path: "/messages", icon: <Message /> },
     { label: "Settings", path: "/settings", icon: <Settings /> },
+    // Show Dashboard only for admin users (simplified check)
+    ...(user?.is_staff ? [{ label: "Dashboard", path: "/admin/analytics", icon: <TrendingUp /> }] : []),
   ];
 
   return (
