@@ -151,6 +151,8 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={`Select ${option.size} pack`}
               >
                 {option.size}
               </button>
