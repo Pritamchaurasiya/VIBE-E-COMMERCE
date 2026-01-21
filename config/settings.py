@@ -317,6 +317,7 @@ REST_FRAMEWORK = {
         'anon': '100/hour',      # Anonymous users: 100 requests per hour
         'user': '1000/hour',     # Authenticated users: 1000 requests per hour
         'login': '5/minute',     # Login attempts: 5 per minute
+        'flash_sales': '100/hour',  # Flash sales rate limit
     },
     'DEFAULT_FILTER_BACKENDS': [
         'rest_framework.filters.SearchFilter',
@@ -447,18 +448,29 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': [CSP_SELF],
+        'script-src': [CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': [CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': [CSP_SELF, "https://fonts.gstatic.com"],
+        'img-src': [CSP_SELF, "data:", "https:", "http:"],
+        'connect-src': [CSP_SELF, "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
+
+    AUTHENTICATION_BACKENDS = [
+        'django.contrib.auth.backends.ModelBackend',
+    ]
+    # Only add Axes backend if NOT running tests (to avoid request object issues)
+    if os.environ.get('PYTEST_CURRENT_TEST') != 'True':
+        AUTHENTICATION_BACKENDS.insert(0, 'axes.backends.AxesStandaloneBackend')
 
 # Elasticsearch Configuration
 ELASTICSEARCH_DSL = {

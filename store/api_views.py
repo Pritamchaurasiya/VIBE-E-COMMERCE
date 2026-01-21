@@ -34,7 +34,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle, ScopedRateThrottle
 from rest_framework.views import APIView
 from django.views import View
 
@@ -707,6 +707,8 @@ class UserProfileView(APIView):
 class FlashSaleListView(generics.ListAPIView):
     """API view for listing active flash sales."""
     serializer_class = FlashSaleSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'flash_sales'
 
     def get_queryset(self):
         """Get currently active flash sales."""
@@ -723,6 +725,8 @@ class FlashSaleDetailView(generics.RetrieveAPIView):
     queryset = FlashSale.objects.prefetch_related('products__vendor', 'products__category')
     serializer_class = FlashSaleSerializer
     lookup_field = 'slug'
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'flash_sales'
 
 
 class BulkOrderView(APIView):
