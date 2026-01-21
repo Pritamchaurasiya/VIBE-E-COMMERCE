@@ -8,7 +8,7 @@ import html
 import hashlib
 import secrets
 from functools import wraps
-from typing import Optional
+from typing import Optional, Union
 
 from django.core.cache import cache
 from django.http import JsonResponse
@@ -103,6 +103,23 @@ def sanitize_search_query(query: str) -> str:
     for pattern in dangerous_patterns:
         result = re.sub(pattern, '', result, flags=re.IGNORECASE)
     return result.strip()[:200]
+
+
+def sanitize_for_csv(value: Union[str, int, float, None]) -> str:
+    """
+    Sanitize value for CSV export to prevent Formula Injection.
+    Prepend a single quote (') if the value starts with: =, +, -, or @
+    """
+    if value is None:
+        return ""
+
+    str_value = str(value)
+
+    # Check for formula injection triggers
+    if str_value.startswith(('=', '+', '-', '@')):
+        return f"'{str_value}"
+
+    return str_value
 
 
 # ============================================================================
