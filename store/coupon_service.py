@@ -271,8 +271,13 @@ class CouponService:
         try:
             # pylint: disable=no-member
             coupon = Coupon.objects.get(code__iexact=code.strip())
-            coupon.used_count += 1
+            # Use F() expression to atomically increment usage count
+            from django.db.models import F
+            coupon.used_count = F('used_count') + 1
             coupon.save(update_fields=['used_count'])
+
+            # Refresh to get the actual value for logging
+            coupon.refresh_from_db()
             logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
             return True, "Coupon applied successfully"
         except Coupon.DoesNotExist:

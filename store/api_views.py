@@ -397,7 +397,10 @@ class ApplyCouponView(APIView):
     def post(self, request):
         """Apply a coupon code."""
         code = request.data.get('code', '').strip().upper()
-        cart_total = request.data.get('cart_total', 0)
+
+        # Security Fix: Calculate cart total server-side
+        cart = Cart(request)
+        cart_total = cart.get_total_cost()
 
         if not code:
             return Response({'success': False, 'error': 'Please enter a coupon code'})
@@ -707,6 +710,7 @@ class UserProfileView(APIView):
 class FlashSaleListView(generics.ListAPIView):
     """API view for listing active flash sales."""
     serializer_class = FlashSaleSerializer
+    throttle_classes = [AnonRateThrottle]
 
     def get_queryset(self):
         """Get currently active flash sales."""
@@ -723,6 +727,7 @@ class FlashSaleDetailView(generics.RetrieveAPIView):
     queryset = FlashSale.objects.prefetch_related('products__vendor', 'products__category')
     serializer_class = FlashSaleSerializer
     lookup_field = 'slug'
+    throttle_classes = [AnonRateThrottle]
 
 
 class BulkOrderView(APIView):
