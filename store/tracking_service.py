@@ -83,9 +83,10 @@ class InputValidator:
     """Secure input validation for tracking data."""
 
     # Compiled regex patterns for efficiency
+    # Refined to reduce false positives (removed @, and common words like UPDATE without context)
     SQL_INJECTION_PATTERN = re.compile(
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
-        r"(--|;|/\*|\*/|@@|@|char\(|nchar\(|varchar\(|nvarchar\())",
+        r"(\b(SELECT|INSERT|DELETE|DROP|UNION|EXEC|EXECUTE)\s+.*\s+(FROM|INTO|TABLE|WHERE)|"
+        r"(--|;|/\*|\*/|@@|char\(|nchar\(|varchar\(|nvarchar\())",
         re.IGNORECASE
     )
 
