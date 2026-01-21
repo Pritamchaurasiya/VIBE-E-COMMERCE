@@ -147,6 +147,8 @@ const AgriProductCard = ({
                 type="button"
                 key={`pack-${option.size}`}
                 className={`agri-packing-option ${selectedPacking === optionIndex ? "active" : ""}`}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={`Select ${option.size} pack`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
