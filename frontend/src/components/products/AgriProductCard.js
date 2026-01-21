@@ -151,6 +151,9 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={`Select ${option.size} pack`}
+                title={`Select ${option.size} pack`}
               >
                 {option.size}
               </button>
@@ -202,6 +205,8 @@ const AgriProductCard = ({
           className={`agri-add-to-cart ${isAddingToCart ? "added" : ""}`}
           onClick={handleAddToCart}
           disabled={isAddingToCart}
+          aria-live="polite"
+          aria-label={isAddingToCart ? "Added to cart" : "Add to cart"}
         >
           {isAddingToCart ? <><Check fontSize="small" /> Added</> : <><Add fontSize="small" /> Add to Cart</>}
         </button>
