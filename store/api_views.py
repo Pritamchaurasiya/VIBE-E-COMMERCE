@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -83,9 +83,13 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').annotate(
+            annotated_review_count=Count('reviews', distinct=True),
+            annotated_avg_rating=Avg('reviews__rating')
+        ).filter(is_active=True)
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -191,6 +195,16 @@ class ProductListView(generics.ListAPIView):
 
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
+
+    def get_serializer_context(self):
+        """Add wishlist items to context for optimization."""
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
+            )
+        return context
 
 
 class ProductDetailView(generics.RetrieveAPIView):
