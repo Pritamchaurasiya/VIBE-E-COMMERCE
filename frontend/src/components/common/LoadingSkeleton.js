@@ -1,263 +1,278 @@
-﻿import React from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import {
   Skeleton,
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
   List,
   ListItem,
   ListItemText,
+  useMediaQuery,
+  Grid,
 } from "@mui/material";
 import { motion } from "framer-motion";
 
-const AnimatedSkeleton = ({ children, delay = 0, ...props }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay }}
-  >
-    {children}
-  </motion.div>
-);
+const AnimatedSkeleton = ({ children, delay = 0, ...props }) => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 
-export const ProductCardSkeleton = ({ variant = "default" }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <Card
-      sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        borderRadius: 3,
-        overflow: "hidden",
-        position: "relative",
-        ...(variant === "pulse" && {
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.3), rgba(255,255,255,0.1))",
-            animation: "pulse 2s ease-in-out infinite",
-          },
-          "@keyframes pulse": {
-            "0%, 100%": { opacity: 0.5 },
-            "50%": { opacity: 1 },
-          },
-        }),
-        ...(variant === "wave" && {
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
-            animation: "wave 1.8s infinite",
-          },
-          "@keyframes wave": {
-            "0%": { left: "-100%" },
-            "100%": { left: "100%" },
-          },
-        }),
-        ...(variant === "shimmer" && {
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), rgba(255,255,255,0.8), rgba(255,255,255,0.4), transparent)",
-            animation: "shimmer 2.5s infinite",
-          },
-          "@keyframes shimmer": {
-            "0%": { left: "-100%" },
-            "100%": { left: "100%" },
-          },
-        }),
-        ...(variant === "default" && {
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-            animation: "shimmer 2s infinite",
-          },
-          "@keyframes shimmer": {
-            "0%": { left: "-100%" },
-            "100%": { left: "100%" },
-          },
-        }),
-      }}
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
     >
-      <Box sx={{ position: "relative", overflow: "hidden" }}>
-        <Skeleton
-          variant="rectangular"
-          height={220}
-          sx={{
-            borderRadius: 0,
-            backgroundColor: "grey.100",
-            "&::after": {
-              background:
-                "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-              backgroundSize: "200% 100%",
-              animation: "loading 1.5s infinite",
-            },
-            "@keyframes loading": {
-              "0%": { backgroundPosition: "200% 0" },
-              "100%": { backgroundPosition: "-200% 0" },
-            },
-          }}
-        />
-        {/* Discount badge skeleton */}
-        <Skeleton
-          variant="rectangular"
-          width={60}
-          height={24}
-          sx={{
-            position: "absolute",
-            top: 12,
-            left: 12,
-            borderRadius: 1,
-            backgroundColor: "error.main",
-            opacity: 0.8,
-          }}
-        />
-        {/* Featured badge skeleton */}
-        <Skeleton
-          variant="rectangular"
-          width={70}
-          height={24}
-          sx={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            borderRadius: 1,
-            backgroundColor: "secondary.main",
-            opacity: 0.8,
-          }}
-        />
-      </Box>
+      {children}
+    </motion.div>
+  );
+};
 
-      <CardContent sx={{ flexGrow: 1, p: 2 }}>
-        {/* Category and vendor */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.3 }}
-        >
-          <Skeleton
-            variant="text"
-            width="60%"
-            height={16}
-            sx={{ mb: 1, backgroundColor: "grey.200" }}
-          />
-        </motion.div>
+export const ProductCardSkeleton = ({ variant = "default" }) => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 
-        {/* Product name */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-        >
-          <Skeleton
-            variant="text"
-            width="90%"
-            height={24}
-            sx={{ mb: 1, backgroundColor: "grey.300" }}
-          />
-          <Skeleton
-            variant="text"
-            width="70%"
-            height={24}
-            sx={{ mb: 1, backgroundColor: "grey.300" }}
-          />
-        </motion.div>
-
-        {/* Rating */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <Skeleton
-              variant="rectangular"
-              width={80}
-              height={16}
-              sx={{ borderRadius: 1 }}
-            />
-            <Skeleton variant="text" width={40} height={14} />
-          </Box>
-        </motion.div>
-
-        {/* Price */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.3 }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Skeleton
-              variant="text"
-              width={60}
-              height={24}
-              sx={{ backgroundColor: "primary.main", opacity: 0.6 }}
-            />
-            <Skeleton variant="text" width={50} height={18} />
-          </Box>
-        </motion.div>
-
-        {/* Stock status */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.3 }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Skeleton variant="circular" width={16} height={16} />
-            <Skeleton variant="text" width={60} height={16} />
-          </Box>
-        </motion.div>
-
-        {/* Action buttons */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.3 }}
-        >
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: 3,
+          overflow: "hidden",
+          position: "relative",
+          ...(!prefersReducedMotion &&
+            variant === "pulse" && {
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                background:
+                  "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.3), rgba(255,255,255,0.1))",
+                animation: "pulse 2s ease-in-out infinite",
+              },
+              "@keyframes pulse": {
+                "0%, 100%": { opacity: 0.5 },
+                "50%": { opacity: 1 },
+              },
+            }),
+          ...(!prefersReducedMotion &&
+            variant === "wave" && {
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: "-100%",
+                width: "100%",
+                height: "100%",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                animation: "wave 1.8s infinite",
+              },
+              "@keyframes wave": {
+                "0%": { left: "-100%" },
+                "100%": { left: "100%" },
+              },
+            }),
+          ...(!prefersReducedMotion &&
+            variant === "shimmer" && {
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: "-100%",
+                width: "100%",
+                height: "100%",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), rgba(255,255,255,0.8), rgba(255,255,255,0.4), transparent)",
+                animation: "shimmer 2.5s infinite",
+              },
+              "@keyframes shimmer": {
+                "0%": { left: "-100%" },
+                "100%": { left: "100%" },
+              },
+            }),
+          ...(!prefersReducedMotion &&
+            variant === "default" && {
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: "-100%",
+                width: "100%",
+                height: "100%",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                animation: "shimmer 2s infinite",
+              },
+              "@keyframes shimmer": {
+                "0%": { left: "-100%" },
+                "100%": { left: "100%" },
+              },
+            }),
+        }}
+      >
+        <Box sx={{ position: "relative", overflow: "hidden" }}>
           <Skeleton
             variant="rectangular"
-            height={36}
+            height={220}
             sx={{
-              borderRadius: 2,
-              width: "100%",
-              backgroundColor: "primary.main",
+              borderRadius: 0,
+              backgroundColor: "grey.100",
+              ...(!prefersReducedMotion && {
+                "&::after": {
+                  background:
+                    "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
+                  backgroundSize: "200% 100%",
+                  animation: "loading 1.5s infinite",
+                },
+                "@keyframes loading": {
+                  "0%": { backgroundPosition: "200% 0" },
+                  "100%": { backgroundPosition: "-200% 0" },
+                },
+              }),
+            }}
+          />
+          {/* Discount badge skeleton */}
+          <Skeleton
+            variant="rectangular"
+            width={60}
+            height={24}
+            sx={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              borderRadius: 1,
+              backgroundColor: "error.main",
               opacity: 0.8,
             }}
           />
-        </motion.div>
-      </CardContent>
-    </Card>
-  </motion.div>
-);
+          {/* Featured badge skeleton */}
+          <Skeleton
+            variant="rectangular"
+            width={70}
+            height={24}
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              borderRadius: 1,
+              backgroundColor: "secondary.main",
+              opacity: 0.8,
+            }}
+          />
+        </Box>
+
+        <CardContent sx={{ flexGrow: 1, p: 2 }}>
+          {/* Category and vendor */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            <Skeleton
+              variant="text"
+              width="60%"
+              height={16}
+              sx={{ mb: 1, backgroundColor: "grey.200" }}
+            />
+          </motion.div>
+
+          {/* Product name */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            <Skeleton
+              variant="text"
+              width="90%"
+              height={24}
+              sx={{ mb: 1, backgroundColor: "grey.300" }}
+            />
+            <Skeleton
+              variant="text"
+              width="70%"
+              height={24}
+              sx={{ mb: 1, backgroundColor: "grey.300" }}
+            />
+          </motion.div>
+
+          {/* Rating */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <Skeleton
+                variant="rectangular"
+                width={80}
+                height={16}
+                sx={{ borderRadius: 1 }}
+              />
+              <Skeleton variant="text" width={40} height={14} />
+            </Box>
+          </motion.div>
+
+          {/* Price */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Skeleton
+                variant="text"
+                width={60}
+                height={24}
+                sx={{ backgroundColor: "primary.main", opacity: 0.6 }}
+              />
+              <Skeleton variant="text" width={50} height={18} />
+            </Box>
+          </motion.div>
+
+          {/* Stock status */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Skeleton variant="circular" width={16} height={16} />
+              <Skeleton variant="text" width={60} height={16} />
+            </Box>
+          </motion.div>
+
+          {/* Action buttons */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.3 }}
+          >
+            <Skeleton
+              variant="rectangular"
+              height={36}
+              sx={{
+                borderRadius: 2,
+                width: "100%",
+                backgroundColor: "primary.main",
+                opacity: 0.8,
+              }}
+            />
+          </motion.div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
 export const OrderCardSkeleton = () => (
   <Card>
@@ -341,150 +356,160 @@ export const ProfileFormSkeleton = () => (
   </Box>
 );
 
-export const WishlistItemSkeleton = () => (
-  <Grid item xs={12} sm={6} md={4} lg={3}>
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4 }}
-    >
-      <Card
-        sx={{
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: 3,
-          overflow: "hidden",
-          position: "relative",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-            animation: "shimmer 2.5s infinite",
-          },
-          "@keyframes shimmer": {
-            "0%": { left: "-100%" },
-            "100%": { left: "100%" },
-          },
-        }}
+export const WishlistItemSkeleton = () => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+
+  return (
+    <Grid item xs={12} sm={6} md={4} lg={3}>
+      <motion.div
+        initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
       >
-        <Box sx={{ position: "relative", overflow: "hidden" }}>
-          <Skeleton
-            variant="rectangular"
-            height={200}
-            sx={{
-              backgroundColor: "grey.100",
-              "&::after": {
+        <Card
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            borderRadius: 3,
+            overflow: "hidden",
+            position: "relative",
+            ...(!prefersReducedMotion && {
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: "-100%",
+                width: "100%",
+                height: "100%",
                 background:
-                  "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-                backgroundSize: "200% 100%",
-                animation: "loading 2s infinite",
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                animation: "shimmer 2.5s infinite",
               },
-              "@keyframes loading": {
-                "0%": { backgroundPosition: "200% 0" },
-                "100%": { backgroundPosition: "-200% 0" },
+              "@keyframes shimmer": {
+                "0%": { left: "-100%" },
+                "100%": { left: "100%" },
               },
-            }}
-          />
-          {/* Heart icon skeleton */}
-          <Skeleton
-            variant="circular"
-            width={32}
-            height={32}
-            sx={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              zIndex: 1,
-              backgroundColor: "rgba(255,255,255,0.9)",
-              border: "2px solid rgba(0,0,0,0.1)",
-            }}
-          />
-        </Box>
-
-        <CardContent sx={{ flexGrow: 1, p: 2 }}>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
-          >
-            <Skeleton
-              variant="text"
-              width="85%"
-              height={24}
-              sx={{ mb: 1, backgroundColor: "grey.300" }}
-            />
-            <Skeleton
-              variant="text"
-              width="60%"
-              height={24}
-              sx={{ mb: 1, backgroundColor: "grey.300" }}
-            />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
-          >
-            <Skeleton
-              variant="text"
-              width="70%"
-              height={16}
-              sx={{ mb: 1, backgroundColor: "grey.200" }}
-            />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
-          >
-            <Skeleton
-              variant="text"
-              width="50%"
-              height={20}
-              sx={{ mb: 2, backgroundColor: "primary.main", opacity: 0.6 }}
-            />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Skeleton variant="circular" width={16} height={16} />
-              <Skeleton variant="text" width={60} height={16} />
-            </Box>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-          >
+            }),
+          }}
+        >
+          <Box sx={{ position: "relative", overflow: "hidden" }}>
             <Skeleton
               variant="rectangular"
-              height={36}
+              height={200}
               sx={{
-                borderRadius: 2,
-                width: "100%",
-                backgroundColor: "primary.main",
-                opacity: 0.8,
+                backgroundColor: "grey.100",
+                ...(!prefersReducedMotion && {
+                  "&::after": {
+                    background:
+                      "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
+                    backgroundSize: "200% 100%",
+                    animation: "loading 2s infinite",
+                  },
+                  "@keyframes loading": {
+                    "0%": { backgroundPosition: "200% 0" },
+                    "100%": { backgroundPosition: "-200% 0" },
+                  },
+                }),
               }}
             />
-          </motion.div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  </Grid>
-);
+            {/* Heart icon skeleton */}
+            <Skeleton
+              variant="circular"
+              width={32}
+              height={32}
+              sx={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                zIndex: 1,
+                backgroundColor: "rgba(255,255,255,0.9)",
+                border: "2px solid rgba(0,0,0,0.1)",
+              }}
+            />
+          </Box>
+
+          <CardContent sx={{ flexGrow: 1, p: 2 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
+              <Skeleton
+                variant="text"
+                width="85%"
+                height={24}
+                sx={{ mb: 1, backgroundColor: "grey.300" }}
+              />
+              <Skeleton
+                variant="text"
+                width="60%"
+                height={24}
+                sx={{ mb: 1, backgroundColor: "grey.300" }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              <Skeleton
+                variant="text"
+                width="70%"
+                height={16}
+                sx={{ mb: 1, backgroundColor: "grey.200" }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+            >
+              <Skeleton
+                variant="text"
+                width="50%"
+                height={20}
+                sx={{ mb: 2, backgroundColor: "primary.main", opacity: 0.6 }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
+            >
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
+                <Skeleton variant="circular" width={16} height={16} />
+                <Skeleton variant="text" width={60} height={16} />
+              </Box>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+            >
+              <Skeleton
+                variant="rectangular"
+                height={36}
+                sx={{
+                  borderRadius: 2,
+                  width: "100%",
+                  backgroundColor: "primary.main",
+                  opacity: 0.8,
+                }}
+              />
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </Grid>
+  );
+};
 
 export const OrderDetailSkeleton = () => (
   <Box>
@@ -575,159 +600,171 @@ export const ProductComparisonSkeleton = () => (
   </Box>
 );
 
-export const LoadingSpinner = ({ size = 40, message = "Loading..." }) => (
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: "200px",
-      gap: 2,
-      position: "relative",
-    }}
-  >
-    {/* Outer rotating ring */}
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{
-        duration: 2,
-        repeat: Infinity,
-        ease: "linear",
+export const LoadingSpinner = ({ size = 40, message = "Loading..." }) => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "200px",
+        gap: 2,
+        position: "relative",
       }}
     >
-      <Box
-        sx={{
-          width: size + 20,
-          height: size + 20,
-          border: "3px solid rgba(34, 197, 94, 0.1)",
-          borderTop: "3px solid rgba(34, 197, 94, 0.6)",
-          borderRadius: "50%",
-          position: "relative",
+      {/* Outer rotating ring */}
+      <motion.div
+        animate={prefersReducedMotion ? { rotate: 0 } : { rotate: 360 }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "linear",
         }}
-      />
-    </motion.div>
-
-    {/* Inner spinning dots */}
-    <Box sx={{ position: "absolute" }}>
-      {[0, 1, 2].map((index) => (
-        <motion.div
-          key={index}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.7, 1, 0.7],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            delay: index * 0.2,
-            ease: "easeInOut",
-          }}
-          style={{
-            position: "absolute",
-            width: 8,
-            height: 8,
-            backgroundColor: "#22c55e",
+      >
+        <Box
+          sx={{
+            width: size + 20,
+            height: size + 20,
+            border: "3px solid rgba(34, 197, 94, 0.1)",
+            borderTop: "3px solid rgba(34, 197, 94, 0.6)",
             borderRadius: "50%",
-            left: size / 2 - 4,
-            top: size / 2 - 4,
-            transformOrigin: `${size / 2 + 4}px ${size / 2 + 4}px`,
+            position: "relative",
           }}
         />
-      ))}
-    </Box>
-
-    {/* Main spinner */}
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{
-        duration: 1,
-        repeat: Infinity,
-        ease: "linear",
-      }}
-    >
-      <Box
-        sx={{
-          width: size,
-          height: size,
-          border: "3px solid #f3f3f3",
-          borderTop: "3px solid #22c55e",
-          borderRadius: "50%",
-          position: "relative",
-          boxShadow: "0 0 20px rgba(34, 197, 94, 0.2)",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: -6,
-            left: -6,
-            right: -6,
-            bottom: -6,
-            border: "2px solid rgba(34, 197, 94, 0.1)",
-            borderRadius: "50%",
-            animation: "ripple 2s infinite",
-          },
-          "@keyframes ripple": {
-            "0%": {
-              transform: "scale(1)",
-              opacity: 1,
-            },
-            "100%": {
-              transform: "scale(1.3)",
-              opacity: 0,
-            },
-          },
-        }}
-      />
-    </motion.div>
-
-    {message && (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-      >
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            fontWeight: 500,
-            textAlign: "center",
-            maxWidth: 200,
-          }}
-        >
-          {message}
-        </Typography>
       </motion.div>
-    )}
 
-    {/* Progress dots */}
-    <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
-      {[0, 1, 2].map((index) => (
-        <motion.div
-          key={index}
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.3, 1, 0.3],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            delay: index * 0.15,
-          }}
-        >
-          <Box
-            sx={{
-              width: 6,
-              height: 6,
+      {/* Inner spinning dots - static if reduced motion */}
+      <Box sx={{ position: "absolute" }}>
+        {[0, 1, 2].map((index) => (
+          <motion.div
+            key={index}
+            animate={
+              prefersReducedMotion
+                ? { scale: 1, opacity: 0.7 }
+                : {
+                    scale: [1, 1.2, 1],
+                    opacity: [0.7, 1, 0.7],
+                  }
+            }
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              delay: index * 0.2,
+              ease: "easeInOut",
+            }}
+            style={{
+              position: "absolute",
+              width: 8,
+              height: 8,
+              backgroundColor: "#22c55e",
               borderRadius: "50%",
-              backgroundColor: "primary.main",
+              left: size / 2 - 4,
+              top: size / 2 - 4,
+              transformOrigin: `${size / 2 + 4}px ${size / 2 + 4}px`,
             }}
           />
+        ))}
+      </Box>
+
+      {/* Main spinner */}
+      <motion.div
+        animate={prefersReducedMotion ? { rotate: 0 } : { rotate: 360 }}
+        transition={{
+          duration: 1,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      >
+        <Box
+          sx={{
+            width: size,
+            height: size,
+            border: "3px solid #f3f3f3",
+            borderTop: "3px solid #22c55e",
+            borderRadius: "50%",
+            position: "relative",
+            boxShadow: "0 0 20px rgba(34, 197, 94, 0.2)",
+            ...(!prefersReducedMotion && {
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: -6,
+                left: -6,
+                right: -6,
+                bottom: -6,
+                border: "2px solid rgba(34, 197, 94, 0.1)",
+                borderRadius: "50%",
+                animation: "ripple 2s infinite",
+              },
+              "@keyframes ripple": {
+                "0%": {
+                  transform: "scale(1)",
+                  opacity: 1,
+                },
+                "100%": {
+                  transform: "scale(1.3)",
+                  opacity: 0,
+                },
+              },
+            }),
+          }}
+        />
+      </motion.div>
+
+      {message && (
+        <motion.div
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              fontWeight: 500,
+              textAlign: "center",
+              maxWidth: 200,
+            }}
+          >
+            {message}
+          </Typography>
         </motion.div>
-      ))}
+      )}
+
+      {/* Progress dots - disabled if reduced motion */}
+      {!prefersReducedMotion && (
+        <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
+          {[0, 1, 2].map((index) => (
+            <motion.div
+              key={index}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.3, 1, 0.3],
+              }}
+              transition={{
+                duration: 1.2,
+                repeat: Infinity,
+                delay: index * 0.15,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: "primary.main",
+                }}
+              />
+            </motion.div>
+          ))}
+        </Box>
+      )}
     </Box>
-  </Box>
-);
+  );
+};
 
 // Advanced skeleton with multiple animation types
 export const AdvancedSkeleton = ({
@@ -738,7 +775,11 @@ export const AdvancedSkeleton = ({
   animationDuration = 2,
   colors = ["#f0f0f0", "#e0e0e0", "#f0f0f0"],
 }) => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+
   const getAnimationStyles = () => {
+    if (prefersReducedMotion) return {};
+
     switch (variant) {
       case "shimmer":
         return {
@@ -800,22 +841,26 @@ export const AdvancedSkeleton = ({
 };
 
 // Skeleton group with staggered animations
-export const SkeletonGroup = ({ children, staggerDelay = 0.1 }) => (
-  <Box>
-    {React.Children.map(children, (child, index) => (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.5,
-          delay: index * staggerDelay,
-        }}
-      >
-        {child}
-      </motion.div>
-    ))}
-  </Box>
-);
+export const SkeletonGroup = ({ children, staggerDelay = 0.1 }) => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+
+  return (
+    <Box>
+      {React.Children.map(children, (child, index) => (
+        <motion.div
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: index * staggerDelay,
+          }}
+        >
+          {child}
+        </motion.div>
+      ))}
+    </Box>
+  );
+};
 
 // PropTypes definitions
 AnimatedSkeleton.propTypes = {
