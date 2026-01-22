@@ -1,0 +1,3 @@
+## 2025-02-27 - Django select_related Optimization
+**Learning:** In Django REST Framework views, accessing related fields in manual serialization loops (like `[p.category.name for p in products]`) triggers N+1 queries if `select_related` is not used in the initial queryset. This is true even if the view logic retrieves objects individually via `get()` and then performs subsequent queries.
+**Action:** Always verify query counts using `assertNumQueries` in tests for list and detail views that access related models. Apply `select_related` (for ForeignKeys) and `prefetch_related` (for M2M/Reverse FKs) proactively.

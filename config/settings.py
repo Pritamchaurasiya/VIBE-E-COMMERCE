@@ -353,7 +353,8 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+# Check NO_REDIS env var to force local memory cache (useful for testing)
+if is_package_installed('django_redis') and os.environ.get('NO_REDIS') != 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -447,12 +448,16 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': [CSP_SELF],
+        'script-src': [CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': [CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': [CSP_SELF, "https://fonts.gstatic.com"],
+        'img-src': [CSP_SELF, "data:", "https:", "http:"],
+        'connect-src': [CSP_SELF, "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
