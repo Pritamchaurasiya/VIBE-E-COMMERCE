@@ -57,10 +57,16 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         """Get product images."""
+        # Use .all() which will use the prefetch cache if available
         return [{'image': img.image.url, 'alt_text': img.alt_text} for img in obj.images.all()]
 
     def get_is_in_wishlist(self, obj):
         """Check if product is in user's wishlist."""
+        # Check context first for bulk optimization
+        wishlist_ids = self.context.get('wishlist_product_ids')
+        if wishlist_ids is not None:
+            return obj.id in wishlist_ids
+
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Wishlist.objects.filter(user=request.user, product=obj).exists()
@@ -68,6 +74,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         """Get average rating for product."""
+        # Use annotated value if available
+        if hasattr(obj, 'annotated_avg_rating'):
+            return obj.annotated_avg_rating or 0
+
         reviews = obj.reviews.all()
         if reviews:
             result = reviews.aggregate(avg_rating=Avg('rating'))
@@ -76,6 +86,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_review_count(self, obj):
         """Get review count for product."""
+        # Use annotated value if available
+        if hasattr(obj, 'annotated_review_count'):
+            return obj.annotated_review_count
         return obj.reviews.count()
 
 
