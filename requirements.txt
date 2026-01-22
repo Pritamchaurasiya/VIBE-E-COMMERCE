@@ -1,76 +1,76 @@
-# Core Django - Updated to latest stable version for security fixes
-# Django 6.0+ contains important security patches
-Django>=6.0
+# Core Django
+Django>=5.1,<6.0
 djangorestframework>=3.15.2
 django-cors-headers>=4.4.0
+django-sslserver>=0.22
 
-# Payment processing
+# Payment Processing
 stripe>=8.5.0
 
-# Image handling
+# Image Processing
 Pillow>=10.4.0
 
-# Environment variables
+# Environment Management
 python-dotenv>=1.0.1
 
-# Caching and performance
+# Database & Caching
 django-redis>=5.4.0
 redis>=5.0.4
 
-# Database (optional - for production)
-# psycopg2-binary>=2.9.9
+# Security
+django-axes>=6.0.0
 
-# Background tasks
+# Task Queue
 celery>=5.4.0
 django-celery-beat>=2.6.0
-django-celery-results>=2.6.0
 
-# WebSockets for real-time features
-channels>=4.0.0
-channels-redis>=4.2.0
+# Monitoring
+django-health-check>=3.18.0
 
-# Advanced security
-django-axes>=6.3.1  # Enhanced brute force protection
-django-csp>=3.8  # Content Security Policy
-django-secure>=1.0.2  # Security middleware
-bleach>=5.0.0 # For sanitizing user input
+# API Documentation
+# drf-yasg>=1.21.7 (Removed due to incompatibility with setuptools 70+)
+drf-spectacular>=0.27.0
 
-# AI/ML capabilities
+# Security Enhancements
+django-csp>=3.8
+django-secure>=1.0.2
+bleach>=5.0.0
+
+# Machine Learning & Analytics
 scikit-learn>=1.5.0
 pandas>=2.2.2
 numpy>=1.26.4
 
-# Advanced search
+# Advanced Search
 elasticsearch>=8.13.0
 elasticsearch-dsl>=8.13.0
 
-# Image processing and optimization
-Pillow>=10.4.0
+# Enhanced Features
 django-imagekit>=5.1.0
+channels>=4.0.0
+daphne>=4.1.0
+djangorestframework-simplejwt>=5.3.1
+drf-yasg>=1.21.7
+django-filter>=24.2
 
-# API enhancements
-djangorestframework-simplejwt>=5.3.1  # JWT authentication
-drf-yasg>=1.21.7  # API documentation
-django-filter>=24.2  # Advanced filtering
+# Performance Monitoring
+sentry-sdk>=2.0.1
+django-prometheus>=2.3.1
 
-# Monitoring and logging
-sentry-sdk>=2.0.1  # Error tracking
-django-prometheus>=2.3.1  # Metrics
+# Email & Notifications
+django-anymail>=10.3.0
+firebase-admin>=6.5.0
 
-# Email and notifications
-django-anymail>=10.3.0  # Multi-provider email
-firebase-admin>=6.5.0  # Push notifications
+# Admin Interface
+django-rosetta>=0.9.9
 
-# Internationalization
-django-rosetta>=0.9.9  # Translation management
-
-# Testing and development
+# Testing
 pytest>=8.2.0
 pytest-django>=4.8.0
 factory-boy>=3.3.0
 faker>=25.3.0
 
-# Deployment
+# Production
 gunicorn>=22.0.0
-whitenoise>=6.7.0  # Static file serving
-psycopg2-binary>=2.9.9  # PostgreSQL support
+whitenoise>=6.7.0
+psycopg2-binary>=2.9.9
