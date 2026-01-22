@@ -72,6 +72,7 @@ CSV_CONTENT_TYPE = 'text/csv'
 
 class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
+    permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -82,6 +83,7 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = ProductSerializer
 
     def get_queryset(self):
@@ -195,6 +197,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
@@ -206,12 +209,14 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
@@ -219,6 +224,7 @@ class VendorDetailView(generics.RetrieveAPIView):
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +290,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +400,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +455,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +505,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +570,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -706,6 +717,7 @@ class UserProfileView(APIView):
 
 class FlashSaleListView(generics.ListAPIView):
     """API view for listing active flash sales."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = FlashSaleSerializer
 
     def get_queryset(self):
@@ -720,6 +732,7 @@ class FlashSaleListView(generics.ListAPIView):
 
 class FlashSaleDetailView(generics.RetrieveAPIView):
     """API view for flash sale details."""
+    permission_classes = [permissions.AllowAny]
     queryset = FlashSale.objects.prefetch_related('products__vendor', 'products__category')
     serializer_class = FlashSaleSerializer
     lookup_field = 'slug'
@@ -808,6 +821,7 @@ class NotificationListView(APIView):
 
 class DealListView(generics.ListAPIView):
     """API view for listing active deals."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = DealSerializer
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -828,6 +842,7 @@ class DealListView(generics.ListAPIView):
 
 class DealDetailView(generics.RetrieveAPIView):
     """API view for deal details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Deal.objects.prefetch_related(
         'products__vendor', 'products__category', 'categories', 'vendors'
     )
@@ -1009,6 +1024,7 @@ class VendorAnalyticsAPIView(APIView):
 
 class TrendingProductsView(APIView):
     """API view for trending products based on recent orders and views."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get trending products."""
@@ -1046,6 +1062,7 @@ class TrendingProductsView(APIView):
 
 class RecentlyViewedView(APIView):
     """API view for tracking and retrieving recently viewed products."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get recently viewed products from session."""
@@ -1107,6 +1124,7 @@ class RecentlyViewedView(APIView):
 
 class AdvancedSearchView(APIView):
     """API view for advanced product search with faceted filters."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Advanced search with aggregations."""
@@ -1390,6 +1408,7 @@ class BulkInventoryUpdateView(APIView):
 
 class ProductCompareView(APIView):
     """API view for comparing multiple products side by side."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Compare products by IDs."""
@@ -2176,6 +2195,7 @@ class DatabaseDashboardView(APIView):
 
 class ContactFormView(APIView):
     """API view for contact form submissions."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Submit a contact form."""
@@ -2212,6 +2232,7 @@ class ContactFormView(APIView):
 
 class SubscriptionView(APIView):
     """API view for newsletter subscriptions."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Subscribe to newsletter."""
