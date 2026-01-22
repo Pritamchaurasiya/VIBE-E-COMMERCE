@@ -85,7 +85,13 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True).prefetch_related('images')
+
+        # Annotate review count and average rating to avoid N+1
+        queryset = queryset.annotate(
+            annotated_review_count=Count('reviews'),
+            annotated_avg_rating=models.Avg('reviews__rating')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -94,6 +100,16 @@ class ProductListView(generics.ListAPIView):
         queryset = self._filter_by_brand_crop_disease(queryset)
 
         return self._apply_sorting(queryset)
+
+    def get_serializer_context(self):
+        """Add wishlist product IDs to context."""
+        context = super().get_serializer_context()
+        request = self.request
+        if request and request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+            )
+        return context
 
     def _filter_by_search(self, queryset):
         query = self.request.query_params.get('q', '')
