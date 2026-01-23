@@ -129,6 +129,7 @@ const ProductCard = React.memo(
         {/* Compare Checkbox */}
         <Box sx={{ position: "absolute", top: 12, left: 12, zIndex: 3 }}>
           <Checkbox
+            inputProps={{ "aria-label": `Select ${product.name}` }}
             checked={selectedProducts.includes(product.id)}
             onChange={() => onSelect(product.id)}
             size="small"
@@ -176,6 +177,11 @@ const ProductCard = React.memo(
                 e.stopPropagation();
                 onToggleWishlist(product.id, product.is_in_wishlist);
               }}
+              aria-label={
+                product.is_in_wishlist
+                  ? `Remove ${product.name} from wishlist`
+                  : `Add ${product.name} to wishlist`
+              }
             >
               {product.is_in_wishlist ? (
                 <Favorite color="error" fontSize="small" />
@@ -453,6 +459,7 @@ const ProductCard = React.memo(
               </Button>
               <Tooltip title="Quick View">
                 <IconButton
+                  aria-label={`Quick view ${product.name}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onQuickView(product);
@@ -532,6 +539,7 @@ const ProductListItem = React.memo(
             <Grid item xs={12} sm={4} md={3}>
               <Box sx={{ position: "relative", height: 150 }}>
                 <Checkbox
+                  inputProps={{ "aria-label": `Select ${product.name}` }}
                   checked={selectedProducts.includes(product.id)}
                   onChange={() => onSelect(product.id)}
                   size="small"
@@ -682,6 +690,7 @@ const ProductListItem = React.memo(
                         Add
                       </Button>
                       <IconButton
+                        aria-label={`Quick view ${product.name}`}
                         onClick={() => onQuickView(product)}
                         size="small"
                         sx={{ border: "1px solid", borderColor: "divider" }}
@@ -1508,6 +1517,7 @@ const ProductList = () => {
           <Fab
             color="primary"
             size="medium"
+            aria-label="Compare selected products"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1529,6 +1539,7 @@ const ProductList = () => {
           <Fab
             color="secondary"
             size="medium"
+            aria-label="View shopping cart"
             sx={{
               borderRadius: 3,
               boxShadow: 4,
@@ -1549,6 +1560,7 @@ const ProductList = () => {
         <Fab
           color="default"
           size="small"
+          aria-label="Scroll to top"
           sx={{
             borderRadius: 3,
             boxShadow: 4,
