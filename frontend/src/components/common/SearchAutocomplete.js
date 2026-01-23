@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -190,6 +190,12 @@ const SearchAutocomplete = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setOpen(true)}
+          inputProps={{
+            role: "combobox",
+            "aria-autocomplete": "list",
+            "aria-expanded": showSuggestions,
+            "aria-controls": "search-results-listbox",
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -200,7 +206,11 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    aria-label="Clear search query"
+                  >
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
@@ -255,11 +265,12 @@ const SearchAutocomplete = ({
                     >
                       Products
                     </Typography>
-                    <List dense>
+                    <List dense role="listbox" id="search-results-listbox">
                       {results.map((product) => (
                         <ListItemButton
                           key={product.id}
                           onClick={() => handleProductClick(product)}
+                          role="option"
                         >
                           <ListItemAvatar>
                             <Avatar
@@ -285,7 +296,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  ₹{product.price}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>
@@ -293,7 +304,7 @@ const SearchAutocomplete = ({
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      Ã¢â‚¬Â¢
+                                      •
                                     </Typography>
                                     <Typography
                                       variant="body2"
@@ -357,7 +368,7 @@ const SearchAutocomplete = ({
                         Clear
                       </Typography>
                     </Box>
-                    <List dense>
+                    <List dense role="listbox" id="search-results-listbox">
                       {searchHistory.map((term) => (
                         <ListItemButton
                           key={`history-${term}`}
@@ -365,6 +376,7 @@ const SearchAutocomplete = ({
                             setQuery(term);
                             handleSearch(term);
                           }}
+                          role="option"
                         >
                           <ListItemAvatar>
                             <Avatar sx={{ bgcolor: "transparent" }}>
