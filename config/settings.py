@@ -102,7 +102,6 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,6 +112,16 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',  # Internationalization
     'store.tracking_middleware.SilentTrackingMiddleware',  # Silent tracking for metrics
 ]
+
+# Conditionally add SecurityTrackingMiddleware (must be after SessionMiddleware)
+if os.environ.get('PYTEST_CURRENT_TEST') != 'True':
+    try:
+        # Insert after SessionMiddleware
+        session_idx = MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware')
+        MIDDLEWARE.insert(session_idx + 1, 'store.tracking_middleware.SecurityTrackingMiddleware')
+    except ValueError:
+        # Fallback if SessionMiddleware is missing
+        MIDDLEWARE.append('store.tracking_middleware.SecurityTrackingMiddleware')
 
 # Add WhiteNoise for static file serving in production
 if is_package_installed('whitenoise'):

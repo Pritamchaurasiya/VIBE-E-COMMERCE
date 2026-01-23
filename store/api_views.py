@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -72,6 +72,7 @@ CSV_CONTENT_TYPE = 'text/csv'
 
 class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
+    permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -82,10 +83,16 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = ProductSerializer
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            annotated_avg_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -94,6 +101,15 @@ class ProductListView(generics.ListAPIView):
         queryset = self._filter_by_brand_crop_disease(queryset)
 
         return self._apply_sorting(queryset)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
+            )
+        return context
 
     def _filter_by_search(self, queryset):
         query = self.request.query_params.get('q', '')
@@ -167,7 +183,7 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'newest':
             return queryset.order_by('-created_at')
         elif sort == 'rating':
-            return queryset.order_by('-created_at')
+            return queryset.order_by('-annotated_avg_rating')
         return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
@@ -195,6 +211,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
@@ -206,12 +223,14 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
@@ -219,6 +238,7 @@ class VendorDetailView(generics.RetrieveAPIView):
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +304,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +414,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +469,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +519,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +584,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -611,8 +636,13 @@ class RegisterView(APIView):
         )
 
         # Create Profile and UserCoin
-        Profile.objects.create(user=user, shop_name=shop_name, role=role)
-        UserCoin.objects.create(user=user)
+        # Profile and UserCoin are created via signals, so we use get_or_create or update
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.shop_name = shop_name
+        profile.role = role
+        profile.save()
+
+        UserCoin.objects.get_or_create(user=user)
 
         logger.info("New user registered: %s", username)
         login(request, user)
