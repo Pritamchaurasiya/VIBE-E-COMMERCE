@@ -1,0 +1,3 @@
+## 2024-05-23 - N+1 Query in DRF Serializers
+**Learning:** `SerializerMethodField` in DRF often causes N+1 queries when accessing reverse relationships (e.g. `obj.reviews.count()`) even if `select_related` is used. `prefetch_related` helps but annotations (`annotate(count=Count('reviews'))`) are more efficient for aggregates. For user-specific state (like "is in wishlist"), injecting bulk-fetched IDs into serializer context avoids N+1 lookups.
+**Action:** When optimizing serializers, audit all `SerializerMethodField`s. Use `annotate` for counts/averages in the View's queryset and pass user-specific sets in `get_serializer_context`.
