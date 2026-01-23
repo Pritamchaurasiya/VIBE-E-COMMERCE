@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, F
 
 logger = logging.getLogger(__name__)
 
@@ -269,14 +269,32 @@ class CouponService:
         Coupon = self._get_coupon_model()
 
         try:
+            # Atomic update: only update if active AND used_count < max_uses
             # pylint: disable=no-member
-            coupon = Coupon.objects.get(code__iexact=code.strip())
-            coupon.used_count += 1
-            coupon.save(update_fields=['used_count'])
-            logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
-            return True, "Coupon applied successfully"
-        except Coupon.DoesNotExist:
-            return False, "Coupon not found"
+            updated_count = Coupon.objects.filter(
+                code__iexact=code.strip(),
+                is_active=True,
+                used_count__lt=F('max_uses')
+            ).update(used_count=F('used_count') + 1)
+
+            if updated_count > 0:
+                logger.info("Coupon %s applied successfully", code)
+                return True, "Coupon applied successfully"
+
+            # If we didn't update, find out why to give a specific error message
+            coupon = Coupon.objects.filter(code__iexact=code.strip()).first()
+
+            if not coupon:
+                return False, "Coupon not found"
+
+            if not coupon.is_active:
+                return False, "This coupon is no longer active"
+
+            if coupon.used_count >= coupon.max_uses:
+                return False, "This coupon has reached its usage limit"
+
+            return False, "Error applying coupon"
+
         except Exception as exc:
             logger.error("Error applying coupon: %s", exc)
             return False, "Error applying coupon"
