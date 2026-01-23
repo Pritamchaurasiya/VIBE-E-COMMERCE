@@ -151,6 +151,8 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-label={`Select packing size ${option.size} for ${product.name}`}
+                aria-pressed={selectedPacking === optionIndex}
               >
                 {option.size}
               </button>
@@ -167,11 +169,11 @@ const AgriProductCard = ({
         <div className="agri-product-pricing">
           <div className="agri-price-row">
             <span className="agri-price-current">
-              ?{currentPrice.toLocaleString()}
+              ₹{currentPrice.toLocaleString()}
             </span>
             {mrp > currentPrice && (
               <>
-                <span className="agri-price-mrp">?{mrp.toLocaleString()}</span>
+                <span className="agri-price-mrp">₹{mrp.toLocaleString()}</span>
                 <span className="agri-price-discount">
                   {discountPercent}% OFF
                 </span>
@@ -191,7 +193,7 @@ const AgriProductCard = ({
           {/* Bulk Pricing */}
           {showBulkPrice && bulkPricing && (
             <div className="agri-price-bulk">
-              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ?{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
+              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ₹{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
             </div>
           )}
         </div>
@@ -202,6 +204,8 @@ const AgriProductCard = ({
           className={`agri-add-to-cart ${isAddingToCart ? "added" : ""}`}
           onClick={handleAddToCart}
           disabled={isAddingToCart}
+          aria-label={isAddingToCart ? `Added ${product.name} to cart` : `Add ${product.name} to cart`}
+          aria-live="polite"
         >
           {isAddingToCart ? <><Check fontSize="small" /> Added</> : <><Add fontSize="small" /> Add to Cart</>}
         </button>
