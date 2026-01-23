@@ -105,6 +105,19 @@ def sanitize_search_query(query: str) -> str:
     return result.strip()[:200]
 
 
+def sanitize_for_csv(text: str) -> str:
+    """
+    Sanitize text for CSV export to prevent formula injection.
+    Prepends a single quote if the text starts with formula characters.
+    """
+    if not text:
+        return ""
+    text = str(text)
+    if text.startswith(('=', '+', '-', '@')):
+        return f"'{text}"
+    return text
+
+
 # ============================================================================
 # RATE LIMITING
 # ============================================================================
