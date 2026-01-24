@@ -84,8 +84,8 @@ class InputValidator:
 
     # Compiled regex patterns for efficiency
     SQL_INJECTION_PATTERN = re.compile(
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
-        r"(--|;|/\*|\*/|@@|@|char\(|nchar\(|varchar\(|nvarchar\())",
+        r"(\bSELECT\s+[\s\S]+?\s+FROM\b|\bINSERT\s+INTO\b|\bUPDATE\s+[\w\._\"']+\s+SET\b|\bDELETE\s+FROM\b|\bDROP\s+(TABLE|DATABASE)\b|\bUNION\s+SELECT\b|\bEXEC(UTE)?\s+(xp_|sp_|@))|"
+        r"(--|/\*|\*/|@@|char\(|nchar\(|varchar\(|nvarchar\()",
         re.IGNORECASE
     )
 
@@ -232,8 +232,8 @@ class UserAgentParser:
     OS_PATTERNS = {
         'Windows': re.compile(r'Windows', re.IGNORECASE),
         'macOS': re.compile(r'Mac OS X|Macintosh', re.IGNORECASE),
-        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'Android': re.compile(r'Android', re.IGNORECASE),
+        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'iOS': re.compile(r'iPhone|iPad|iPod', re.IGNORECASE),
     }
 

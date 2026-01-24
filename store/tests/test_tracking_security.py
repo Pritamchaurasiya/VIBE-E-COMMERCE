@@ -6,6 +6,7 @@ and tracking_middleware.py.
 """
 # pylint: disable=no-member
 
+from unittest.mock import patch, MagicMock
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 
@@ -59,6 +60,24 @@ class InputValidatorTests(TestCase):
     def test_detect_sql_injection_normal_text(self):
         """Test normal text does not trigger SQL detection."""
         self.assertFalse(InputValidator.detect_sql_injection("Hello World"))
+
+    def test_sql_injection_false_positives(self):
+        """Test that common false positives are not flagged."""
+        valid_inputs = [
+            "user@example.com",
+            "Please select an option",
+            "I will update the document later",
+            "Insert the coin into the slot",
+            "This is a union of two groups",
+            "Drop the box",
+            "Execute the plan",
+            "Delete this file",
+            "Price is $10.00",
+            "search query",
+        ]
+        for input_str in valid_inputs:
+            self.assertFalse(InputValidator.detect_sql_injection(input_str),
+                f"False positive detected for: {input_str}")
 
     def test_detect_xss_script_tag(self):
         """Test XSS script tag detection."""
@@ -196,12 +215,19 @@ class EnhancedTrackingServiceTests(TestCase):
         result = EnhancedTrackingService.is_tracking_enabled('nonexistent')
         self.assertFalse(result)
 
-    def test_get_tracking_statistics(self):
+    @patch('store.tracking_service.EnhancedTrackingService._get_model')
+    def test_get_tracking_statistics(self, mock_get_model):
         """Test statistics retrieval."""
+        # Mock the models and their objects.filter().count()
+        mock_model = MagicMock()
+        mock_model.objects.filter.return_value.count.return_value = 10
+        mock_get_model.return_value = mock_model
+
         stats = EnhancedTrackingService.get_tracking_statistics()
         self.assertIsInstance(stats, dict)
         self.assertIn('file_operations_24h', stats)
         self.assertIn('user_actions_24h', stats)
+        self.assertEqual(stats['file_operations_24h'], 10)
 
     def test_suspicious_request_detection(self):
         """Test suspicious request detection."""
