@@ -6,6 +6,7 @@ and tracking_middleware.py.
 """
 # pylint: disable=no-member
 
+from unittest.mock import MagicMock, patch
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 
@@ -196,8 +197,14 @@ class EnhancedTrackingServiceTests(TestCase):
         result = EnhancedTrackingService.is_tracking_enabled('nonexistent')
         self.assertFalse(result)
 
-    def test_get_tracking_statistics(self):
+    @patch('store.tracking_service.EnhancedTrackingService._get_model')
+    def test_get_tracking_statistics(self, mock_get_model):
         """Test statistics retrieval."""
+        # Mock the models and their objects.filter().count()
+        mock_model = MagicMock()
+        mock_model.objects.filter.return_value.count.return_value = 10
+        mock_get_model.return_value = mock_model
+
         stats = EnhancedTrackingService.get_tracking_statistics()
         self.assertIsInstance(stats, dict)
         self.assertIn('file_operations_24h', stats)
