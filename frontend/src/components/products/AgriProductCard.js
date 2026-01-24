@@ -141,7 +141,7 @@ const AgriProductCard = ({
 
         {/* Packing Options */}
         {packingOptions.length > 1 && (
-          <div className="agri-product-packing">
+          <div className="agri-product-packing" role="group" aria-label="Packing options">
             {packingOptions.slice(0, 3).map((option, optionIndex) => (
               <button
                 type="button"
@@ -151,6 +151,8 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={selectedPacking === optionIndex ? `${option.size} selected` : `Select ${option.size}`}
               >
                 {option.size}
               </button>
@@ -167,11 +169,11 @@ const AgriProductCard = ({
         <div className="agri-product-pricing">
           <div className="agri-price-row">
             <span className="agri-price-current">
-              ?{currentPrice.toLocaleString()}
+              ₹{currentPrice.toLocaleString()}
             </span>
             {mrp > currentPrice && (
               <>
-                <span className="agri-price-mrp">?{mrp.toLocaleString()}</span>
+                <span className="agri-price-mrp">₹{mrp.toLocaleString()}</span>
                 <span className="agri-price-discount">
                   {discountPercent}% OFF
                 </span>
@@ -191,7 +193,7 @@ const AgriProductCard = ({
           {/* Bulk Pricing */}
           {showBulkPrice && bulkPricing && (
             <div className="agri-price-bulk">
-              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ?{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
+              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ₹{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
             </div>
           )}
         </div>
@@ -202,6 +204,8 @@ const AgriProductCard = ({
           className={`agri-add-to-cart ${isAddingToCart ? "added" : ""}`}
           onClick={handleAddToCart}
           disabled={isAddingToCart}
+          aria-live="polite"
+          aria-label={isAddingToCart ? "Added to cart" : "Add to cart"}
         >
           {isAddingToCart ? <><Check fontSize="small" /> Added</> : <><Add fontSize="small" /> Add to Cart</>}
         </button>
