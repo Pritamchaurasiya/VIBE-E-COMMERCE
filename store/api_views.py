@@ -83,6 +83,17 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_context(self):
+        """Add wishlist_product_ids to serializer context for O(1) lookups."""
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context['wishlist_product_ids'] = set(
+                Wishlist.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
+            )
+        return context
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
@@ -92,6 +103,13 @@ class ProductListView(generics.ListAPIView):
         queryset = self._filter_by_price(queryset)
         queryset = self._filter_by_attributes(queryset)
         queryset = self._filter_by_brand_crop_disease(queryset)
+
+        # Optimize: Prefetch images and annotate rating/review count to prevent N+1 queries
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            avg_rating=models.Avg('reviews__rating'),
+            review_count=models.Count('reviews')
+        )
 
         return self._apply_sorting(queryset)
 
@@ -167,7 +185,7 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'newest':
             return queryset.order_by('-created_at')
         elif sort == 'rating':
-            return queryset.order_by('-created_at')
+            return queryset.order_by('-avg_rating')
         return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
