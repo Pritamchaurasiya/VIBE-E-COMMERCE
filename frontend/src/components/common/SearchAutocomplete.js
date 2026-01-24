@@ -26,6 +26,7 @@ import {
   TrendingUp,
   History,
   Category,
+  Mic,
 } from "@mui/icons-material";
 import { productsAPI } from "../../services/api";
 import debounce from "lodash/debounce";
@@ -50,6 +51,45 @@ const SearchAutocomplete = ({
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+
+  // Voice Search Handler
+  const handleVoiceSearch = useCallback(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Voice search is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(transcript);
+      handleSearch(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Voice search error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  }, []);
 
   // Popular searches (could be fetched from API)
   const popularSearches = [
@@ -202,6 +242,15 @@ const SearchAutocomplete = ({
                 {!loading && query && (
                   <IconButton size="small" onClick={handleClear}>
                     <Clear fontSize="small" />
+                  </IconButton>
+                )}
+                {!loading && (
+                  <IconButton
+                    size="small"
+                    onClick={handleVoiceSearch}
+                    color={isListening ? "secondary" : "default"}
+                  >
+                    <Mic fontSize="small" />
                   </IconButton>
                 )}
               </InputAdornment>

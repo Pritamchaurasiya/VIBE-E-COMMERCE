@@ -46,12 +46,16 @@ import {
   Compare,
   ContactSupport,
   Info,
+  WbSunny,
+  TrendingUp,
+  Grass,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
 import { useCart } from "../../utils/CartContext";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme, selectIsDarkMode } from "../../features/theme/themeSlice";
+import SearchAutocomplete from "./SearchAutocomplete";
 
 const Header = () => {
   const { logout, isAuthenticated, user } = useAuth();
@@ -148,10 +152,11 @@ const Header = () => {
   const navigationItems = [
     { label: "Home", path: "/", icon: <Home /> },
     { label: "Products", path: "/products", icon: <Store /> },
+    { label: "Weather", path: "/weather", icon: <WbSunny /> },
+    { label: "Mandi Prices", path: "/mandi-prices", icon: <TrendingUp /> },
+    { label: "Soil Health", path: "/soil-health", icon: <Grass /> },
     { label: "Vendors", path: "/vendors", icon: <Category /> },
     { label: "Compare", path: "/compare", icon: <Compare /> },
-    { label: "About", path: "/about", icon: <Info /> },
-    { label: "Contact", path: "/contact", icon: <ContactSupport /> },
   ];
 
   const userMenuItems = [
@@ -268,40 +273,8 @@ const Header = () => {
             </Box>
 
             {/* Search Bar */}
-            <Box
-              component="form"
-              onSubmit={handleSearch}
-              sx={{
-                display: { xs: "none", sm: "flex" },
-                alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                borderRadius: 2,
-                px: 1.5,
-                py: 0.5,
-                mr: 2,
-                minWidth: { sm: 180, md: 280 },
-                transition: "all 0.3s ease",
-                "&:hover, &:focus-within": {
-                  backgroundColor: "rgba(255, 255, 255, 0.25)",
-                  boxShadow: "0 0 0 2px rgba(255,255,255,0.2)",
-                },
-              }}
-            >
-              <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
-              <InputBase
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                inputProps={{
-                  "aria-label": "search products",
-                  role: "searchbox",
-                }}
-                sx={{
-                  color: "white",
-                  flex: 1,
-                  "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
-                }}
-              />
+            <Box sx={{ display: { xs: "none", sm: "block" }, mr: 2 }}>
+              <SearchAutocomplete />
             </Box>
 
             {/* Theme Toggle */}
@@ -507,29 +480,7 @@ const Header = () => {
 
         {/* Mobile Search */}
         <Box sx={{ p: 2 }}>
-          <Box
-            component="form"
-            onSubmit={handleSearch}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              bgcolor: "action.hover",
-              borderRadius: 2,
-              px: 2,
-              py: 1,
-            }}
-          >
-            <InputBase
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ flex: 1 }}
-              inputProps={{ "aria-label": "search" }}
-            />
-            <IconButton type="submit" size="small" aria-label="submit search">
-              <SearchIcon />
-            </IconButton>
-          </Box>
+          <SearchAutocomplete fullWidth />
         </Box>
 
         <List>
