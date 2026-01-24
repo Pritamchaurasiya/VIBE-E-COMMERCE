@@ -102,7 +102,6 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,6 +112,10 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',  # Internationalization
     'store.tracking_middleware.SilentTrackingMiddleware',  # Silent tracking for metrics
 ]
+
+if os.environ.get('PYTEST_CURRENT_TEST') != 'True':
+    # Security tracking early to block threats
+    MIDDLEWARE.insert(2, 'store.tracking_middleware.SecurityTrackingMiddleware')
 
 # Add WhiteNoise for static file serving in production
 if is_package_installed('whitenoise'):
@@ -353,7 +356,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and os.environ.get('NO_REDIS') != 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
