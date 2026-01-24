@@ -84,8 +84,8 @@ class InputValidator:
 
     # Compiled regex patterns for efficiency
     SQL_INJECTION_PATTERN = re.compile(
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
-        r"(--|;|/\*|\*/|@@|@|char\(|nchar\(|varchar\(|nvarchar\())",
+        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE|WAITFOR)\b|"
+        r"(--|;|/\*|\*/|@@|char\(|nchar\(|varchar\(|nvarchar\())",
         re.IGNORECASE
     )
 
@@ -232,8 +232,8 @@ class UserAgentParser:
     OS_PATTERNS = {
         'Windows': re.compile(r'Windows', re.IGNORECASE),
         'macOS': re.compile(r'Mac OS X|Macintosh', re.IGNORECASE),
-        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'Android': re.compile(r'Android', re.IGNORECASE),
+        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'iOS': re.compile(r'iPhone|iPad|iPod', re.IGNORECASE),
     }
 
@@ -295,7 +295,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
