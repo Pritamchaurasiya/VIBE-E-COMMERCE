@@ -447,6 +447,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -456,13 +457,13 @@ class RecommendationsView(APIView):
             return Response({'recommendations': []})
 
         # Get products in same category
-        category_products = Product.objects.filter(
+        category_products = Product.objects.select_related('category', 'vendor').filter(
             category=product.category,
             is_active=True
         ).exclude(id=product.id)[:4]
 
         # Get products from same vendor
-        vendor_products = Product.objects.filter(
+        vendor_products = Product.objects.select_related('category', 'vendor').filter(
             vendor=product.vendor,
             is_active=True
         ).exclude(id=product.id).exclude(id__in=category_products)[:2]
@@ -470,7 +471,7 @@ class RecommendationsView(APIView):
         # Get products in similar price range (Â±20%)
         price_min = float(product.price) * 0.8
         price_max = float(product.price) * 1.2
-        price_products = Product.objects.filter(
+        price_products = Product.objects.select_related('category', 'vendor').filter(
             price__gte=price_min,
             price__lte=price_max,
             is_active=True
