@@ -61,6 +61,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_is_in_wishlist(self, obj):
         """Check if product is in user's wishlist."""
+        wishlist_ids = self.context.get('wishlist_product_ids')
+        if wishlist_ids is not None:
+            return obj.id in wishlist_ids
+
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Wishlist.objects.filter(user=request.user, product=obj).exists()
@@ -68,6 +72,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         """Get average rating for product."""
+        if hasattr(obj, 'annotated_avg_rating'):
+            return obj.annotated_avg_rating or 0
+
         reviews = obj.reviews.all()
         if reviews:
             result = reviews.aggregate(avg_rating=Avg('rating'))
@@ -76,6 +83,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_review_count(self, obj):
         """Get review count for product."""
+        if hasattr(obj, 'annotated_review_count'):
+            return obj.annotated_review_count
+
         return obj.reviews.count()
 
 
