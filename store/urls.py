@@ -5,6 +5,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from . import api_views
+from . import agri_api
 from . import recommendations_api
 from . import notifications_api
 from . import wishlist_api
@@ -846,6 +847,11 @@ urlpatterns = [
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
     ),
+
+    # ====== AGRI API ENDPOINTS ======
+    path('api/v1/weather/', agri_api.WeatherView.as_view(), name='api_weather'),
+    path('api/v1/soil-health/', agri_api.SoilHealthView.as_view(), name='api_soil_health'),
+    path('api/v1/mandi-prices/', agri_api.MandiPricesView.as_view(), name='api_mandi_prices'),
 ]
 
 

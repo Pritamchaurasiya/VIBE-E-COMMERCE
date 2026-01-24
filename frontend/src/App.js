@@ -46,6 +46,9 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const WeatherPage = lazy(() => import("./pages/WeatherPage"));
+const MandiPricesPage = lazy(() => import("./pages/MandiPricesPage"));
+const SoilHealthPage = lazy(() => import("./pages/SoilHealthPage"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -82,6 +85,36 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/weather"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <WeatherPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/mandi-prices"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <MandiPricesPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/soil-health"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SoilHealthPage />
                 </Box>
               </Slide>
             }

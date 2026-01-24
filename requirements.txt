@@ -1,6 +1,6 @@
 # Core Django - Updated to latest stable version for security fixes
 # Django 6.0+ contains important security patches
-Django>=6.0
+Django>=5.0,<6.0
 djangorestframework>=3.15.2
 django-cors-headers>=4.4.0
 
@@ -31,7 +31,7 @@ channels-redis>=4.2.0
 
 # Advanced security
 django-axes>=6.3.1  # Enhanced brute force protection
-django-csp>=3.8  # Content Security Policy
+django-csp>=3.8,<4.0  # Content Security Policy (pinned <4.0 for legacy settings)
 django-secure>=1.0.2  # Security middleware
 bleach>=5.0.0 # For sanitizing user input
 

@@ -191,6 +191,21 @@ export const subscriptionAPI = {
   subscribe: (email) => api.post("/api/v1/subscribe/", { email }),
 };
 
+// New Agri Features API
+export const weatherAPI = {
+  getWeather: (city) => api.get("/api/v1/weather/", { params: { city } }),
+};
+
+export const soilHealthAPI = {
+  getReport: (sampleId) =>
+    api.get("/api/v1/soil-health/", { params: { sample_id: sampleId } }),
+};
+
+export const mandiPricesAPI = {
+  getPrices: (market) =>
+    api.get("/api/v1/mandi-prices/", { params: { market } }),
+};
+
 // ============================================
 // AGRIM-STYLE API ENDPOINTS
 // ============================================
