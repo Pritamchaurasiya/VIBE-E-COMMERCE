@@ -167,11 +167,11 @@ const AgriProductCard = ({
         <div className="agri-product-pricing">
           <div className="agri-price-row">
             <span className="agri-price-current">
-              ?{currentPrice.toLocaleString()}
+              {`\u20B9`}{currentPrice.toLocaleString()}
             </span>
             {mrp > currentPrice && (
               <>
-                <span className="agri-price-mrp">?{mrp.toLocaleString()}</span>
+                <span className="agri-price-mrp">{`\u20B9`}{mrp.toLocaleString()}</span>
                 <span className="agri-price-discount">
                   {discountPercent}% OFF
                 </span>
@@ -191,7 +191,7 @@ const AgriProductCard = ({
           {/* Bulk Pricing */}
           {showBulkPrice && bulkPricing && (
             <div className="agri-price-bulk">
-              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: ?{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
+              <Inventory fontSize="small" style={{ fontSize: '0.9rem', marginRight: 4 }} /> Bulk: {`\u20B9`}{bulkPricing.price}/unit ({bulkPricing.min_qty}+ units)
             </div>
           )}
         </div>
