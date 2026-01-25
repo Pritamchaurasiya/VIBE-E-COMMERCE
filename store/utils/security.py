@@ -304,3 +304,28 @@ def check_password_strength(password: str) -> tuple:
         issues.append("Password is too common")
 
     return len(issues) == 0, issues
+
+
+# ============================================================================
+# CSV SECURITY
+# ============================================================================
+
+def sanitize_for_csv(value) -> str:
+    """
+    Sanitize a value for CSV export to prevent formula injection.
+
+    Prepends a single quote if the value starts with =, +, -, or @.
+    This prevents Excel and other spreadsheet software from executing the value as a formula.
+    """
+    if value is None:
+        return ""
+
+    str_value = str(value)
+
+    if not str_value:
+        return ""
+
+    if str_value.startswith(('=', '+', '-', '@')):
+        return f"'{str_value}"
+
+    return str_value
