@@ -23,11 +23,19 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
 from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+
+try:
+    from sklearn.linear_model import LinearRegression
+    import numpy as np
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
 
 # DRF imports
 from rest_framework import generics, status, permissions
@@ -83,6 +91,7 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
@@ -208,6 +217,7 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
@@ -215,10 +225,12 @@ class VendorDetailView(generics.RetrieveAPIView):
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
+    permission_classes = [permissions.AllowAny]
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -499,6 +511,7 @@ class LoginView(APIView):
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
+    permission_classes = [permissions.AllowAny]
     throttle_scope = 'login'
 
     def post(self, request):
@@ -563,6 +576,7 @@ class RegisterView(APIView):
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Register a new user with input validation."""
@@ -682,6 +696,7 @@ class UserProfileView(APIView):
         """Update user profile."""
         user = request.user
         profile_data = request.data.get('profile', {})
+        preferences = request.data.get('preferences', {})
 
         # Update user fields
         user.first_name = request.data.get('first_name', user.first_name)
@@ -695,6 +710,15 @@ class UserProfileView(APIView):
             if field in profile_data:
                 setattr(profile, field, profile_data[field])
         profile.save()
+
+        # Update preferences
+        for key, value in preferences.items():
+            UserPreference.objects.update_or_create(
+                user=user,
+                preference_type='ui_customization',
+                preference_key=key,
+                defaults={'preference_value': str(value), 'data_type': 'string', 'source': 'explicit'}
+            )
 
         return Response({'success': True})
 
@@ -981,6 +1005,20 @@ class VendorAnalyticsAPIView(APIView):
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
+        # Calculate predictive analytics for low stock products
+        predictions = []
+        if HAS_SKLEARN:
+            low_stock_items = products.filter(stock_quantity__gt=0, stock_quantity__lte=20)
+            for item in low_stock_items:
+                days_left = self._predict_stockout_days(item.id, item.stock_quantity)
+                if days_left is not None and days_left < 30:
+                    predictions.append({
+                        'product_name': item.name,
+                        'current_stock': item.stock_quantity,
+                        'days_until_stockout': days_left,
+                        'status': 'critical' if days_left < 7 else 'warning'
+                    })
+
         return Response({
             'overview': {
                 'total_products': products.count(),
@@ -1004,7 +1042,62 @@ class VendorAnalyticsAPIView(APIView):
                 'average_rating': round(avg_rating, 1),
             },
             'top_products': list(top_products),
+            'stock_predictions': predictions,
         })
+
+    def _predict_stockout_days(self, product_id, current_stock):
+        """Predict days until stockout using Linear Regression."""
+        # Get daily sales for last 30 days
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        daily_sales = OrderItem.objects.filter(
+            product_id=product_id,
+            order__created_at__gte=thirty_days_ago,
+            order__paid=True
+        ).annotate(
+            date=TruncDate('order__created_at')
+        ).values('date').annotate(
+            qty=Sum('quantity')
+        ).order_by('date')
+
+        if not daily_sales or len(daily_sales) < 3:
+            return None  # Not enough data
+
+        # Prepare data for regression
+        # X = days since start, y = quantity sold
+        start_date = thirty_days_ago.date()
+        X = []
+        y = []
+
+        for entry in daily_sales:
+            days_diff = (entry['date'] - start_date).days
+            X.append([days_diff])
+            y.append(entry['qty'])
+
+        if not X:
+            return None
+
+        try:
+            model = LinearRegression()
+            model.fit(X, y)
+
+            # Predict sales trend
+            # If slope is positive, sales are increasing.
+            # We estimate average daily sales based on recent trend.
+            next_day = 31
+            predicted_daily_sales = model.predict([[next_day]])[0]
+
+            # Use max of predicted or average to be safe (avoid negative predictions)
+            avg_daily = sum(y) / 30
+            daily_rate = max(predicted_daily_sales, avg_daily)
+
+            if daily_rate <= 0.1:
+                return None  # Negligible sales
+
+            days_left = int(current_stock / daily_rate)
+            return days_left
+        except Exception as e:
+            logger.warning(f"Prediction failed for product {product_id}: {e}")
+            return None
 
 
 class TrendingProductsView(APIView):
