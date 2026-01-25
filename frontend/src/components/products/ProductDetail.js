@@ -1096,7 +1096,7 @@ const ProductDetail = () => {
                           color="primary"
                           fontWeight="bold"
                         >
-                          Ã¢â€šÂ¹{rec.price}
+                          ₹{rec.price}
                         </Typography>
                       </CardContent>
                     </Card>
