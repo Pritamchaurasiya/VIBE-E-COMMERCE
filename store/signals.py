@@ -7,12 +7,13 @@ This module handles automatic actions triggered by model events.
 
 import logging
 from django.db.models.signals import post_save, pre_save, post_delete
+from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 
 from .models import (
     Order, OrderItem, Product, Profile, Review, BulkOrder,
-    Notification, VendorVerification
+    Notification, VendorVerification, UserSession
 )
 from django.utils import timezone
 
@@ -201,3 +202,33 @@ def log_product_deletion(sender, instance, **kwargs):
     Log product deletions.
     """
     logger.info("Product deleted: %s (ID: %d)", instance.name, instance.id)
+
+@receiver(user_logged_in)
+def check_new_device(sender, user, request, **kwargs):
+    """
+    Detect login from a new device/browser and notify user.
+    """
+    if not request:
+        return
+
+    user_agent = request.META.get('HTTP_USER_AGENT', '')[:255]
+    # Simple fingerprinting based on User-Agent
+    # In production, use more robust fingerprinting
+
+    # Check if this UA has been seen before for this user
+    known_session = UserSession.objects.filter(
+        user=user,
+        user_agent__contains=user_agent
+    ).exists()
+
+    if not known_session:
+        # It's a new device/browser
+        Notification.objects.create(
+            user=user,
+            notification_type='system',
+            title='New Login Detected',
+            message=f'We detected a new login from {user_agent}. If this wasn\'t you, please change your password.',
+            priority='high',
+            is_email_sent=True # Assuming email service picks this up
+        )
+        logger.warning(f"New device login detected for {user.username}: {user_agent}")

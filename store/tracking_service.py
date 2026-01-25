@@ -232,8 +232,8 @@ class UserAgentParser:
     OS_PATTERNS = {
         'Windows': re.compile(r'Windows', re.IGNORECASE),
         'macOS': re.compile(r'Mac OS X|Macintosh', re.IGNORECASE),
-        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'Android': re.compile(r'Android', re.IGNORECASE),
+        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'iOS': re.compile(r'iPhone|iPad|iPod', re.IGNORECASE),
     }
 
@@ -295,7 +295,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
@@ -506,12 +506,17 @@ class EnhancedTrackingService:
         try:
             TrackingAlert = cls._get_model('TrackingAlert')
             # pylint: disable=no-member
+            # Map triggered_by to metadata if model doesn't support triggered_by
+            metadata = kwargs.pop('metadata', {})
+            if triggered_by:
+                metadata['triggered_by'] = triggered_by
+
             return TrackingAlert.objects.create(
                 alert_type=alert_type,
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
+                metadata=InputValidator.sanitize_metadata(metadata),
                 **kwargs
             )
         except Exception as exc:
@@ -634,7 +639,7 @@ class EnhancedTrackingService:
             UserActionTracker = cls._get_model('UserActionTracker')
             SystemAccessTracker = cls._get_model('SystemAccessTracker')
             DataModificationTracker = cls._get_model('DataModificationTracker')
-            SessionTracker = cls._get_model('SessionTracker')
+            UserSession = cls._get_model('UserSession')
             TrackingAlert = cls._get_model('TrackingAlert')
 
             # pylint: disable=no-member
@@ -651,7 +656,7 @@ class EnhancedTrackingService:
                 'data_modifications_24h': DataModificationTracker.objects.filter(
                     timestamp__gte=last_24h
                 ).count(),
-                'active_sessions': SessionTracker.objects.filter(
+                'active_sessions': UserSession.objects.filter(
                     is_active=True
                 ).count(),
                 'active_alerts': TrackingAlert.objects.filter(
