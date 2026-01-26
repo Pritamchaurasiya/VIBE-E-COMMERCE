@@ -190,6 +190,9 @@ const SearchAutocomplete = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setOpen(true)}
+          inputProps={{
+            "aria-label": "Search products",
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -200,7 +203,11 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    aria-label="Clear search query"
+                  >
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
@@ -285,7 +292,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  {`\u20B9${product.price}`}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>
@@ -293,7 +300,7 @@ const SearchAutocomplete = ({
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      Ã¢â‚¬Â¢
+                                      •
                                     </Typography>
                                     <Typography
                                       variant="body2"
@@ -348,11 +355,19 @@ const SearchAutocomplete = ({
                       <Typography
                         variant="caption"
                         color="primary"
+                        role="button"
+                        tabIndex={0}
                         sx={{
                           cursor: "pointer",
                           "&:hover": { textDecoration: "underline" },
                         }}
                         onClick={clearHistory}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            clearHistory();
+                          }
+                        }}
                       >
                         Clear
                       </Typography>

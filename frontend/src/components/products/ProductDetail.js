@@ -468,7 +468,7 @@ const ProductDetail = () => {
                     color="primary.main"
                     fontWeight="800"
                   >
-                    ₹{product.price.toLocaleString()}
+                      {`\u20B9${product.price.toLocaleString()}`}
                   </Typography>
                   {product.mrp && product.mrp > product.price && (
                     <Typography
@@ -480,7 +480,7 @@ const ProductDetail = () => {
                       }}
                       color="text.secondary"
                     >
-                      ₹{product.mrp.toLocaleString()}
+                      {`\u20B9${product.mrp.toLocaleString()}`}
                     </Typography>
                   )}
                 </Box>
@@ -498,7 +498,7 @@ const ProductDetail = () => {
                         Bulk Offer:
                      </Typography>
                      <Typography variant="body2" color="text.primary">
-                        Buy {product.bulk_min_quantity}+ for <strong>₹{product.bulk_price}</strong> / unit
+                        Buy {product.bulk_min_quantity}+ for <strong>{`\u20B9${product.bulk_price}`}</strong> / unit
                      </Typography>
                   </Box>
                 )}
@@ -1096,7 +1096,7 @@ const ProductDetail = () => {
                           color="primary"
                           fontWeight="bold"
                         >
-                          Ã¢â€šÂ¹{rec.price}
+                          {`\u20B9${rec.price}`}
                         </Typography>
                       </CardContent>
                     </Card>

@@ -1225,7 +1225,7 @@ const ProductList = () => {
                   color="text.secondary"
                   sx={{ mt: 1 }}
                 >
-                  Ã¢â€šÂ¹{priceRange[0]} - Ã¢â€šÂ¹{priceRange[1]}
+                  {`\u20B9${priceRange[0]}`} - {`\u20B9${priceRange[1]}`}
                 </Typography>
               </Box>
 
@@ -1664,7 +1664,7 @@ const ProductList = () => {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
               >
                 <Typography variant="h6" color="primary" fontWeight="bold">
-                  Ã¢â€šÂ¹{hoverPreview.product.price}
+                  {`\u20B9${hoverPreview.product.price}`}
                 </Typography>
                 {hoverPreview.product.mrp &&
                   hoverPreview.product.mrp > hoverPreview.product.price && (
@@ -1673,7 +1673,7 @@ const ProductList = () => {
                       sx={{ textDecoration: "line-through" }}
                       color="text.secondary"
                     >
-                      Ã¢â€šÂ¹{hoverPreview.product.mrp}
+                      {`\u20B9${hoverPreview.product.mrp}`}
                     </Typography>
                   )}
                 {hoverPreview.product.discount_percentage > 0 && (
@@ -1917,7 +1917,7 @@ const FiltersDrawer = React.memo(
               sx={{ color: "primary.main" }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Ã¢â€šÂ¹{priceRange[0]} - Ã¢â€šÂ¹{priceRange[1]}
+              {`\u20B9${priceRange[0]}`} - {`\u20B9${priceRange[1]}`}
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -2094,7 +2094,7 @@ const QuickViewDialog = React.memo(
                   sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
                 >
                   <Typography variant="h4" color="primary" fontWeight="bold">
-                    Ã¢â€šÂ¹{quickViewProduct.price}
+                    {`\u20B9${quickViewProduct.price}`}
                   </Typography>
                   {quickViewProduct.mrp &&
                     quickViewProduct.mrp > quickViewProduct.price && (
@@ -2103,7 +2103,7 @@ const QuickViewDialog = React.memo(
                         sx={{ textDecoration: "line-through" }}
                         color="text.secondary"
                       >
-                        Ã¢â€šÂ¹{quickViewProduct.mrp}
+                        {`\u20B9${quickViewProduct.mrp}`}
                       </Typography>
                     )}
                 </Box>
