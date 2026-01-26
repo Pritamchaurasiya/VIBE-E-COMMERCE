@@ -67,7 +67,7 @@ if is_package_installed('django_celery_results'):
     INSTALLED_APPS.append('django_celery_results')
 
 # Security apps
-if is_package_installed('axes'):
+if is_package_installed('axes') and os.environ.get('PYTEST_CURRENT_TEST') != 'True':
     INSTALLED_APPS.append('axes')
 
 if is_package_installed('csp'):
@@ -119,10 +119,10 @@ if is_package_installed('whitenoise'):
     MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Add optional middleware if packages are installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and os.environ.get('PYTEST_CURRENT_TEST') != 'True':
     MIDDLEWARE.append('axes.middleware.AxesMiddleware')
 
-if is_package_installed('csp'):
+if is_package_installed('csp') and os.environ.get('PYTEST_CURRENT_TEST') != 'True':
     MIDDLEWARE.append('csp.middleware.CSPMiddleware')
 
 ROOT_URLCONF = 'config.urls'
@@ -353,7 +353,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and os.environ.get('NO_REDIS') != 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -445,17 +445,26 @@ else:
         }
     }
 
-# Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+# Content Security Policy
+if is_package_installed('csp'):
+    CONTENT_SECURITY_POLICY = {
+        'DIRECTIVES': {
+            'default-src': ["'self'"],
+            'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+            'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            'font-src': ["'self'", "https://fonts.gstatic.com"],
+            'img-src': ["'self'", "data:", "https:", "http:"],
+            'connect-src': ["'self'", "https://api.stripe.com", "wss:", "ws:"],
+        }
+    }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Axes (Brute force protection) - Only if installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and os.environ.get('PYTEST_CURRENT_TEST') != 'True':
+    AUTHENTICATION_BACKENDS.append('axes.backends.AxesStandaloneBackend')
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
