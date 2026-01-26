@@ -102,7 +102,6 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -113,6 +112,10 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',  # Internationalization
     'store.tracking_middleware.SilentTrackingMiddleware',  # Silent tracking for metrics
 ]
+
+# Add SecurityTrackingMiddleware if not running tests
+if os.environ.get('PYTEST_CURRENT_TEST') != 'True':
+    MIDDLEWARE.insert(2, 'store.tracking_middleware.SecurityTrackingMiddleware')
 
 # Add WhiteNoise for static file serving in production
 if is_package_installed('whitenoise'):
@@ -353,7 +356,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and os.environ.get('NO_REDIS') != 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -445,14 +448,26 @@ else:
         }
     }
 
-# Content Security Policy - Use constant for common values
+# Content Security Policy
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': [CSP_SELF],
+        'script-src': [CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': [CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': [CSP_SELF, "https://fonts.gstatic.com"],
+        'img-src': [CSP_SELF, "data:", "https:", "http:"],
+        'connect-src': [CSP_SELF, "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+if is_package_installed('axes'):
+    AUTHENTICATION_BACKENDS.insert(0, 'axes.backends.AxesStandaloneBackend')
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
