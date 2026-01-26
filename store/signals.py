@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 from .models import (
     Order, OrderItem, Product, Profile, Review, BulkOrder,
-    Notification, VendorVerification
+    Notification, VendorVerification, OrderStatusHistory
 )
 from django.utils import timezone
 
@@ -35,9 +35,16 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Order)
 def order_status_changed(sender, instance, created, **kwargs):
     """
-    Handle order status changes and notifications.
+    Handle order status changes, notifications, and history tracking.
     """
     if created:
+        # Create initial history record
+        OrderStatusHistory.objects.create(
+            order=instance,
+            status=instance.status,
+            notes="Order placed"
+        )
+
         # New order notification
         if instance.user:
             Notification.objects.create(
@@ -49,19 +56,27 @@ def order_status_changed(sender, instance, created, **kwargs):
             )
         logger.info("New order created: #%d", instance.id)
     else:
-        # Status update notification
-        if instance.user and hasattr(instance, '_previous_status'):
+        # Status update notification and history
+        if hasattr(instance, '_previous_status'):
             if instance.status != instance._previous_status:
-                Notification.objects.create(
-                    user=instance.user,
-                    notification_type='order',
-                    title='Order Status Updated',
-                    message=(
-                        f'Your order #{instance.id} status has been updated '
-                        f'to {instance.get_status_display()}.'
-                    ),
-                    link=f'/orders/{instance.id}/'
+                # Create history record
+                OrderStatusHistory.objects.create(
+                    order=instance,
+                    status=instance.status,
+                    notes=f"Status updated from {instance._previous_status} to {instance.status}"
                 )
+
+                if instance.user:
+                    Notification.objects.create(
+                        user=instance.user,
+                        notification_type='order',
+                        title='Order Status Updated',
+                        message=(
+                            f'Your order #{instance.id} status has been updated '
+                            f'to {instance.get_status_display()}.'
+                        ),
+                        link=f'/orders/{instance.id}/'
+                    )
                 logger.info(
                     "Order #%d status changed to %s", instance.id, instance.status
                 )

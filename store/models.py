@@ -2719,3 +2719,164 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access events.
+    """
+    access_type = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    session_id = models.CharField(max_length=100, blank=True)
+    resource_accessed = models.CharField(max_length=255)
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, default='low')
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        verbose_name = 'System Access'
+        verbose_name_plural = 'System Accesses'
+        indexes = [
+            models.Index(fields=['access_type', 'access_timestamp']),
+            models.Index(fields=['user', 'access_timestamp']),
+            models.Index(fields=['ip_address', 'access_timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.access_type} - {self.resource_accessed}"
+
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications.
+    """
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=100)
+    operation = models.CharField(max_length=20)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    changes = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['model_name', 'timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+        ]
+
+
+class SessionTracker(models.Model):
+    """
+    Model for tracking user sessions (distinct from UserSession).
+    """
+    session_key = models.CharField(max_length=40, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    login_timestamp = models.DateTimeField(auto_now_add=True)
+    logout_timestamp = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'login_timestamp']),
+            models.Index(fields=['is_active']),
+        ]
+
+
+class TrackingDataRetention(models.Model):
+    """
+    Model for configuring data retention policies.
+    """
+    data_type = models.CharField(max_length=50, unique=True)
+    retention_period = models.IntegerField(default=90)
+    retention_unit = models.CharField(max_length=20, default='days')
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.data_type}: {self.retention_period} {self.retention_unit}"
+
+class Address(models.Model):
+    """
+    Model for managing multiple user addresses.
+    """
+    ADDRESS_TYPES = [
+        ('home', 'Home'),
+        ('office', 'Office'),
+        ('other', 'Other'),
+    ]
+    user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, help_text="Full name of recipient")
+    phone = models.CharField(max_length=20)
+    street_address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+    is_default = models.BooleanField(default=False)
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES, default='home')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-is_default', '-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_default']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.street_address}"
+
+    def save(self, *args, **kwargs):
+        """Ensure only one default address per user."""
+        if self.is_default:
+            Address.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
+class OrderStatusHistory(models.Model):
+    """
+    Model for tracking order status history.
+    """
+    order = models.ForeignKey(Order, related_name='status_history', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled')
+    ])
+    timestamp = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['order', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.order.id} - {self.status}"
+
+class ProductQuestion(models.Model):
+    """
+    Model for product questions and answers.
+    """
+    user = models.ForeignKey(User, related_name='questions', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='questions', on_delete=models.CASCADE)
+    question = models.TextField()
+    answer = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['product', 'is_active']),
+        ]
+
+    def __str__(self):
+        return f"Q: {self.question} ({self.product.name})"
