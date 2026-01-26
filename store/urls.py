@@ -542,6 +542,26 @@ urlpatterns = [
         api_views.AnalyticsDashboardView.as_view(),
         name='api_analytics_dashboard'
     ),
+    path(
+        'api/analytics/segmentation/',
+        api_views.UserSegmentationView.as_view(),
+        name='api_user_segmentation'
+    ),
+    path(
+        'api/analytics/segments/',
+        api_views.SegmentManagementView.as_view(),
+        name='api_segment_management'
+    ),
+    path(
+        'api/analytics/errors/',
+        api_views.ErrorTrackingView.as_view(),
+        name='api_error_tracking'
+    ),
+    path(
+        'api/analytics/system-monitoring/',
+        api_views.SystemMonitoringView.as_view(),
+        name='api_system_monitoring'
+    ),
 
     # ====== TRACKING SYSTEM API ENDPOINTS ======
     # Tracking Dashboard API (Admin only)
