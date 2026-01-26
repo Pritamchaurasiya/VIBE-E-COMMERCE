@@ -8,7 +8,7 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, Address, OrderStatusHistory, ProductQuestion
 )
 # Analytics model imports
 from .models import (
@@ -114,9 +114,17 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'price', 'quantity', 'vendor']
 
 
+class OrderStatusHistorySerializer(serializers.ModelSerializer):
+    """Serializer for OrderStatusHistory model."""
+    class Meta:
+        model = OrderStatusHistory
+        fields = ['status', 'timestamp', 'notes']
+
+
 class OrderSerializer(serializers.ModelSerializer):
     """Serializer for Order model."""
     items = OrderItemSerializer(many=True, read_only=True)
+    status_history = OrderStatusHistorySerializer(many=True, read_only=True)
     total_amount = serializers.SerializerMethodField()
 
     class Meta:
@@ -125,7 +133,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'email', 'address', 'zipcode',
             'place', 'phone', 'created_at', 'paid', 'paid_amount', 'payment_method',
-            'status', 'items', 'total_amount'
+            'status', 'items', 'total_amount', 'status_history'
         ]
         read_only_fields = ['id', 'created_at', 'paid', 'paid_amount']
 
@@ -605,3 +613,22 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+class AddressSerializer(serializers.ModelSerializer):
+    """Serializer for Address model."""
+    class Meta:
+        model = Address
+        fields = [
+            'id', 'name', 'phone', 'street_address', 'city',
+            'state', 'zip_code', 'is_default', 'address_type'
+        ]
+        read_only_fields = ['id']
+
+class ProductQuestionSerializer(serializers.ModelSerializer):
+    """Serializer for ProductQuestion model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = ProductQuestion
+        fields = ['id', 'user', 'question', 'answer', 'created_at']
+        read_only_fields = ['id', 'user', 'answer', 'created_at']

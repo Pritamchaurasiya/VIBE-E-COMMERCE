@@ -846,7 +846,30 @@ urlpatterns = [
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
     ),
+
+    # ====== ADDRESS API ENDPOINTS ======
+    path(
+        'api/v1/addresses/',
+        api_views.AddressViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='api_address_list'
+    ),
+    path(
+        'api/v1/addresses/<int:pk>/',
+        api_views.AddressViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+        name='api_address_detail'
+    ),
+
+    # ====== ORDER ACTIONS ======
+    path(
+        'api/v1/orders/<int:pk>/cancel/',
+        api_views.CancelOrderView.as_view(),
+        name='api_order_cancel'
+    ),
+
+    # ====== PRODUCT Q&A ======
+    path(
+        'api/v1/products/<int:product_id>/questions/',
+        api_views.ProductQuestionListCreateView.as_view(),
+        name='api_product_questions'
+    ),
 ]
-
-
-
