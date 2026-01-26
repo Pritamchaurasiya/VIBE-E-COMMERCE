@@ -25,10 +25,10 @@ from .admin_permissions import (
     log_admin_action, TRACKING_PERMISSIONS
 )
 from .tracking_service import EnhancedTrackingService
-from .models import (
-    TrackingConfiguration, TrackingAlert, AdminTrackingAudit,
-    SiteSettings
+from .tracking_models import (
+    TrackingConfiguration, TrackingAlert, AdminTrackingAudit
 )
+from .models import SiteSettings
 
 # pylint: disable=no-member, broad-except, import-outside-toplevel
 

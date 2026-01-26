@@ -17,7 +17,7 @@ from ..admin_permissions import (
     log_admin_action, setup_admin_permissions, setup_admin_roles
 )
 from ..secure_admin import SecureAdminSite
-from ..models import (
+from ..tracking_models import (
     TrackingConfiguration, TrackingAlert,
     AdminTrackingAudit
 )

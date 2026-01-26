@@ -142,7 +142,7 @@ def setup_admin_permissions():
 
     # Create custom tracking permissions
     try:
-        from store.models import TrackingConfiguration
+        from store.tracking_models import TrackingConfiguration
         content_type = ContentType.objects.get_for_model(TrackingConfiguration)
 
         for codename, name in TRACKING_PERMISSIONS.items():
@@ -339,7 +339,7 @@ def log_admin_action(user, action, model_name, object_id=None, object_repr=None,
     Log admin actions to the audit trail.
     """
     try:
-        from .models import AdminTrackingAudit
+        from .tracking_models import AdminTrackingAudit
 
         AdminTrackingAudit.objects.create(
             action=action,
