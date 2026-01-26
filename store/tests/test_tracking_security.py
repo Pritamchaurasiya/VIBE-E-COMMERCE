@@ -56,6 +56,10 @@ class InputValidatorTests(TestCase):
         """Test SQL UNION detection."""
         self.assertTrue(InputValidator.detect_sql_injection("1 UNION SELECT password FROM users"))
 
+    def test_detect_sql_injection_email(self):
+        """Test that valid email addresses are not flagged as SQL injection."""
+        self.assertFalse(InputValidator.detect_sql_injection("user@example.com"))
+
     def test_detect_sql_injection_normal_text(self):
         """Test normal text does not trigger SQL detection."""
         self.assertFalse(InputValidator.detect_sql_injection("Hello World"))
