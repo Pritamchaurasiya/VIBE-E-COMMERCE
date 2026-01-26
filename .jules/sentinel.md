@@ -1,0 +1,4 @@
+## 2025-05-15 - SQL Injection Regex False Positive
+**Vulnerability:** The SQL injection detection regex `SQL_INJECTION_PATTERN` in `store/tracking_service.py` included a standalone `@` character, which flagged all email addresses as SQL injection attempts, causing a Denial of Service for user registration and login.
+**Learning:** Regex-based security filters must be carefully tested against valid user inputs like emails. Broad matching of special characters like `@` (used in both SQL variables and email addresses) is dangerous without context awareness.
+**Prevention:** Avoid single-character matches in security regexes unless strictly necessary. Use positive lookahead/lookbehind or more specific patterns (e.g., `@\w+` for variables, but even then, be careful with emails). Always include valid use-cases (like emails) in security filter regression tests.
