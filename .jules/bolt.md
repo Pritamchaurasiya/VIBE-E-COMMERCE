@@ -1,0 +1,3 @@
+## 2025-05-22 - Vendor Analytics Optimization & Dependency Fix
+**Learning:** `VendorAnalyticsAPIView` was performing O(N) database queries and loading all order items into Python memory for aggregation, causing performance degradation as data grows. Also, `requirements.txt` incorrectly specified `Django>=6.0` (unreleased), causing dependency resolution failures.
+**Action:** Replaced Python-side iteration with database-level aggregation using `Sum`, `Count`, `Case`, and `When`. Fixed `requirements.txt` to allow `Django>=5.0,<6.0`. Always check `requirements.txt` for unrealistic versions when environment setup fails.
