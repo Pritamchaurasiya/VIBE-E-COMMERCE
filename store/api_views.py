@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, F, Case, When
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -942,36 +942,49 @@ class VendorAnalyticsAPIView(APIView):
         seven_days_ago = now - timezone.timedelta(days=7)
 
         # Get vendor products with optimized query
-        products = Product.objects.filter(vendor=vendor).select_related('category')
+        products = Product.objects.filter(vendor=vendor)
 
-        # Get orders for this vendor's products
-        order_items = OrderItem.objects.filter(
+        # Optimize product metrics
+        product_metrics = products.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(stock_quantity__lte=F('low_stock_threshold')))
+        )
+
+        # Calculate revenue metrics in database
+        revenue_metrics = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
-
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
-        )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
+        ).aggregate(
+            total=Sum(F('price') * F('quantity')),
+            monthly=Sum(
+                Case(
+                    When(order__created_at__gte=thirty_days_ago, then=F('price') * F('quantity')),
+                    default=0,
+                    output_field=models.DecimalField()
+                )
+            ),
+            weekly=Sum(
+                Case(
+                    When(order__created_at__gte=seven_days_ago, then=F('price') * F('quantity')),
+                    default=0,
+                    output_field=models.DecimalField()
+                )
+            ),
+            order_count=Count('order', distinct=True)
         )
 
         # Get reviews
-        reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
-        avg_rating = reviews.aggregate(avg=models.Avg('rating'))['avg'] or 0
+        reviews = Review.objects.filter(product__vendor=vendor)
+        review_metrics = reviews.aggregate(
+            total=Count('id'),
+            avg_rating=models.Avg('rating')
+        )
+        avg_rating = review_metrics['avg_rating'] or 0
 
         # Get bulk orders
-        bulk_orders = BulkOrder.objects.filter(vendor=vendor).select_related('product', 'user')
-        pending_bulk = bulk_orders.filter(status='pending').count()
+        pending_bulk = BulkOrder.objects.filter(vendor=vendor, status='pending').count()
 
         # Top selling products
         top_products = OrderItem.objects.filter(
@@ -981,14 +994,16 @@ class VendorAnalyticsAPIView(APIView):
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
+        total_revenue = revenue_metrics['total'] or 0
+        monthly_revenue = revenue_metrics['monthly'] or 0
+        weekly_revenue = revenue_metrics['weekly'] or 0
+
         return Response({
             'overview': {
-                'total_products': products.count(),
-                'active_products': products.filter(is_active=True).count(),
-                'out_of_stock': products.filter(stock_quantity=0).count(),
-                'low_stock': products.filter(
-                    stock_quantity__lte=models.F('low_stock_threshold')
-                ).count(),
+                'total_products': product_metrics['total'],
+                'active_products': product_metrics['active'],
+                'out_of_stock': product_metrics['out_of_stock'],
+                'low_stock': product_metrics['low_stock'],
             },
             'revenue': {
                 'total': round(total_revenue, 2),
@@ -996,11 +1011,11 @@ class VendorAnalyticsAPIView(APIView):
                 'weekly': round(weekly_revenue, 2),
             },
             'orders': {
-                'total': order_items.values('order').distinct().count(),
+                'total': revenue_metrics['order_count'],
                 'pending_bulk_orders': pending_bulk,
             },
             'reviews': {
-                'total': reviews.count(),
+                'total': review_metrics['total'],
                 'average_rating': round(avg_rating, 1),
             },
             'top_products': list(top_products),
