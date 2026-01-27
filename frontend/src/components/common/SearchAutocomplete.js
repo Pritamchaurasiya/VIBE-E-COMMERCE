@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -285,7 +285,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  {'\u20B9'}{product.price}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>
@@ -293,7 +293,7 @@ const SearchAutocomplete = ({
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      Ã¢â‚¬Â¢
+                                      {'\u2022'}
                                     </Typography>
                                     <Typography
                                       variant="body2"
@@ -351,6 +351,14 @@ const SearchAutocomplete = ({
                         sx={{
                           cursor: "pointer",
                           "&:hover": { textDecoration: "underline" },
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            clearHistory();
+                          }
                         }}
                         onClick={clearHistory}
                       >
