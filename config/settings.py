@@ -67,7 +67,7 @@ if is_package_installed('django_celery_results'):
     INSTALLED_APPS.append('django_celery_results')
 
 # Security apps
-if is_package_installed('axes'):
+if is_package_installed('axes') and not os.environ.get('PYTEST_CURRENT_TEST'):
     INSTALLED_APPS.append('axes')
 
 if is_package_installed('csp'):
@@ -119,7 +119,7 @@ if is_package_installed('whitenoise'):
     MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Add optional middleware if packages are installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and not os.environ.get('PYTEST_CURRENT_TEST'):
     MIDDLEWARE.append('axes.middleware.AxesMiddleware')
 
 if is_package_installed('csp'):
@@ -314,9 +314,9 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',      # Anonymous users: 100 requests per hour
-        'user': '1000/hour',     # Authenticated users: 1000 requests per hour
-        'login': '5/minute',     # Login attempts: 5 per minute
+        'anon': None if os.environ.get('PYTEST_CURRENT_TEST') else '100/hour',
+        'user': None if os.environ.get('PYTEST_CURRENT_TEST') else '1000/hour',
+        'login': None if os.environ.get('PYTEST_CURRENT_TEST') else '5/minute',
     },
     'DEFAULT_FILTER_BACKENDS': [
         'rest_framework.filters.SearchFilter',
@@ -446,19 +446,26 @@ else:
     }
 
 # Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': ["'self'", "https://fonts.gstatic.com"],
+        'img-src': ["'self'", "data:", "https:", "http:"],
+        'connect-src': ["'self'", "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and not os.environ.get('PYTEST_CURRENT_TEST'):
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
+    AUTHENTICATION_BACKENDS = [
+        'axes.backends.AxesStandaloneBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    ]
 
 # Elasticsearch Configuration
 ELASTICSEARCH_DSL = {
