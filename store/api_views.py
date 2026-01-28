@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -86,6 +86,23 @@ class ProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimize query with prefetch and annotations
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            annotated_avg_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
+
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
