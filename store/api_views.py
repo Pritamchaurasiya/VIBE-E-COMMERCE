@@ -1222,48 +1222,57 @@ class DashboardStatsView(APIView):
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Orders statistics
-        all_orders = Order.objects.all()
-        paid_orders = all_orders.filter(paid=True)
+        # Optimized Orders statistics and Revenue calculations
+        orders_metrics = Order.objects.aggregate(
+            # Revenue metrics (only for paid orders)
+            total_revenue=Sum('paid_amount', filter=Q(paid=True)),
+            monthly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=thirty_days_ago)),
+            weekly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=seven_days_ago)),
+            today_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__date=today)),
 
-        # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
+            # Order counts
+            total_orders=Count('id'),
+            paid_orders=Count('id', filter=Q(paid=True)),
+            pending_orders=Count('id', filter=Q(status='pending')),
+            processing_orders=Count('id', filter=Q(status='processing')),
+            shipped_orders=Count('id', filter=Q(status='shipped')),
+            delivered_orders=Count('id', filter=Q(status='delivered')),
+            cancelled_orders=Count('id', filter=Q(status='cancelled')),
+            today_orders=Count('id', filter=Q(created_at__date=today)),
+        )
 
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
+        total_revenue = orders_metrics['total_revenue'] or 0
+        monthly_revenue = orders_metrics['monthly_revenue'] or 0
+        weekly_revenue = orders_metrics['weekly_revenue'] or 0
+        today_revenue = orders_metrics['today_revenue'] or 0
 
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        # Order counts
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': orders_metrics['total_orders'],
+            'paid': orders_metrics['paid_orders'],
+            'pending': orders_metrics['pending_orders'],
+            'processing': orders_metrics['processing_orders'],
+            'shipped': orders_metrics['shipped_orders'],
+            'delivered': orders_metrics['delivered_orders'],
+            'cancelled': orders_metrics['cancelled_orders'],
+            'today': orders_metrics['today_orders'],
         }
 
-        # Products statistics
-        products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
+        # Optimized Products statistics
+        product_metrics = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(
                 stock_quantity__lte=models.F('low_stock_threshold'),
                 stock_quantity__gt=0
-            ).count(),
+            )),
+        )
+
+        products_stats = {
+            'total': product_metrics['total'],
+            'active': product_metrics['active'],
+            'out_of_stock': product_metrics['out_of_stock'],
+            'low_stock': product_metrics['low_stock'],
         }
 
         # Users statistics (User already imported at top)
@@ -1278,7 +1287,7 @@ class DashboardStatsView(APIView):
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
