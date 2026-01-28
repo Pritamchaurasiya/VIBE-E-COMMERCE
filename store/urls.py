@@ -658,6 +658,15 @@ urlpatterns = [
         name='api_notifications_settings_update'
     ),
 
+    # ====== AGRI-INTELLIGENCE API ENDPOINTS ======
+    path('api/v1/weather/', api_views.WeatherView.as_view(), name='api_weather'),
+    path('api/v1/soil-health/', api_views.SoilHealthView.as_view(), name='api_soil_health'),
+    path('api/v1/mandi-prices/', api_views.MandiPricesView.as_view(), name='api_mandi_prices'),
+    path('api/v1/my-farm/', api_views.UserFarmView.as_view(), name='api_user_farm'),
+
+    # ====== ML ANALYTICS ENDPOINTS ======
+    path('api/v1/analytics/predict-purchase/', api_views.PurchasePredictionView.as_view(), name='api_predict_purchase'),
+
     # ====== WISHLIST API ENDPOINTS ======
     path(
         'api/v2/wishlist/',

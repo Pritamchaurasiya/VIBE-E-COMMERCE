@@ -11,11 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Determine if we are running tests
+IS_TESTING = os.environ.get('TESTING') == 'True' or 'test' in sys.argv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -102,7 +106,6 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,8 +114,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Internationalization
-    'store.tracking_middleware.SilentTrackingMiddleware',  # Silent tracking for metrics
 ]
+
+# Add tracking middleware if not testing
+if not IS_TESTING:
+    MIDDLEWARE.insert(2, 'store.tracking_middleware.SecurityTrackingMiddleware')
+    MIDDLEWARE.append('store.tracking_middleware.SilentTrackingMiddleware')
 
 # Add WhiteNoise for static file serving in production
 if is_package_installed('whitenoise'):
@@ -353,7 +360,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and not os.environ.get('NO_REDIS'):
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -447,18 +454,27 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': [CSP_SELF],
+        'script-src': [CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': [CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': [CSP_SELF, "https://fonts.gstatic.com"],
+        'img-src': [CSP_SELF, "data:", "https:", "http:"],
+        'connect-src': [CSP_SELF, "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
-if is_package_installed('axes'):
+# Skip in tests to prevent authentication errors
+if is_package_installed('axes') and not IS_TESTING:
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
+    AUTHENTICATION_BACKENDS = [
+        'axes.backends.AxesStandaloneBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    ]
 
 # Elasticsearch Configuration
 ELASTICSEARCH_DSL = {

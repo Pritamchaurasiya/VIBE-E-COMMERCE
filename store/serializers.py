@@ -8,7 +8,7 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, WeatherLog, SoilHealthReport, MandiPrice, UserFarm
 )
 # Analytics model imports
 from .models import (
@@ -605,3 +605,32 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+class WeatherLogSerializer(serializers.ModelSerializer):
+    """Serializer for WeatherLog model."""
+    class Meta:
+        """Meta class for WeatherLogSerializer."""
+        model = WeatherLog
+        fields = ['city', 'temperature', 'condition', 'humidity', 'timestamp']
+
+class SoilHealthReportSerializer(serializers.ModelSerializer):
+    """Serializer for SoilHealthReport model."""
+    class Meta:
+        """Meta class for SoilHealthReportSerializer."""
+        model = SoilHealthReport
+        fields = ['id', 'ph_level', 'nitrogen', 'phosphorus', 'potassium', 'organic_carbon', 'recommendation', 'created_at']
+        read_only_fields = ['recommendation', 'created_at']
+
+class MandiPriceSerializer(serializers.ModelSerializer):
+    """Serializer for MandiPrice model."""
+    class Meta:
+        """Meta class for MandiPriceSerializer."""
+        model = MandiPrice
+        fields = ['crop', 'market', 'price', 'date']
+
+class UserFarmSerializer(serializers.ModelSerializer):
+    """Serializer for UserFarm model."""
+    class Meta:
+        """Meta class for UserFarmSerializer."""
+        model = UserFarm
+        fields = ['id', 'farm_name', 'area_acres', 'primary_crop', 'soil_type', 'irrigation_type']

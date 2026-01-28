@@ -2719,3 +2719,169 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access events (logins, admin access, API calls).
+    """
+    ACCESS_TYPES = [
+        ('admin_access', 'Admin Panel Access'),
+        ('api_access', 'API Access'),
+        ('file_access', 'File Access'),
+        ('login_attempt', 'Login Attempt'),
+        ('login_page_access', 'Login Page Access'),
+        ('logout', 'Logout'),
+        ('database_access', 'Database Access'),
+        ('page_access', 'Page Access'),
+        ('sql_injection', 'SQL Injection Attempt'),
+        ('xss_attempt', 'XSS Attempt'),
+        ('path_traversal', 'Path Traversal Attempt'),
+        ('csrf_violation', 'CSRF Violation'),
+        ('brute_force', 'Brute Force Attempt'),
+        ('suspicious_activity', 'Suspicious Activity'),
+        ('error', 'System Error'),
+    ]
+
+    access_type = models.CharField(max_length=50, choices=ACCESS_TYPES)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    session_id = models.CharField(max_length=100, blank=True)
+    resource_accessed = models.CharField(max_length=255, blank=True)
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, default='low')
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        verbose_name = 'System Access'
+        verbose_name_plural = 'System Access Logs'
+        indexes = [
+            models.Index(fields=['access_type', 'access_timestamp']),
+            models.Index(fields=['ip_address', 'access_timestamp']),
+            models.Index(fields=['user', 'access_timestamp']),
+            models.Index(fields=['risk_level']),
+        ]
+
+    def __str__(self):
+        return f"{self.access_type} - {self.user} ({self.access_timestamp})"
+
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications (CUD operations).
+    """
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    model_name = models.CharField(max_length=100)
+    operation = models.CharField(max_length=20) # create, update, delete
+    object_id = models.CharField(max_length=100, blank=True)
+    changes = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['timestamp']),
+            models.Index(fields=['model_name']),
+        ]
+
+class SessionTracker(models.Model):
+    """
+    Model for tracking active user sessions.
+    """
+    session_key = models.CharField(max_length=40, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    login_timestamp = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_active', 'last_activity']),
+            models.Index(fields=['user']),
+        ]
+
+class TrackingDataRetention(models.Model):
+    """
+    Configuration for data retention policies.
+    """
+    data_type = models.CharField(max_length=50, unique=True) # e.g. 'file_operations', 'user_actions'
+    retention_period = models.PositiveIntegerField(default=90)
+    retention_unit = models.CharField(max_length=10, default='days') # days, weeks, months, years
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.data_type} retention: {self.retention_period} {self.retention_unit}"
+
+
+# ============================================
+# AGRI-INTELLIGENCE MODELS
+# ============================================
+
+class WeatherLog(models.Model):
+    """
+    Log of weather conditions for analytics and forecasting.
+    """
+    city = models.CharField(max_length=100)
+    temperature = models.DecimalField(max_digits=5, decimal_places=2)
+    condition = models.CharField(max_length=100)
+    humidity = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['city', 'timestamp'])]
+
+    def __str__(self):
+        return f"{self.city}: {self.temperature}°C ({self.condition})"
+
+class SoilHealthReport(models.Model):
+    """
+    Soil health report for a user's farm.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='soil_reports')
+    ph_level = models.DecimalField(max_digits=4, decimal_places=2, help_text="pH Level (0-14)")
+    nitrogen = models.DecimalField(max_digits=5, decimal_places=2, help_text="Nitrogen (N) kg/ha")
+    phosphorus = models.DecimalField(max_digits=5, decimal_places=2, help_text="Phosphorus (P) kg/ha")
+    potassium = models.DecimalField(max_digits=5, decimal_places=2, help_text="Potassium (K) kg/ha")
+    organic_carbon = models.DecimalField(max_digits=5, decimal_places=2, help_text="Organic Carbon %")
+    recommendation = models.TextField(blank=True, help_text="AI-generated recommendation")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Soil Report for {self.user.username} ({self.created_at.date()})"
+
+class MandiPrice(models.Model):
+    """
+    Daily mandi prices for crops.
+    """
+    crop = models.CharField(max_length=100)
+    market = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price per quintal")
+    date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['crop', 'market', 'date'])]
+        ordering = ['-date', 'crop']
+
+    def __str__(self):
+        return f"{self.crop} at {self.market}: ₹{self.price}"
+
+class UserFarm(models.Model):
+    """
+    User's farm profile for personalized recommendations.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='farm')
+    farm_name = models.CharField(max_length=255)
+    area_acres = models.DecimalField(max_digits=10, decimal_places=2)
+    primary_crop = models.CharField(max_length=100)
+    soil_type = models.CharField(max_length=100)
+    irrigation_type = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Farm"
