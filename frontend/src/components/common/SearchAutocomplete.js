@@ -200,7 +200,7 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton size="small" onClick={handleClear} aria-label="Clear search">
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
@@ -285,7 +285,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  {`\u20B9`}{product.price}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>
@@ -293,7 +293,7 @@ const SearchAutocomplete = ({
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      Ã¢â‚¬Â¢
+                                      {`\u2022`}
                                     </Typography>
                                     <Typography
                                       variant="body2"
