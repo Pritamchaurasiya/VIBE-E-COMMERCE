@@ -1,5 +1,6 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CircularProgress } from "@mui/material";
 import { productsAPI } from "../../services/api";
 import { useCart } from "../../utils/CartContext";
 import { useAuth } from "../../utils/AuthContext";
@@ -18,6 +19,7 @@ const TopNav = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const searchRef = useRef(null);
+  const inputRef = useRef(null);
   const searchTimeout = useRef(null);
   const navigate = useNavigate();
   const { cartCount } = useCart();
@@ -50,6 +52,31 @@ const TopNav = () => {
       fetchNotificationCount();
     }
   }, [isAuthenticated]);
+
+  // Keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check for / or Ctrl+K (Cmd+K)
+      if (
+        e.key === "/" ||
+        ((e.metaKey || e.ctrlKey) && e.key === "k")
+      ) {
+        // Prevent default if typing / outside inputs, or always for Ctrl+K
+        if (
+          e.key === "/" &&
+          ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)
+        ) {
+          return;
+        }
+
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Handle search with debounce
   const handleSearch = useCallback(async (query) => {
@@ -143,15 +170,23 @@ const TopNav = () => {
       <div className="agri-search-wrapper" ref={searchRef}>
         <form onSubmit={handleSearchSubmit}>
           <input
+            ref={inputRef}
             type="text"
             className="agri-search-input"
-            placeholder="Search seeds, fertilizers, pesticides..."
+            placeholder="Search seeds, fertilizers... (Press /)"
             value={searchQuery}
             onChange={handleSearchInput}
             onFocus={() => setIsSearchOpen(true)}
             aria-label="Search products"
+            aria-keyshortcuts="/"
           />
-          <span className="agri-search-icon">{isLoading ? "..." : <Search fontSize="small" />}</span>
+          <span className="agri-search-icon">
+            {isLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <Search fontSize="small" />
+            )}
+          </span>
         </form>
 
         {/* Search Dropdown */}
