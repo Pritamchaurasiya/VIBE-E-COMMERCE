@@ -30,7 +30,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 # DRF imports
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, filters
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -47,7 +47,8 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment,
+    WeatherLog, SoilHealthReport, MandiPrice, UserFarm
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,11 +56,14 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer,
+    WeatherLogSerializer, SoilHealthReportSerializer, MandiPriceSerializer,
+    UserFarmSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
 )
+from .ml_service import PredictiveService
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +76,7 @@ CSV_CONTENT_TYPE = 'text/csv'
 
 class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
+    permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -82,6 +87,7 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = ProductSerializer
 
     def get_queryset(self):
@@ -195,6 +201,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
@@ -206,12 +213,14 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
@@ -219,6 +228,7 @@ class VendorDetailView(generics.RetrieveAPIView):
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +294,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +404,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +459,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +509,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +574,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -610,9 +625,13 @@ class RegisterView(APIView):
             last_name=last_name
         )
 
-        # Create Profile and UserCoin
-        Profile.objects.create(user=user, shop_name=shop_name, role=role)
-        UserCoin.objects.create(user=user)
+        # Update Profile (created by signal) and create UserCoin
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.shop_name = shop_name
+        profile.role = role
+        profile.save()
+
+        UserCoin.objects.get_or_create(user=user)
 
         logger.info("New user registered: %s", username)
         login(request, user)
@@ -2176,6 +2195,7 @@ class DatabaseDashboardView(APIView):
 
 class ContactFormView(APIView):
     """API view for contact form submissions."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Submit a contact form."""
@@ -2212,6 +2232,7 @@ class ContactFormView(APIView):
 
 class SubscriptionView(APIView):
     """API view for newsletter subscriptions."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Subscribe to newsletter."""
@@ -3734,6 +3755,96 @@ from .tracking_api import (  # noqa: E402 pylint: disable=wrong-import-position
     TrackingAlertsAPIView,
     tracking_realtime_stats,
 )
+
+class WeatherView(APIView):
+    """
+    API view for getting weather information.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        city = request.query_params.get('city', 'Delhi')
+        # Fetch from WeatherLog or mock
+        log = WeatherLog.objects.filter(city__iexact=city).order_by('-timestamp').first()
+        if log:
+            serializer = WeatherLogSerializer(log)
+            return Response(serializer.data)
+
+        # Mock response
+        return Response({
+            'city': city,
+            'temperature': 30.5,
+            'condition': 'Sunny',
+            'humidity': 60,
+            'timestamp': timezone.now().isoformat(),
+            'source': 'mock'
+        })
+
+class SoilHealthView(generics.ListCreateAPIView):
+    """
+    API view for managing soil health reports.
+    """
+    serializer_class = SoilHealthReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SoilHealthReport.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # Generate recommendation
+        ph = float(self.request.data.get('ph_level', 7))
+        recommendation = "Soil looks good."
+        if ph < 6:
+            recommendation = "Acidic soil. Consider adding lime."
+        elif ph > 8:
+            recommendation = "Alkaline soil. Consider adding sulfur."
+
+        serializer.save(user=self.request.user, recommendation=recommendation)
+
+class MandiPricesView(generics.ListAPIView):
+    """
+    API view for mandi prices.
+    """
+    serializer_class = MandiPriceSerializer
+    permission_classes = [permissions.AllowAny]
+    queryset = MandiPrice.objects.all().order_by('-date')
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['crop', 'market']
+
+class PurchasePredictionView(APIView):
+    """
+    API view for predictive analytics (purchase probability).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Get purchase probability score for the current user."""
+        probability = PredictiveService.predict_purchase_probability(request.user)
+        return Response({
+            'purchase_probability': probability,
+            'level': 'High' if probability > 0.6 else 'Medium' if probability > 0.3 else 'Low',
+            'timestamp': timezone.now()
+        })
+
+class UserFarmView(generics.RetrieveUpdateCreateAPIView):
+    """
+    API view for managing user's farm profile.
+    """
+    serializer_class = UserFarmSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # Retrieve or create farm for current user
+        farm, _ = UserFarm.objects.get_or_create(
+            user=self.request.user,
+            defaults={
+                'farm_name': 'My Farm',
+                'area_acres': 0,
+                'primary_crop': 'Unknown',
+                'soil_type': 'Unknown'
+            }
+        )
+        return farm
 
 __all__ = [
     'TrackingDashboardAPIView',
