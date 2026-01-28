@@ -16,6 +16,7 @@ import {
   CircularProgress,
   Divider,
   IconButton,
+  Button,
   Popper,
   Fade,
   ClickAwayListener,
@@ -200,7 +201,11 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    aria-label="Clear search query"
+                  >
                     <Clear fontSize="small" />
                   </IconButton>
                 )}
@@ -285,7 +290,7 @@ const SearchAutocomplete = ({
                                   color="primary"
                                   fontWeight="bold"
                                 >
-                                  Ã¢â€šÂ¹{product.price}
+                                  {'\u20B9'}{product.price}
                                 </Typography>
                                 {product.vendor_name && (
                                   <>
@@ -293,7 +298,7 @@ const SearchAutocomplete = ({
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      Ã¢â‚¬Â¢
+                                      {'\u2022'}
                                     </Typography>
                                     <Typography
                                       variant="body2"
@@ -345,17 +350,13 @@ const SearchAutocomplete = ({
                       <Typography variant="overline" color="text.secondary">
                         Recent Searches
                       </Typography>
-                      <Typography
-                        variant="caption"
-                        color="primary"
-                        sx={{
-                          cursor: "pointer",
-                          "&:hover": { textDecoration: "underline" },
-                        }}
+                      <Button
+                        size="small"
                         onClick={clearHistory}
+                        sx={{ minWidth: "auto", p: 0.5 }}
                       >
                         Clear
-                      </Typography>
+                      </Button>
                     </Box>
                     <List dense>
                       {searchHistory.map((term) => (
