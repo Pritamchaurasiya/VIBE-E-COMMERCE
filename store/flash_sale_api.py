@@ -10,9 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from store.models import FlashSale
+from store.utils.security import rate_limit
 
 
 @require_http_methods(["GET"])
+@rate_limit(key_prefix='flash_sale_list', max_attempts=60, period=60)
 def get_active_flash_sales(_request):
     """
     Get all currently active flash sales with countdown.
@@ -77,6 +79,7 @@ def get_active_flash_sales(_request):
 
 
 @require_http_methods(["GET"])
+@rate_limit(key_prefix='flash_sale_detail', max_attempts=60, period=60)
 def get_flash_sale_detail(_request, sale_id):
     """
     Get detailed information about a flash sale with all products.

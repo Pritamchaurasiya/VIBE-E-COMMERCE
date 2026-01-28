@@ -41,13 +41,15 @@ from django.views import View
 # Local imports
 from .cart import Cart
 from .permissions import IsVendorUser
+from .utils.security import sanitize_for_csv
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Wishlist, Review, Coupon, Profile,
     FlashSale, BulkOrder, Notification, Deal, InventoryLog, Contact, Subscription,
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment,
+    ProductQuestion, ProductAnswer, VendorFollow, RefundRequest, VendorAnalytics
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,7 +57,9 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer,
+    ProductQuestionSerializer, ProductAnswerSerializer, VendorFollowSerializer,
+    RefundRequestSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
@@ -1493,15 +1497,15 @@ class ExportDataView(APIView):
 
         for order in orders:
             writer.writerow([
-                order.id,
-                f"{order.first_name} {order.last_name}",
-                order.email,
-                order.phone,
-                order.address,
-                order.paid_amount or 0,
-                'Paid' if order.paid else 'Unpaid',
-                order.status,
-                order.created_at.strftime('%Y-%m-%d %H:%M')
+                sanitize_for_csv(order.id),
+                sanitize_for_csv(f"{order.first_name} {order.last_name}"),
+                sanitize_for_csv(order.email),
+                sanitize_for_csv(order.phone),
+                sanitize_for_csv(order.address),
+                sanitize_for_csv(order.paid_amount or 0),
+                sanitize_for_csv('Paid' if order.paid else 'Unpaid'),
+                sanitize_for_csv(order.status),
+                sanitize_for_csv(order.created_at.strftime('%Y-%m-%d %H:%M'))
             ])
 
         return response
@@ -1521,16 +1525,16 @@ class ExportDataView(APIView):
 
         for product in products:
             writer.writerow([
-                product.id,
-                product.name,
-                product.category.name,
-                product.vendor.name,
-                product.price,
-                product.mrp or '',
-                product.stock_quantity,
-                product.brand,
-                'Yes' if product.is_active else 'No',
-                product.created_at.strftime('%Y-%m-%d')
+                sanitize_for_csv(product.id),
+                sanitize_for_csv(product.name),
+                sanitize_for_csv(product.category.name),
+                sanitize_for_csv(product.vendor.name),
+                sanitize_for_csv(product.price),
+                sanitize_for_csv(product.mrp or ''),
+                sanitize_for_csv(product.stock_quantity),
+                sanitize_for_csv(product.brand),
+                sanitize_for_csv('Yes' if product.is_active else 'No'),
+                sanitize_for_csv(product.created_at.strftime('%Y-%m-%d'))
             ])
 
         return response
@@ -1555,13 +1559,13 @@ class ExportDataView(APIView):
 
         for user in users:
             writer.writerow([
-                user.id,
-                user.username,
-                user.email,
-                user.first_name,
-                user.last_name,
-                user.date_joined.strftime('%Y-%m-%d'),
-                'Yes' if user.is_active else 'No'
+                sanitize_for_csv(user.id),
+                sanitize_for_csv(user.username),
+                sanitize_for_csv(user.email),
+                sanitize_for_csv(user.first_name),
+                sanitize_for_csv(user.last_name),
+                sanitize_for_csv(user.date_joined.strftime('%Y-%m-%d')),
+                sanitize_for_csv('Yes' if user.is_active else 'No')
             ])
 
         return response
@@ -1578,10 +1582,10 @@ class ExportDataView(APIView):
 
         for vendor in vendors:
             writer.writerow([
-                vendor.id,
-                vendor.name,
-                vendor.city,
-                vendor.products.count()
+                sanitize_for_csv(vendor.id),
+                sanitize_for_csv(vendor.name),
+                sanitize_for_csv(vendor.city),
+                sanitize_for_csv(vendor.products.count())
             ])
 
         return response
@@ -2751,6 +2755,129 @@ class NewlyLaunchedView(APIView):
         return Response({
             'products': serializer.data
         })
+
+
+# ============================================
+# Q&A AND INTERACTION API VIEWS
+# ============================================
+
+class ProductQuestionListCreateView(generics.ListCreateAPIView):
+    """API view for listing and creating product questions."""
+    serializer_class = ProductQuestionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        product_slug = self.kwargs.get('product_slug')
+        return ProductQuestion.objects.filter(
+            product__slug=product_slug, is_active=True
+        ).select_related('user', 'product').prefetch_related('answers')
+
+    def perform_create(self, serializer):
+        product_slug = self.kwargs.get('product_slug')
+        product = get_object_or_404(Product, slug=product_slug)
+        serializer.save(user=self.request.user, product=product)
+
+
+class ProductAnswerCreateView(generics.CreateAPIView):
+    """API view for creating answers to product questions."""
+    serializer_class = ProductAnswerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        question_id = self.kwargs.get('question_id')
+        question = get_object_or_404(ProductQuestion, id=question_id)
+
+        # Check if user is the vendor of the product
+        is_vendor = False
+        if hasattr(self.request.user, 'vendor'):
+            is_vendor = (question.product.vendor == self.request.user.vendor)
+
+        serializer.save(
+            user=self.request.user,
+            question=question,
+            is_vendor_response=is_vendor
+        )
+
+
+class VendorFollowView(APIView):
+    """API view to toggle following a vendor."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, slug):
+        vendor = get_object_or_404(Vendor, slug=slug)
+        follow, created = VendorFollow.objects.get_or_create(
+            user=request.user,
+            vendor=vendor
+        )
+
+        if not created:
+            follow.delete()
+            return Response({'status': 'unfollowed'})
+
+        return Response({'status': 'followed'})
+
+
+class RefundRequestCreateView(generics.CreateAPIView):
+    """API view for creating refund requests."""
+    serializer_class = RefundRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        order_id = self.kwargs.get('order_id')
+        order = get_object_or_404(Order, id=order_id, user=self.request.user)
+        serializer.save(order=order)
+
+
+class UserSecurityView(APIView):
+    """API view for managing user security/sessions."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        sessions = UserSession.objects.filter(
+            user=request.user, is_active=True
+        ).order_by('-last_activity')
+        serializer = UserSessionSerializer(sessions, many=True)
+        return Response(serializer.data)
+
+    def delete(self, request, session_id):
+        """Revoke a session."""
+        session = get_object_or_404(UserSession, session_id=session_id, user=request.user)
+        session.is_active = False
+        session.ended_at = timezone.now()
+        session.save()
+        return Response({'success': True})
+
+
+class VendorAnalyticsExportView(APIView):
+    """API view for exporting vendor analytics."""
+    permission_classes = [permissions.IsAuthenticated, IsVendorUser]
+
+    def get(self, request):
+        if not hasattr(request.user, 'vendor'):
+            return Response(
+                {'error': ERROR_NOT_VENDOR},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        vendor = request.user.vendor
+        analytics = VendorAnalytics.objects.filter(vendor=vendor).order_by('-date')
+
+        response = HttpResponse(content_type=CSV_CONTENT_TYPE)
+        response['Content-Disposition'] = 'attachment; filename="vendor_analytics.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Date', 'Total Revenue', 'Orders', 'Products', 'Views'])
+
+        for record in analytics:
+            writer.writerow([
+                sanitize_for_csv(str(record.date)),
+                sanitize_for_csv(str(record.total_revenue)),
+                sanitize_for_csv(str(record.total_orders)),
+                sanitize_for_csv(str(record.total_products)),
+                sanitize_for_csv(str(record.total_views))
+            ])
+
+        return response
 
 
 # ============================================

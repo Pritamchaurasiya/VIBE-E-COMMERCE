@@ -8,7 +8,8 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, ProductQuestion, ProductAnswer,
+    VendorFollow, RefundRequest
 )
 # Analytics model imports
 from .models import (
@@ -605,3 +606,40 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+
+class ProductAnswerSerializer(serializers.ModelSerializer):
+    """Serializer for ProductAnswer model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = ProductAnswer
+        fields = ['id', 'user', 'text', 'is_vendor_response', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at', 'is_vendor_response']
+
+
+class ProductQuestionSerializer(serializers.ModelSerializer):
+    """Serializer for ProductQuestion model."""
+    user = serializers.StringRelatedField(read_only=True)
+    answers = ProductAnswerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductQuestion
+        fields = ['id', 'user', 'product', 'text', 'created_at', 'answers']
+        read_only_fields = ['id', 'user', 'product', 'created_at', 'answers']
+
+
+class VendorFollowSerializer(serializers.ModelSerializer):
+    """Serializer for VendorFollow model."""
+    class Meta:
+        model = VendorFollow
+        fields = ['id', 'user', 'vendor', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
+
+
+class RefundRequestSerializer(serializers.ModelSerializer):
+    """Serializer for RefundRequest model."""
+    class Meta:
+        model = RefundRequest
+        fields = ['id', 'order', 'reason', 'image', 'status', 'admin_notes', 'created_at']
+        read_only_fields = ['id', 'status', 'admin_notes', 'created_at']

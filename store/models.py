@@ -2719,3 +2719,86 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+
+# ============================================
+# NEW FEATURE MODELS
+# ============================================
+
+class ProductQuestion(models.Model):
+    """
+    Model for Q&A on products.
+    """
+    user = models.ForeignKey(User, related_name='questions', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='questions', on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Question by {self.user.username} on {self.product.name}"
+
+
+class ProductAnswer(models.Model):
+    """
+    Model for answers to product questions.
+    """
+    user = models.ForeignKey(User, related_name='answers', on_delete=models.CASCADE)
+    question = models.ForeignKey(ProductQuestion, related_name='answers', on_delete=models.CASCADE)
+    text = models.TextField()
+    is_vendor_response = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Answer by {self.user.username}"
+
+
+class VendorFollow(models.Model):
+    """
+    Model for users following vendors.
+    """
+    user = models.ForeignKey(User, related_name='following_vendors', on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, related_name='followers', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'vendor')
+        indexes = [
+            models.Index(fields=['user', 'vendor']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} follows {self.vendor.name}"
+
+
+class RefundRequest(models.Model):
+    """
+    Model for refund/return requests.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('refunded', 'Refunded'),
+    ]
+
+    order = models.ForeignKey(Order, related_name='refund_requests', on_delete=models.CASCADE)
+    reason = models.TextField()
+    image = models.ImageField(upload_to='refunds/', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Refund Request for Order #{self.order.id}"
