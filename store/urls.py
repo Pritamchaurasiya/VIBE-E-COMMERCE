@@ -846,6 +846,52 @@ urlpatterns = [
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
     ),
+
+    # ====== NEW FEATURE API ENDPOINTS ======
+    # Product Q&A
+    path(
+        'api/v1/products/<slug:product_slug>/questions/',
+        api_views.ProductQuestionListCreateView.as_view(),
+        name='api_product_questions'
+    ),
+    path(
+        'api/v1/questions/<int:question_id>/answers/',
+        api_views.ProductAnswerCreateView.as_view(),
+        name='api_product_answers'
+    ),
+
+    # Vendor Follow
+    path(
+        'api/v1/vendors/<slug:slug>/follow/',
+        api_views.VendorFollowView.as_view(),
+        name='api_vendor_follow'
+    ),
+
+    # Refund Request
+    path(
+        'api/v1/orders/<int:order_id>/refund/',
+        api_views.RefundRequestCreateView.as_view(),
+        name='api_refund_request'
+    ),
+
+    # User Security
+    path(
+        'api/v1/security/sessions/',
+        api_views.UserSecurityView.as_view(),
+        name='api_security_sessions'
+    ),
+    path(
+        'api/v1/security/sessions/<str:session_id>/',
+        api_views.UserSecurityView.as_view(),
+        name='api_security_revoke_session'
+    ),
+
+    # Vendor Analytics Export
+    path(
+        'api/v1/vendor/analytics/export/',
+        api_views.VendorAnalyticsExportView.as_view(),
+        name='api_vendor_analytics_export'
+    ),
 ]
 
 
