@@ -2719,3 +2719,79 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access events.
+    """
+    access_type = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    session_id = models.CharField(max_length=100, blank=True)
+    resource_accessed = models.CharField(max_length=255)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, default='low')
+    metadata = models.JSONField(default=dict, blank=True)
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-access_timestamp']
+
+    def __str__(self):
+        return f"{self.access_type} by {self.user.username if self.user else 'Anonymous'}"
+
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications.
+    """
+    model_name = models.CharField(max_length=100)
+    operation = models.CharField(max_length=20)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.operation} on {self.model_name}"
+
+
+class SessionTracker(models.Model):
+    """
+    Model for tracking user sessions.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    session_key = models.CharField(max_length=40)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    login_timestamp = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-login_timestamp']
+
+    def __str__(self):
+        return f"Session {self.session_key}"
+
+
+class TrackingDataRetention(models.Model):
+    """
+    Model for managing data retention policies.
+    """
+    data_type = models.CharField(max_length=50)
+    retention_period = models.PositiveIntegerField()
+    retention_unit = models.CharField(max_length=20, choices=[
+        ('days', 'Days'), ('weeks', 'Weeks'),
+        ('months', 'Months'), ('years', 'Years')
+    ])
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Retention for {self.data_type}"

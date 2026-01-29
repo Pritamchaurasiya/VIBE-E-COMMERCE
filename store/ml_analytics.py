@@ -141,7 +141,10 @@ class MLAnalyticsEngine:
         std = np.std(arr)
 
         if std == 0:
-            z_score = 0.0
+            if value != mean:
+                z_score = float('inf')
+            else:
+                z_score = 0.0
         else:
             z_score = abs((value - mean) / std)
 
