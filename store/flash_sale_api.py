@@ -10,9 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from store.models import FlashSale
+from store.utils.security import rate_limit
 
 
 @require_http_methods(["GET"])
+@rate_limit('flash_sales_list', 60, 60)
 def get_active_flash_sales(_request):
     """
     Get all currently active flash sales with countdown.
@@ -77,6 +79,7 @@ def get_active_flash_sales(_request):
 
 
 @require_http_methods(["GET"])
+@rate_limit('flash_sale_detail', 60, 60)
 def get_flash_sale_detail(_request, sale_id):
     """
     Get detailed information about a flash sale with all products.
@@ -133,6 +136,7 @@ def get_flash_sale_detail(_request, sale_id):
 
 @login_required
 @require_http_methods(["POST"])
+@rate_limit('flash_sale_sub', 10, 60)
 def subscribe_flash_sale(request, sale_id):
     """
     Subscribe to flash sale notifications.
@@ -177,6 +181,7 @@ def subscribe_flash_sale(request, sale_id):
 
 @login_required
 @require_http_methods(["DELETE"])
+@rate_limit('flash_sale_unsub', 20, 60)
 def unsubscribe_flash_sale(request, sale_id):
     """
     Unsubscribe from flash sale notifications.
@@ -199,6 +204,7 @@ def unsubscribe_flash_sale(request, sale_id):
 
 
 @require_http_methods(["GET"])
+@rate_limit('flash_sale_count', 120, 60)
 def get_flash_sale_countdown(_request, sale_id):
     """
     Get countdown timer data for a flash sale (lightweight endpoint).
