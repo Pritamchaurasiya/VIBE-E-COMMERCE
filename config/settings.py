@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 CART_SESSION_ID = 'cart'
 
@@ -353,7 +353,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and os.environ.get('USE_REDIS', 'False') == 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
