@@ -307,7 +307,7 @@ class CartViewTest(TestCase):
             reverse('cart_add', kwargs={'product_id': self.product.id})
         )
         # Update quantity (increment)
-        response = self.client.get(
+        response = self.client.post(
             reverse('cart_update', kwargs={
                 'product_id': self.product.id,
                 'action': 'increment'
