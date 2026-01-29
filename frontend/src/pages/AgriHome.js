@@ -163,8 +163,19 @@ const AgriHome = () => {
       ]);
 
       setDealProducts(dealsRes.data?.products || []);
-      setTrendingProducts(highMarginRes.data?.products || []);
-      setNewProducts(newRes.data?.products || []);
+
+      // Optimize: Add margin_percentage once during fetch, not during render
+      setTrendingProducts((highMarginRes.data?.products || []).map(p => ({
+        ...p,
+        margin_percentage: Math.floor(Math.random() * 20) + 15,
+      })));
+
+      // Optimize: Add is_new once during fetch
+      setNewProducts((newRes.data?.products || []).map(p => ({
+        ...p,
+        is_new: true,
+      })));
+
       setRecentlyViewed(recentRes.data?.products || []);
       setPopularProducts(popularLocRes.data?.products || []);
 
@@ -208,7 +219,8 @@ const AgriHome = () => {
   }, []);
 
   // Handle wishlist toggle
-  const handleWishlistToggle = async (productId, isAdding) => {
+  // Optimized: Use useCallback to stabilize function identity
+  const handleWishlistToggle = useCallback(async (productId, isAdding) => {
     try {
       if (isAdding) {
         await wishlistAPI.add(productId);
@@ -218,7 +230,7 @@ const AgriHome = () => {
     } catch (error) {
       console.error("Wishlist toggle failed:", error);
     }
-  };
+  }, []);
 
   // Copy promo code
   const copyPromoCode = (code) => {
@@ -474,10 +486,7 @@ const AgriHome = () => {
               {trendingProducts.slice(0, 6).map((product) => (
                 <AgriProductCard
                   key={product.id}
-                  product={{
-                    ...product,
-                    margin_percentage: Math.floor(Math.random() * 20) + 15,
-                  }}
+                  product={product}
                   showBulkPrice={true}
                   onWishlistToggle={handleWishlistToggle}
                 />
@@ -500,7 +509,7 @@ const AgriHome = () => {
               {newProducts.slice(0, 4).map((product) => (
                 <AgriProductCard
                   key={product.id}
-                  product={{ ...product, is_new: true }}
+                  product={product}
                   onWishlistToggle={handleWishlistToggle}
                 />
               ))}
