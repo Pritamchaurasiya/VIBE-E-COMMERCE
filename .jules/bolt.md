@@ -1,0 +1,3 @@
+## 2025-05-23 - Redis Dependency in Tests
+**Learning:** The project's `settings.py` automatically configures Redis as the cache backend if `django_redis` is installed, regardless of environment variables like `TESTING`. This causes tests to fail with `Connection refused` if Redis is not running, even if `APIClient` is used.
+**Action:** When writing tests that might touch cache or session (like `APITestCase`), explicitly use `@override_settings(CACHES={...}, SESSION_ENGINE='django.contrib.sessions.backends.db')` to force `LocMemCache` and DB session storage, ensuring tests are isolated from the environment's Redis requirement.
