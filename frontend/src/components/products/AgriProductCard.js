@@ -244,4 +244,4 @@ AgriProductCard.propTypes = {
   onWishlistToggle: PropTypes.func,
 };
 
-export default AgriProductCard;
+export default React.memo(AgriProductCard);
