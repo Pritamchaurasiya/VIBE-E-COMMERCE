@@ -11,11 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Check if running tests
+TESTING = os.environ.get('TESTING') == 'True' or 'test' in sys.argv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -67,10 +71,10 @@ if is_package_installed('django_celery_results'):
     INSTALLED_APPS.append('django_celery_results')
 
 # Security apps
-if is_package_installed('axes'):
+if is_package_installed('axes') and not TESTING:
     INSTALLED_APPS.append('axes')
 
-if is_package_installed('csp'):
+if is_package_installed('csp') and not TESTING:
     INSTALLED_APPS.append('csp')
 
 # Image optimization
@@ -102,7 +106,12 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
+]
+
+if not TESTING:
+    MIDDLEWARE.append('store.tracking_middleware.SecurityTrackingMiddleware')  # Security tracking early to block threats
+
+MIDDLEWARE += [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -119,10 +128,10 @@ if is_package_installed('whitenoise'):
     MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Add optional middleware if packages are installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and not TESTING:
     MIDDLEWARE.append('axes.middleware.AxesMiddleware')
 
-if is_package_installed('csp'):
+if is_package_installed('csp') and not TESTING:
     MIDDLEWARE.append('csp.middleware.CSPMiddleware')
 
 ROOT_URLCONF = 'config.urls'
@@ -275,6 +284,13 @@ PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
 LOGIN_REDIRECT_URL = 'frontpage'
 LOGOUT_REDIRECT_URL = 'frontpage'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+if is_package_installed('axes') and not TESTING:
+    AUTHENTICATION_BACKENDS.insert(0, 'axes.backends.AxesStandaloneBackend')
+
 # Session Settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_SECURE = not DEBUG
@@ -353,7 +369,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and not TESTING:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -445,14 +461,18 @@ else:
         }
     }
 
-# Content Security Policy - Use constant for common values
+# Content Security Policy
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': (CSP_SELF,),
+        'script-src': (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"),
+        'style-src': (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"),
+        'font-src': (CSP_SELF, "https://fonts.gstatic.com"),
+        'img-src': (CSP_SELF, "data:", "https:", "http:"),
+        'connect-src': (CSP_SELF, "https://api.stripe.com", "wss:", "ws:"),
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
