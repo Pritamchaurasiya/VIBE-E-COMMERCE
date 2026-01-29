@@ -22,12 +22,13 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, OuterRef, Exists
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.views import View
 
 # DRF imports
 from rest_framework import generics, status, permissions
@@ -36,7 +37,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
-from django.views import View
 
 # Local imports
 from .cart import Cart
@@ -86,6 +86,23 @@ class ProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimization: Prefetch images and annotate reviews/ratings
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            annotated_review_count=Count('reviews', distinct=True),
+            annotated_avg_rating=Avg('reviews__rating')
+        )
+
+        # Optimization: Check wishlist status in bulk for authenticated users
+        if self.request.user.is_authenticated:
+            is_in_wishlist = Wishlist.objects.filter(
+                user=self.request.user,
+                product=OuterRef('pk')
+            )
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(is_in_wishlist)
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
