@@ -27,6 +27,7 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from .cart import Cart
+from .utils.security import rate_limit
 from .forms import (
     OrderForm, VendorRegistrationForm, ReviewForm, UserUpdateForm, ProfileUpdateForm
 )
@@ -691,6 +692,7 @@ def search_api(request):
 
 
 @require_POST
+@rate_limit(key_prefix='apply_coupon', max_attempts=10, period=60)
 def apply_coupon(request):
     """
     API endpoint to validate and apply a coupon code.

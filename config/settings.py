@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 CART_SESSION_ID = 'cart'
 
@@ -317,6 +317,7 @@ REST_FRAMEWORK = {
         'anon': '100/hour',      # Anonymous users: 100 requests per hour
         'user': '1000/hour',     # Authenticated users: 1000 requests per hour
         'login': '5/minute',     # Login attempts: 5 per minute
+        'coupon': '10/minute',   # Coupon attempts: 10 per minute
     },
     'DEFAULT_FILTER_BACKENDS': [
         'rest_framework.filters.SearchFilter',
@@ -353,7 +354,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and not os.environ.get('NO_REDIS'):
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
