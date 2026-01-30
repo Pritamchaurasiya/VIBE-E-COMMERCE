@@ -393,28 +393,44 @@ if CHANNELS_AVAILABLE:
                 now = timezone.now()
 
                 # System metrics
+                memory_info = {'total': 0, 'available': 0, 'used': 0, 'percent': 0}
+                cpu_info = {'percent': 0, 'count': 0, 'per_core': []}
+                disk_info = {'total': 0, 'used': 0, 'free': 0, 'percent': 0}
+
+                if has_psutil:
+                    try:
+                        vm = psutil.virtual_memory()
+                        memory_info = {
+                            'total': vm.total,
+                            'available': vm.available,
+                            'used': vm.used,
+                            'percent': vm.percent
+                        }
+
+                        cpu_info = {
+                            'percent': psutil.cpu_percent(interval=0.1),
+                            'count': psutil.cpu_count(),
+                            'per_core': psutil.cpu_percent(percpu=True)
+                        }
+
+                        du = psutil.disk_usage('/')
+                        disk_info = {
+                            'total': du.total,
+                            'used': du.used,
+                            'free': du.free,
+                            'percent': du.percent
+                        }
+                    except Exception as e:
+                        logger.error("Error gathering system metrics: %s", e)
+
                 metrics = {
                     'timestamp': now.isoformat(),
                     'system': {
                         'uptime': 0,
                         'load_avg': [0, 0, 0],
-                        'memory': {
-                            'total': psutil.virtual_memory().total if has_psutil else 0,
-                            'available': psutil.virtual_memory().available if has_psutil else 0,
-                            'used': psutil.virtual_memory().used if has_psutil else 0,
-                            'percent': psutil.virtual_memory().percent if has_psutil else 0
-                        },
-                        'cpu': {
-                            'percent': psutil.cpu_percent(interval=0.1) if has_psutil else 0,
-                            'count': psutil.cpu_count() if has_psutil else 0,
-                            'per_core': psutil.cpu_percent(percpu=True) if has_psutil else []
-                        },
-                        'disk': {
-                            'total': psutil.disk_usage('/').total if has_psutil else 0,
-                            'used': psutil.disk_usage('/').used if has_psutil else 0,
-                            'free': psutil.disk_usage('/').free if has_psutil else 0,
-                            'percent': psutil.disk_usage('/').percent if has_psutil else 0
-                        }
+                        'memory': memory_info,
+                        'cpu': cpu_info,
+                        'disk': disk_info
                     },
                     'database': {
                         'connections': 0,
