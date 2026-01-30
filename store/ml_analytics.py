@@ -8,9 +8,10 @@ Provides machine learning-based analytics including:
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Deque
 from dataclasses import dataclass
 from datetime import datetime
+from collections import deque
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class MLAnalyticsEngine:
             window_size: Number of data points to keep in sliding window
         """
         self.window_size = window_size
-        self._data_windows: Dict[str, List[float]] = {}
+        self._data_windows: Dict[str, Deque[float]] = {}
         self._sklearn_available = self._check_sklearn()
         self._isolation_forests: Dict[str, Any] = {}
 
@@ -78,14 +79,9 @@ class MLAnalyticsEngine:
             value: Metric value
         """
         if metric_name not in self._data_windows:
-            self._data_windows[metric_name] = []
+            self._data_windows[metric_name] = deque(maxlen=self.window_size)
 
-        window = self._data_windows[metric_name]
-        window.append(value)
-
-        # Maintain window size
-        if len(window) > self.window_size:
-            window.pop(0)
+        self._data_windows[metric_name].append(value)
 
     def detect_anomaly(
         self,
@@ -131,7 +127,7 @@ class MLAnalyticsEngine:
         self,
         metric_name: str,
         value: float,
-        window: List[float],
+        window: Deque[float],
         z_threshold: float,
         timestamp: datetime
     ) -> AnomalyResult:
@@ -141,7 +137,10 @@ class MLAnalyticsEngine:
         std = np.std(arr)
 
         if std == 0:
-            z_score = 0.0
+            if value != mean:
+                z_score = float('inf')
+            else:
+                z_score = 0.0
         else:
             z_score = abs((value - mean) / std)
 
@@ -176,7 +175,7 @@ class MLAnalyticsEngine:
         self,
         metric_name: str,
         value: float,
-        window: List[float],
+        window: Deque[float],
         timestamp: datetime
     ) -> AnomalyResult:
         """Detect anomalies using Isolation Forest."""
