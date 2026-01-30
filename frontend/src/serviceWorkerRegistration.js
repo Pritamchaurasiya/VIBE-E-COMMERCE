@@ -1,6 +1,8 @@
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
+/* global globalThis */
+
 const isLocalhost = Boolean(
   globalThis.location.hostname === "localhost" ||
     // [::1] is the IPv6 localhost address.
