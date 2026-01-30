@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+db.sqlite3
+.DS_Store
+media/
+staticfiles/
+*.log
+reproduce_n_plus_1.py
