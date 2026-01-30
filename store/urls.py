@@ -850,3 +850,18 @@ urlpatterns = [
 
 
 
+
+# ============================================
+# AGRI-INTELLIGENCE ROUTING
+# ============================================
+from rest_framework.routers import DefaultRouter
+from . import agri_api
+
+router = DefaultRouter()
+router.register(r'api/v1/farms', agri_api.UserFarmViewSet, basename='api_farms')
+router.register(r'api/v1/soil-health', agri_api.SoilHealthReportViewSet, basename='api_soil_health')
+router.register(r'api/v1/mandi-prices', agri_api.MandiPriceViewSet, basename='api_mandi_prices')
+router.register(r'api/v1/weather', agri_api.WeatherViewSet, basename='api_weather')
+router.register(r'api/v1/advisory', agri_api.CropAdvisoryViewSet, basename='api_advisory')
+
+urlpatterns += router.urls

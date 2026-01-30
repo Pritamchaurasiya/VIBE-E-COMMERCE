@@ -2719,3 +2719,203 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+# ============================================
+# NEW AGRI-INTELLIGENCE MODELS
+# ============================================
+
+class UserFarm(models.Model):
+    """
+    Model for storing user farm details.
+    """
+    user = models.ForeignKey(User, related_name='farms', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, help_text="e.g., My Wheat Field")
+    location = models.CharField(max_length=255, help_text="Village, District, State")
+    size_acres = models.DecimalField(max_digits=6, decimal_places=2, help_text="Size in acres")
+    soil_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('alluvial', 'Alluvial Soil'),
+            ('black', 'Black Soil'),
+            ('red', 'Red Soil'),
+            ('laterite', 'Laterite Soil'),
+            ('arid', 'Arid/Desert Soil'),
+            ('forest', 'Forest Soil'),
+            ('other', 'Other'),
+        ],
+        default='alluvial'
+    )
+    irrigation_source = models.CharField(
+        max_length=50,
+        choices=[
+            ('rainfed', 'Rainfed'),
+            ('canal', 'Canal'),
+            ('well', 'Well/Tube Well'),
+            ('drip', 'Drip Irrigation'),
+            ('sprinkler', 'Sprinkler'),
+        ],
+        default='rainfed'
+    )
+    primary_crops = models.ManyToManyField(Crop, related_name='farms', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"
+
+
+class SoilHealthReport(models.Model):
+    """
+    Model for storing soil health test reports.
+    """
+    farm = models.ForeignKey(UserFarm, related_name='soil_reports', on_delete=models.CASCADE)
+    sample_date = models.DateField()
+    ph_level = models.DecimalField(max_digits=4, decimal_places=2, help_text="pH Value (0-14)")
+    nitrogen = models.DecimalField(max_digits=6, decimal_places=2, help_text="Nitrogen (N) in kg/ha")
+    phosphorus = models.DecimalField(max_digits=6, decimal_places=2, help_text="Phosphorus (P) in kg/ha")
+    potassium = models.DecimalField(max_digits=6, decimal_places=2, help_text="Potassium (K) in kg/ha")
+    organic_carbon = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, help_text="Organic Carbon %")
+    moisture = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Moisture %")
+    recommendations = models.TextField(blank=True, help_text="Auto-generated or expert recommendations")
+    recommended_products = models.ManyToManyField(Product, related_name='soil_recommendations', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-sample_date']
+
+    def __str__(self):
+        return f"Soil Report: {self.farm.name} on {self.sample_date}"
+
+    def generate_recommendations(self):
+        """
+        Simple logic to generate recommendations based on NPK values.
+        This can be enhanced with AI/ML later.
+        """
+        recs = []
+        # Nitrogen Check (General range: 280-560 kg/ha)
+        if self.nitrogen < 280:
+            recs.append("Nitrogen is low. Use Urea or Nitrogen-rich fertilizers.")
+        elif self.nitrogen > 560:
+            recs.append("Nitrogen is high. Reduce nitrogen fertilizers.")
+
+        # Phosphorus Check (General range: 10-25 kg/ha)
+        if self.phosphorus < 10:
+            recs.append("Phosphorus is low. Use DAP or Super Phosphate.")
+
+        # Potassium Check (General range: 108-280 kg/ha)
+        if self.potassium < 108:
+            recs.append("Potassium is low. Use MOP or Potash fertilizers.")
+
+        # pH Check
+        if self.ph_level < 6.0:
+            recs.append("Soil is acidic. Consider adding Lime.")
+        elif self.ph_level > 8.0:
+            recs.append("Soil is alkaline. Consider adding Gypsum.")
+
+        self.recommendations = "\n".join(recs)
+        self.save()
+
+
+class MandiPrice(models.Model):
+    """
+    Model for storing daily market prices (Mandi Prices).
+    """
+    state = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    market = models.CharField(max_length=100)
+    commodity = models.CharField(max_length=100)
+    variety = models.CharField(max_length=100, blank=True)
+    grade = models.CharField(max_length=50, blank=True)
+    arrival_date = models.DateField()
+    min_price = models.DecimalField(max_digits=10, decimal_places=2)
+    max_price = models.DecimalField(max_digits=10, decimal_places=2)
+    modal_price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-arrival_date']
+        indexes = [
+            models.Index(fields=['state', 'district', 'commodity'], name='idx_mandi_loc_comm'),
+            models.Index(fields=['arrival_date'], name='idx_mandi_date'),
+        ]
+
+    def __str__(self):
+        return f"{self.commodity} in {self.market} on {self.arrival_date}"
+
+
+class WeatherLog(models.Model):
+    """
+    Model for logging weather data for farms.
+    """
+    farm = models.ForeignKey(UserFarm, related_name='weather_logs', on_delete=models.CASCADE)
+    date = models.DateField()
+    temp_max = models.DecimalField(max_digits=5, decimal_places=2, help_text="Max Temperature (C)")
+    temp_min = models.DecimalField(max_digits=5, decimal_places=2, help_text="Min Temperature (C)")
+    rainfall = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="Rainfall (mm)")
+    humidity = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Humidity %")
+    wind_speed = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Wind Speed (km/h)")
+    condition = models.CharField(max_length=100, blank=True, help_text="Sunny, Cloudy, Rainy, etc.")
+    forecast_data = models.JSONField(blank=True, null=True, help_text="Detailed forecast JSON")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+        unique_together = ('farm', 'date')
+
+    def __str__(self):
+        return f"Weather for {self.farm.name} on {self.date}"
+
+
+class CropAdvisory(models.Model):
+    """
+    Model for Q&A / Advisory between farmers and experts.
+    """
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('answered', 'Answered'),
+        ('closed', 'Closed'),
+    ]
+
+    user = models.ForeignKey(User, related_name='advisories', on_delete=models.CASCADE)
+    topic = models.CharField(
+        max_length=50,
+        choices=[
+            ('crop_disease', 'Crop Disease'),
+            ('pest_control', 'Pest Control'),
+            ('fertilizer', 'Fertilizer Use'),
+            ('seeds', 'Seeds & Sowing'),
+            ('weather', 'Weather Related'),
+            ('general', 'General Inquiry'),
+        ],
+        default='general'
+    )
+    crop = models.ForeignKey(Crop, on_delete=models.SET_NULL, null=True, blank=True)
+    question = models.TextField()
+    image = models.ImageField(upload_to='advisory/', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+
+    # Expert Answer
+    answer = models.TextField(blank=True)
+    answered_by = models.ForeignKey(
+        User,
+        related_name='expert_answers',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    is_public = models.BooleanField(default=True, help_text="Visible to other users")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status'], name='idx_advisory_status'),
+            models.Index(fields=['topic'], name='idx_advisory_topic'),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.get_topic_display()} ({self.status})"

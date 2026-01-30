@@ -605,3 +605,77 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+# ============================================
+# AGRI-INTELLIGENCE SERIALIZERS
+# ============================================
+
+from .models import UserFarm, SoilHealthReport, MandiPrice, WeatherLog, CropAdvisory
+
+class UserFarmSerializer(serializers.ModelSerializer):
+    """Serializer for UserFarm model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = UserFarm
+        fields = [
+            'id', 'user', 'name', 'location', 'size_acres',
+            'soil_type', 'irrigation_source', 'primary_crops',
+            'created_at', 'is_active'
+        ]
+        read_only_fields = ['id', 'user', 'created_at']
+
+class SoilHealthReportSerializer(serializers.ModelSerializer):
+    """Serializer for SoilHealthReport model."""
+    farm_name = serializers.ReadOnlyField(source='farm.name')
+
+    class Meta:
+        model = SoilHealthReport
+        fields = [
+            'id', 'farm', 'farm_name', 'sample_date', 'ph_level',
+            'nitrogen', 'phosphorus', 'potassium', 'organic_carbon',
+            'moisture', 'recommendations', 'recommended_products',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'recommendations', 'recommended_products']
+
+class MandiPriceSerializer(serializers.ModelSerializer):
+    """Serializer for MandiPrice model."""
+
+    class Meta:
+        model = MandiPrice
+        fields = [
+            'id', 'state', 'district', 'market', 'commodity',
+            'variety', 'grade', 'arrival_date', 'min_price',
+            'max_price', 'modal_price'
+        ]
+
+class WeatherLogSerializer(serializers.ModelSerializer):
+    """Serializer for WeatherLog model."""
+    farm_name = serializers.ReadOnlyField(source='farm.name')
+
+    class Meta:
+        model = WeatherLog
+        fields = [
+            'id', 'farm', 'farm_name', 'date', 'temp_max', 'temp_min',
+            'rainfall', 'humidity', 'wind_speed', 'condition',
+            'forecast_data'
+        ]
+
+class CropAdvisorySerializer(serializers.ModelSerializer):
+    """Serializer for CropAdvisory model."""
+    user = serializers.StringRelatedField(read_only=True)
+    answered_by_name = serializers.ReadOnlyField(source='answered_by.username')
+    crop_name = serializers.ReadOnlyField(source='crop.name')
+
+    class Meta:
+        model = CropAdvisory
+        fields = [
+            'id', 'user', 'topic', 'crop', 'crop_name', 'question',
+            'image', 'status', 'answer', 'answered_by', 'answered_by_name',
+            'answered_at', 'is_public', 'created_at'
+        ]
+        read_only_fields = [
+            'id', 'user', 'answer', 'answered_by', 'answered_at',
+            'status', 'created_at'
+        ]
