@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -241,10 +241,17 @@ const Footer = () => {
                   },
                   "& input::placeholder": { color: "rgba(255,255,255,0.5)" },
                 }}
+                inputProps={{
+                  "aria-label": "Email address for newsletter",
+                }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton size="small" sx={{ color: "primary.light" }}>
+                      <IconButton
+                        size="small"
+                        sx={{ color: "primary.light" }}
+                        aria-label="Subscribe"
+                      >
                         <Send />
                       </IconButton>
                     </InputAdornment>
