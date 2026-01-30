@@ -2179,9 +2179,9 @@ class ContactFormView(APIView):
 
     def post(self, request):
         """Submit a contact form."""
-        name = request.data.get('name', '').strip()
-        email = request.data.get('email', '').strip()
-        message = request.data.get('message', '').strip()
+        name = bleach.clean(request.data.get('name', '')).strip()
+        email = bleach.clean(request.data.get('email', '')).strip()
+        message = bleach.clean(request.data.get('message', '')).strip()
 
         if not all([name, email, message]):
             return Response(
