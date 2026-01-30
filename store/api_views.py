@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,9 +84,27 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimize query with prefetch and annotations
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            annotated_average_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews', distinct=True)
+        )
+
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -197,6 +216,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -208,17 +228,20 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +307,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +417,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +472,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +522,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +587,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -1009,6 +1037,7 @@ class VendorAnalyticsAPIView(APIView):
 
 class TrendingProductsView(APIView):
     """API view for trending products based on recent orders and views."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get trending products."""
@@ -1046,6 +1075,7 @@ class TrendingProductsView(APIView):
 
 class RecentlyViewedView(APIView):
     """API view for tracking and retrieving recently viewed products."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get recently viewed products from session."""
@@ -1107,6 +1137,7 @@ class RecentlyViewedView(APIView):
 
 class AdvancedSearchView(APIView):
     """API view for advanced product search with faceted filters."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Advanced search with aggregations."""
