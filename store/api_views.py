@@ -87,6 +87,25 @@ class ProductListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
 
+        # Optimize queries
+        queryset = queryset.prefetch_related('images')
+
+        queryset = queryset.annotate(
+            annotated_average_rating=models.Avg('reviews__rating'),
+            annotated_review_count=Count('reviews', distinct=True)
+        )
+
+        if self.request.user.is_authenticated:
+            from django.db.models import Exists, OuterRef
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
+
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
         queryset = self._filter_by_price(queryset)
