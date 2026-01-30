@@ -46,6 +46,10 @@ import {
   Compare,
   ContactSupport,
   Info,
+  Landscape,
+  TrendingUp,
+  Science,
+  QuestionAnswer,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -148,10 +152,12 @@ const Header = () => {
   const navigationItems = [
     { label: "Home", path: "/", icon: <Home /> },
     { label: "Products", path: "/products", icon: <Store /> },
+    { label: "My Farm", path: "/my-farm", icon: <Landscape /> },
+    { label: "Soil Health", path: "/soil-health", icon: <Science /> },
+    { label: "Mandi Prices", path: "/mandi-prices", icon: <TrendingUp /> },
+    { label: "Advisory", path: "/advisory", icon: <QuestionAnswer /> },
     { label: "Vendors", path: "/vendors", icon: <Category /> },
     { label: "Compare", path: "/compare", icon: <Compare /> },
-    { label: "About", path: "/about", icon: <Info /> },
-    { label: "Contact", path: "/contact", icon: <ContactSupport /> },
   ];
 
   const userMenuItems = [

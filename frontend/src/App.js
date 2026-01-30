@@ -46,6 +46,10 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const FarmManagement = lazy(() => import("./pages/FarmManagement"));
+const SoilHealthDashboard = lazy(() => import("./pages/SoilHealthDashboard"));
+const MandiPrices = lazy(() => import("./pages/MandiPrices"));
+const ExpertAdvisory = lazy(() => import("./pages/ExpertAdvisory"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -312,6 +316,46 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
                 <Box>
                   <Settings />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/my-farm"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <FarmManagement />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/soil-health"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SoilHealthDashboard />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/mandi-prices"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <MandiPrices />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/advisory"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <ExpertAdvisory />
                 </Box>
               </Slide>
             }
