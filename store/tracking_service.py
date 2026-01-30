@@ -295,7 +295,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
@@ -506,12 +506,16 @@ class EnhancedTrackingService:
         try:
             TrackingAlert = cls._get_model('TrackingAlert')
             # pylint: disable=no-member
+            metadata = kwargs.pop('metadata', {})
+            if triggered_by:
+                metadata['triggered_by'] = InputValidator.sanitize_metadata(triggered_by)
+
             return TrackingAlert.objects.create(
                 alert_type=alert_type,
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
+                metadata=metadata,
                 **kwargs
             )
         except Exception as exc:
