@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -93,7 +93,27 @@ class ProductListView(generics.ListAPIView):
         queryset = self._filter_by_attributes(queryset)
         queryset = self._filter_by_brand_crop_disease(queryset)
 
-        return self._apply_sorting(queryset)
+        # Performance optimizations (Annotations)
+        queryset = queryset.annotate(
+            annotated_average_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews', distinct=True)
+        )
+
+        if self.request.user.is_authenticated:
+            wishlist_subquery = Wishlist.objects.filter(
+                user=self.request.user,
+                product=OuterRef('pk')
+            )
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(wishlist_subquery)
+            )
+
+        queryset = self._apply_sorting(queryset)
+
+        # Prefetch related (should be applied to the final queryset)
+        queryset = queryset.prefetch_related('images')
+
+        return queryset
 
     def _filter_by_search(self, queryset):
         query = self.request.query_params.get('q', '')
