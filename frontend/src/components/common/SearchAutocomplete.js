@@ -16,6 +16,7 @@ import {
   CircularProgress,
   Divider,
   IconButton,
+  Tooltip,
   Popper,
   Fade,
   ClickAwayListener,
@@ -200,9 +201,15 @@ const SearchAutocomplete = ({
               <InputAdornment position="end">
                 {loading && <CircularProgress size={20} />}
                 {!loading && query && (
-                  <IconButton size="small" onClick={handleClear}>
-                    <Clear fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Clear search">
+                    <IconButton
+                      size="small"
+                      onClick={handleClear}
+                      aria-label="Clear search"
+                    >
+                      <Clear fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 )}
               </InputAdornment>
             ),
@@ -405,6 +412,7 @@ const SearchAutocomplete = ({
                           key={`popular-${term}`}
                           label={term}
                           size="small"
+                          aria-label={`Search for ${term}`}
                           onClick={() => {
                             setQuery(term);
                             handleSearch(term);
