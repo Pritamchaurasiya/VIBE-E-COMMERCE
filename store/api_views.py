@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -36,6 +36,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.views import View
 
 # Local imports
@@ -47,7 +48,7 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment, UserFarm
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,11 +56,12 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer, UserFarmSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
 )
+from .services.agri_intelligence import DiseaseDiagnosisService, PredictiveService
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +87,24 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
+
+        # Annotate with review stats to avoid N+1
+        queryset = queryset.annotate(
+            annotated_average_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews', distinct=True)
+        )
+
+        # Annotate with wishlist status if user is authenticated
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -638,6 +657,44 @@ class RegisterView(APIView):
             'token': token.key,
             'user': user_data
         }, status=status.HTTP_201_CREATED)
+
+
+class UserFarmView(generics.RetrieveUpdateAPIView):
+    """API view for managing user farm profile."""
+    serializer_class = UserFarmSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        """Get or create farm profile for current user."""
+        obj, _ = UserFarm.objects.get_or_create(user=self.request.user)
+        return obj
+
+
+class DiseaseDiagnosisView(APIView):
+    """API view for diagnosing plant diseases from images."""
+    permission_classes = [permissions.AllowAny]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        image = request.FILES.get('image')
+        if not image:
+            return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        diagnosis = DiseaseDiagnosisService.diagnose(image)
+
+        return Response({
+            'diagnosis': diagnosis,
+            'recommendations': []  # Placeholder for actual product recommendations
+        })
+
+
+class PurchasePredictionView(APIView):
+    """API view for predicting next user purchase."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        prediction = PredictiveService.predict_next_purchase(request.user)
+        return Response(prediction)
 
 
 class UserProfileView(APIView):

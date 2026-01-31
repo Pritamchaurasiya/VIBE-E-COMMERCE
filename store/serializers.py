@@ -8,7 +8,7 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, UserFarm
 )
 # Analytics model imports
 from .models import (
@@ -61,6 +61,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_is_in_wishlist(self, obj):
         """Check if product is in user's wishlist."""
+        if hasattr(obj, 'annotated_is_in_wishlist'):
+            return obj.annotated_is_in_wishlist
+
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Wishlist.objects.filter(user=request.user, product=obj).exists()
@@ -68,6 +71,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_average_rating(self, obj):
         """Get average rating for product."""
+        if hasattr(obj, 'annotated_average_rating'):
+            return obj.annotated_average_rating or 0
+
         reviews = obj.reviews.all()
         if reviews:
             result = reviews.aggregate(avg_rating=Avg('rating'))
@@ -76,6 +82,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_review_count(self, obj):
         """Get review count for product."""
+        if hasattr(obj, 'annotated_review_count'):
+            return obj.annotated_review_count
+
         return obj.reviews.count()
 
 
@@ -145,6 +154,20 @@ class ProfileSerializer(serializers.ModelSerializer):
             'user', 'shop_name', 'gst_number', 'address', 'city',
             'state', 'pincode', 'credit_limit', 'credit_used', 'is_kyc_verified'
         ]
+
+
+class UserFarmSerializer(serializers.ModelSerializer):
+    """Serializer for UserFarm model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        """Meta class for UserFarmSerializer."""
+        model = UserFarm
+        fields = [
+            'user', 'farm_size', 'soil_type', 'irrigation_type',
+            'primary_crops', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['user', 'created_at', 'updated_at']
 
 
 class CouponSerializer(serializers.ModelSerializer):

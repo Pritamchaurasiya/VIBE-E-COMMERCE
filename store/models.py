@@ -2719,3 +2719,33 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class UserFarm(models.Model):
+    """
+    Model to store user farm details for Agri-Intelligence.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='farm_profile')
+    farm_size = models.DecimalField(max_digits=10, decimal_places=2, help_text="Farm size in acres", default=0.00)
+    SOIL_TYPES = [
+        ('loamy', 'Loamy'),
+        ('clay', 'Clay'),
+        ('sandy', 'Sandy'),
+        ('silt', 'Silt'),
+        ('peat', 'Peat'),
+        ('chalky', 'Chalky'),
+    ]
+    soil_type = models.CharField(max_length=20, choices=SOIL_TYPES, default='loamy')
+    IRRIGATION_TYPES = [
+        ('rainfed', 'Rainfed'),
+        ('drip', 'Drip'),
+        ('sprinkler', 'Sprinkler'),
+        ('canal', 'Canal'),
+        ('tube_well', 'Tube Well'),
+    ]
+    irrigation_type = models.CharField(max_length=20, choices=IRRIGATION_TYPES, default='rainfed')
+    primary_crops = models.JSONField(default=list, help_text="List of crops grown")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Farm"
