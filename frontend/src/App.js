@@ -18,6 +18,7 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import ScrollToTop from "./components/common/ScrollToTop";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import AgriBot from "./components/chat/AgriBot";
 
 // Lazy loaded components for code splitting
 // const HomePage = lazy(() => import("./components/common/HomePage")); // Switched to AgriHome
@@ -41,6 +42,8 @@ const About = lazy(() => import("./components/pages/About"));
 const Contact = lazy(() => import("./components/pages/Contact"));
 const Settings = lazy(() => import("./components/settings/Settings"));
 const NotFound = lazy(() => import("./components/pages/NotFound"));
+const CropCalendar = lazy(() => import("./components/pages/CropCalendar"));
+const MyRewards = lazy(() => import("./components/pages/MyRewards"));
 
 // AGRIM-Style Pages
 const AgriHome = lazy(() => import("./pages/AgriHome"));
@@ -316,6 +319,26 @@ const AnimatedRoutes = () => {
               </Slide>
             }
           />
+          <Route
+            path="/crop-calendar"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <CropCalendar />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/rewards"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <MyRewards />
+                </Box>
+              </Slide>
+            }
+          />
           {/* AGRIM-Style Routes */}
           <Route
             path="/agri"
@@ -465,6 +488,7 @@ function App() {
             </Box>
             <Footer />
             <ScrollToTop />
+            <AgriBot />
           </AnimatedBox>
         </Router>
       </CartProvider>
