@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, OuterRef, Exists
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -85,7 +85,24 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
+
+        # Annotate with review metrics
+        queryset = queryset.annotate(
+            annotated_average_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews', distinct=True)
+        )
+
+        # Annotate with wishlist status if authenticated
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -2735,7 +2752,6 @@ class HighMarginProductsView(APIView):
 
 class NewlyLaunchedView(APIView):
     """API view for newly launched products."""
-    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(60 * 30))  # Cache for 30 minutes
     def get(self, _request):

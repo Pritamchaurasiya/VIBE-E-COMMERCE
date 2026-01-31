@@ -1,0 +1,3 @@
+## 2025-05-15 - Testing Performance Optimizations
+**Learning:** When verifying performance optimizations (query counts) in a Django project with external dependencies (Redis, Postgres) configured in `settings.py` but not available in the environment, it is crucial to create a dedicated test settings file (e.g., `store/tests/settings_test.py`) that overrides `DATABASES`, `CACHES`, and `MIDDLEWARE` to use SQLite, LocMemCache, and disable dependency-heavy middleware. This avoids `ConnectionError` and allows `assertNumQueries` to work correctly.
+**Action:** Always create a lightweight test settings file when measuring query performance in isolated environments to ensure clean reproduction and verification.
