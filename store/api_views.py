@@ -2197,6 +2197,11 @@ class ContactFormView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Sanitize input to prevent Stored XSS
+        name = bleach.clean(name)
+        email = bleach.clean(email)
+        message = bleach.clean(message)
+
         contact = Contact.objects.create(
             name=name,
             email=email,
