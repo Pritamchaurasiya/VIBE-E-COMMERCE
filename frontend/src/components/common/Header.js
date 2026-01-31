@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -68,9 +68,35 @@ const Header = () => {
   };
 
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check for '/' key or Ctrl+K / Cmd+K
+      if (
+        e.key === "/" ||
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")
+      ) {
+        // Don't trigger if user is already typing in an input/textarea
+        if (
+          document.activeElement.tagName === "INPUT" ||
+          document.activeElement.tagName === "TEXTAREA"
+        ) {
+          return;
+        }
+
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Sample notifications - would come from API in production
   const notifications = [
@@ -289,8 +315,9 @@ const Header = () => {
             >
               <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
               <InputBase
-                placeholder="Search products..."
+                placeholder="Search products... (/)"
                 value={searchQuery}
+                inputRef={searchInputRef}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 inputProps={{
                   "aria-label": "search products",
