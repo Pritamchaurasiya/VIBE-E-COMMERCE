@@ -45,7 +45,7 @@ import UserSegmentationWidget from '../components/monitoring/UserSegmentationWid
 import AnalyticsCharts from '../components/monitoring/AnalyticsCharts';
 import MonitoringAlerts from '../components/monitoring/MonitoringAlerts';
 import useWebSocket from '../hooks/useWebSocket';
-import { getAnalyticsDashboard, getRealTimeAnalytics } from '../services/api';
+import { analyticsAPI } from '../services/api';
 import './EnhancedMonitoringDashboard.css';
 
 const EnhancedMonitoringDashboard = () => {
@@ -81,8 +81,8 @@ const EnhancedMonitoringDashboard = () => {
     try {
       setLoading(true);
       const [dashboardResponse, realTimeResponse] = await Promise.all([
-        getAnalyticsDashboard(),
-        getRealTimeAnalytics()
+        analyticsAPI.getDashboard(),
+        analyticsAPI.getRealTimeAnalytics()
       ]);
 
       setDashboardData(dashboardResponse.data);

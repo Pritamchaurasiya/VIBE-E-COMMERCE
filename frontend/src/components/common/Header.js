@@ -46,6 +46,7 @@ import {
   Compare,
   ContactSupport,
   Info,
+  Mic,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -123,6 +124,28 @@ const Header = () => {
     },
     [searchQuery, navigate],
   );
+
+  const handleVoiceSearch = useCallback(() => {
+    if ("webkitSpeechRecognition" in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = "en-US";
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        navigate(`/products?q=${encodeURIComponent(transcript)}`);
+        setMobileDrawerOpen(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Voice recognition error", event.error);
+      };
+    } else {
+      alert("Voice search is not supported in this browser.");
+    }
+  }, [navigate]);
 
   const toggleMobileDrawer = useCallback(() => {
     setMobileDrawerOpen((prev) => !prev);
@@ -302,6 +325,14 @@ const Header = () => {
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
               />
+              <IconButton
+                size="small"
+                onClick={handleVoiceSearch}
+                aria-label="voice search"
+                sx={{ color: "white", p: 0.5 }}
+              >
+                <Mic fontSize="small" />
+              </IconButton>
             </Box>
 
             {/* Theme Toggle */}
@@ -526,6 +557,13 @@ const Header = () => {
               sx={{ flex: 1 }}
               inputProps={{ "aria-label": "search" }}
             />
+            <IconButton
+              onClick={handleVoiceSearch}
+              size="small"
+              aria-label="voice search"
+            >
+              <Mic />
+            </IconButton>
             <IconButton type="submit" size="small" aria-label="submit search">
               <SearchIcon />
             </IconButton>
