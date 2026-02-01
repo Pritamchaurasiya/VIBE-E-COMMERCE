@@ -684,16 +684,19 @@ class UserProfileView(APIView):
         profile_data = request.data.get('profile', {})
 
         # Update user fields
-        user.first_name = request.data.get('first_name', user.first_name)
-        user.last_name = request.data.get('last_name', user.last_name)
-        user.email = request.data.get('email', user.email)
+        if 'first_name' in request.data:
+            user.first_name = bleach.clean(request.data['first_name'])
+        if 'last_name' in request.data:
+            user.last_name = bleach.clean(request.data['last_name'])
+        if 'email' in request.data:
+            user.email = bleach.clean(request.data['email'])
         user.save()
 
         # Update or create profile
         profile, _ = Profile.objects.get_or_create(user=user)
         for field in ['shop_name', 'gst_number', 'address', 'city', 'state', 'pincode']:
             if field in profile_data:
-                setattr(profile, field, profile_data[field])
+                setattr(profile, field, bleach.clean(str(profile_data[field])))
         profile.save()
 
         return Response({'success': True})
@@ -743,7 +746,7 @@ class BulkOrderView(APIView):
         product_id = request.data.get('product_id')
         quantity = request.data.get('quantity')
         requested_price = request.data.get('requested_price')
-        notes = request.data.get('notes', '')
+        notes = bleach.clean(request.data.get('notes', ''))
 
         if not product_id or not quantity:
             return Response(
@@ -879,7 +882,7 @@ class InventoryView(APIView):
         user = request.user
         product_id = request.data.get('product_id')
         new_quantity = request.data.get('quantity')
-        notes = request.data.get('notes', '')
+        notes = bleach.clean(request.data.get('notes', ''))
 
         if not hasattr(user, 'vendor'):
             return Response(
@@ -1340,7 +1343,7 @@ class BulkInventoryUpdateView(APIView):
         for update in updates:
             product_id = update.get('product_id')
             new_quantity = update.get('quantity')
-            notes = update.get('notes', '')
+            notes = bleach.clean(update.get('notes', ''))
 
             try:
                 product = Product.objects.get(id=product_id, vendor=vendor)
@@ -2179,9 +2182,9 @@ class ContactFormView(APIView):
 
     def post(self, request):
         """Submit a contact form."""
-        name = request.data.get('name', '').strip()
-        email = request.data.get('email', '').strip()
-        message = request.data.get('message', '').strip()
+        name = bleach.clean(request.data.get('name', '').strip())
+        email = bleach.clean(request.data.get('email', '').strip())
+        message = bleach.clean(request.data.get('message', '').strip())
 
         if not all([name, email, message]):
             return Response(

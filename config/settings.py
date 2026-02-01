@@ -446,13 +446,24 @@ else:
     }
 
 # Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+_CSP_SELF = "'self'"
+_CSP_DEFAULT_SRC = (_CSP_SELF,)
+_CSP_SCRIPT_SRC = (_CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
+_CSP_STYLE_SRC = (_CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
+_CSP_FONT_SRC = (_CSP_SELF, "https://fonts.gstatic.com")
+_CSP_IMG_SRC = (_CSP_SELF, "data:", "https:", "http:")
+_CSP_CONNECT_SRC = (_CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': _CSP_DEFAULT_SRC,
+        'script-src': _CSP_SCRIPT_SRC,
+        'style-src': _CSP_STYLE_SRC,
+        'font-src': _CSP_FONT_SRC,
+        'img-src': _CSP_IMG_SRC,
+        'connect-src': _CSP_CONNECT_SRC,
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
