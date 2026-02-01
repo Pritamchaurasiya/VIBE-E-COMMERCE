@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Q
 
 logger = logging.getLogger(__name__)
@@ -270,11 +271,20 @@ class CouponService:
 
         try:
             # pylint: disable=no-member
-            coupon = Coupon.objects.get(code__iexact=code.strip())
-            coupon.used_count += 1
-            coupon.save(update_fields=['used_count'])
-            logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
-            return True, "Coupon applied successfully"
+            # Use atomic transaction and select_for_update to prevent race conditions
+            with transaction.atomic():
+                coupon = Coupon.objects.select_for_update().get(code__iexact=code.strip())
+
+                # Check usage limit inside the lock
+                if coupon.used_count >= coupon.max_uses:
+                    logger.warning("Coupon %s limit reached during application", code)
+                    return False, "This coupon has reached its usage limit"
+
+                coupon.used_count += 1
+                coupon.save(update_fields=['used_count'])
+
+                logger.info("Coupon %s applied, usage count: %d", code, coupon.used_count)
+                return True, "Coupon applied successfully"
         except Coupon.DoesNotExist:
             return False, "Coupon not found"
         except Exception as exc:
