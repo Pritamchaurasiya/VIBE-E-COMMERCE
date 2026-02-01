@@ -234,6 +234,7 @@ urlpatterns = [
 
     # User Profile API
     path('api/v1/profile/', api_views.UserProfileView.as_view(), name='api_profile'),
+    path('api/v1/my-farm/', api_views.UserFarmView.as_view(), name='api_user_farm'),
 
     # ====== NEW ENHANCED API ENDPOINTS ======
     # Flash Sales API

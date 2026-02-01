@@ -22,6 +22,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 // Lazy loaded components for code splitting
 // const HomePage = lazy(() => import("./components/common/HomePage")); // Switched to AgriHome
 const ProductList = lazy(() => import("./components/products/ProductList"));
+const BulkOrderList = lazy(() => import("./components/orders/BulkOrderList"));
 const ProductDetail = lazy(() => import("./components/products/ProductDetailEnhanced"));
 const ProductComparison = lazy(
   () => import("./components/products/ProductComparison"),
@@ -46,6 +47,7 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const FarmDashboard = lazy(() => import("./pages/FarmDashboard"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -82,6 +84,16 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/my-farm"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <FarmDashboard />
                 </Box>
               </Slide>
             }
@@ -240,6 +252,16 @@ const AnimatedRoutes = () => {
               >
                 <Box>
                   <Orders />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/bulk-orders"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <BulkOrderList />
                 </Box>
               </Slide>
             }

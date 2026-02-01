@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Box, Skeleton } from "@mui/material";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";

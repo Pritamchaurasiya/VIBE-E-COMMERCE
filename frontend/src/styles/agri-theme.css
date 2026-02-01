@@ -1348,16 +1348,4 @@ body.agri-theme {
 /* Image Enhancements */
 .img-premium {
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  transition: transform 0.5s ease;
 }
-
-.img-premium:hover {
-  transform: scale(1.05);
-}
-
-. a s p e c t - r a t i o - 4 - 3 
- 
-   a s p e c t - r a t i o :   4 / 3 ;   
- 
- 

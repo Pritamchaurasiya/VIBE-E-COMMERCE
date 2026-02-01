@@ -102,9 +102,9 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -352,8 +352,10 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+# Caching Configuration - Use Redis if available and enabled, fallback to local memory
+USE_REDIS = os.environ.get('USE_REDIS', 'False') == 'True'
+
+if is_package_installed('django_redis') and USE_REDIS:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -447,15 +449,25 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': [CSP_SELF],
+        'script-src': [CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': [CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': [CSP_SELF, "https://fonts.gstatic.com"],
+        'img-src': [CSP_SELF, "data:", "https:", "http:"],
+        'connect-src': [CSP_SELF, "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
+    AUTHENTICATION_BACKENDS.append('axes.backends.AxesStandaloneBackend')
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
