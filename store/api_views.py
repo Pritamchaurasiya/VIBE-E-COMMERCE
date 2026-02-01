@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -950,20 +950,23 @@ class VendorAnalyticsAPIView(APIView):
             order__paid=True
         ).select_related('order', 'product__category')
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
+        # Calculate revenue metrics using database aggregation
+        # Optimized: O(1) DB query instead of O(N) Python loop
+        revenue_stats = order_items.aggregate(
+            total=Sum(F('price') * F('quantity')),
+            monthly=Sum(
+                F('price') * F('quantity'),
+                filter=Q(order__created_at__gte=thirty_days_ago)
+            ),
+            weekly=Sum(
+                F('price') * F('quantity'),
+                filter=Q(order__created_at__gte=seven_days_ago)
+            )
         )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+
+        total_revenue = revenue_stats['total'] or 0
+        monthly_revenue = revenue_stats['monthly'] or 0
+        weekly_revenue = revenue_stats['weekly'] or 0
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
