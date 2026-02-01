@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,9 +84,25 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        # print(f"Permissions: {self.permission_classes}")
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
+
+        # Annotate with review data
+        queryset = queryset.annotate(
+            annotated_average_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
+
+        # Annotate wishlist status for authenticated users
+        if self.request.user.is_authenticated:
+            wishlist_subquery = Wishlist.objects.filter(
+                user=self.request.user,
+                product=OuterRef('pk')
+            )
+            queryset = queryset.annotate(annotated_is_in_wishlist=Exists(wishlist_subquery))
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -198,6 +215,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -208,6 +226,7 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
@@ -215,10 +234,12 @@ class VendorDetailView(generics.RetrieveAPIView):
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
+    permission_classes = [permissions.AllowAny]
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +305,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +415,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +470,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -500,6 +524,7 @@ class LoginView(APIView):
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
     throttle_scope = 'login'
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Authenticate and login user."""
@@ -563,6 +588,7 @@ class RegisterView(APIView):
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Register a new user with input validation."""
@@ -611,8 +637,12 @@ class RegisterView(APIView):
         )
 
         # Create Profile and UserCoin
-        Profile.objects.create(user=user, shop_name=shop_name, role=role)
-        UserCoin.objects.create(user=user)
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.shop_name = shop_name
+        profile.role = role
+        profile.save()
+
+        UserCoin.objects.get_or_create(user=user)
 
         logger.info("New user registered: %s", username)
         login(request, user)
@@ -1009,6 +1039,7 @@ class VendorAnalyticsAPIView(APIView):
 
 class TrendingProductsView(APIView):
     """API view for trending products based on recent orders and views."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get trending products."""
@@ -1046,6 +1077,7 @@ class TrendingProductsView(APIView):
 
 class RecentlyViewedView(APIView):
     """API view for tracking and retrieving recently viewed products."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get recently viewed products from session."""
@@ -1107,6 +1139,7 @@ class RecentlyViewedView(APIView):
 
 class AdvancedSearchView(APIView):
     """API view for advanced product search with faceted filters."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Advanced search with aggregations."""
