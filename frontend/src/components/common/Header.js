@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -62,6 +62,28 @@ const Header = () => {
   const location = useLocation();
   const muiTheme = useMuiTheme();
   useMediaQuery(muiTheme.breakpoints.down("md"));
+
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "/" && !event.repeat) {
+        const activeElement = document.activeElement;
+        const isInputActive =
+          activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.isContentEditable;
+
+        if (!isInputActive) {
+          event.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleToggleTheme = () => {
     dispatch(toggleTheme());
@@ -289,7 +311,8 @@ const Header = () => {
             >
               <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
               <InputBase
-                placeholder="Search products..."
+                inputRef={searchInputRef}
+                placeholder="Search products... (/)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 inputProps={{
