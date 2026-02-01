@@ -442,6 +442,7 @@ class SecurityTrackingMiddlewareTests(TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.status_code, 413)
 
+    @override_settings(TESTING=False)
     def test_brute_force_lockout(self):
         """Test brute force protection with lockout."""
         ip = '10.0.0.100'
@@ -583,6 +584,7 @@ class SecurityMiddlewareThreadSafetyTests(TestCase):
         self.assertEqual(len(errors), 0, f"Thread errors: {errors}")
         self.assertEqual(len(results), 10)
 
+    @override_settings(TESTING=False)
     def test_concurrent_lockout_checks(self):
         """Test thread safety of lockout checking."""
         ip = '10.0.0.99'

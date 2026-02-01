@@ -9,6 +9,7 @@ and tracking_middleware.py.
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 
+from django.core.cache import cache
 from store.tracking_service import (
     EnhancedTrackingService,
     InputValidator,
@@ -97,6 +98,9 @@ class InputValidatorTests(TestCase):
 
 class RateLimiterTests(TestCase):
     """Tests for RateLimiter class."""
+
+    def tearDown(self):
+        cache.clear()
 
     def test_allows_requests_under_limit(self):
         """Test requests under limit are allowed."""

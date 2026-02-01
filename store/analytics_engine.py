@@ -29,7 +29,7 @@ import numpy as np
 
 # Django imports
 from django.db.models import Avg, Count
-from django.db.models.functions import TruncHour
+from django.db.models.functions import TruncHour, ExtractHour, ExtractWeekDay
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -284,32 +284,32 @@ class PredictiveAnalytics:
             # Get user activity data
             cutoff = timezone.now() - timedelta(days=days)
 
-            user_actions = UserActionTracker.objects.filter(  # pylint: disable=no-member
+            base_qs = UserActionTracker.objects.filter(  # pylint: disable=no-member
                 user_id=user_id,
                 action_timestamp__gte=cutoff
-            ).values('action_type', 'action_timestamp')
+            )
 
-            # We query UserSession but don't strictly use it here for prediction logic in this simplified version
-            # user_sessions = UserSession.objects.filter( # pylint: disable=no-member
-            #     user_id=user_id,
-            #     started_at__gte=cutoff
-            # ).values('duration_seconds', 'page_views', 'started_at')
-
-            if not user_actions.exists():
+            if not base_qs.exists():
                 return {"error": "No user data available"}
 
-            # Analyze patterns
-            action_counts = defaultdict(int)
-            hourly_activity = defaultdict(int)
+            # Bolt Optimization: Database Aggregations
+            # Action counts
+            action_counts_qs = base_qs.values('action_type').annotate(count=Count('id'))
+            action_counts = {item['action_type']: item['count'] for item in action_counts_qs}
+
+            # Hourly activity
+            hourly_qs = base_qs.annotate(hour=ExtractHour('action_timestamp')).values('hour').annotate(count=Count('id'))
+            hourly_activity = defaultdict(int, {item['hour']: item['count'] for item in hourly_qs})
+
+            # Daily activity
+            # Django ExtractWeekDay returns 1 (Sunday) to 7 (Saturday)
+            # Python timestamp.weekday() returns 0 (Monday) to 6 (Sunday)
+            daily_qs = base_qs.annotate(weekday=ExtractWeekDay('action_timestamp')).values('weekday').annotate(count=Count('id'))
             daily_activity = defaultdict(int)
-
-            for action in user_actions:
-                action_type = action['action_type']
-                timestamp = action['action_timestamp']
-
-                action_counts[action_type] += 1
-                hourly_activity[timestamp.hour] += 1
-                daily_activity[timestamp.weekday()] += 1
+            for item in daily_qs:
+                # Convert Django 1-7 (Sun-Sat) to Python 0-6 (Mon-Sun)
+                py_weekday = (item['weekday'] - 2) % 7
+                daily_activity[py_weekday] = item['count']
 
             # Predict next week activity
             total_actions = sum(action_counts.values())

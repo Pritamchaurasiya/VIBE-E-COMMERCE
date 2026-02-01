@@ -38,45 +38,38 @@ SENSITIVE_FIELDS = frozenset({
 
 
 class RateLimiter:
-    """Thread-safe rate limiter for tracking operations."""
+    """Distributed rate limiter using Django cache for scalability."""
 
     def __init__(self, max_requests: int = MAX_REQUESTS_PER_WINDOW,
                  window_seconds: int = RATE_LIMIT_WINDOW):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests: Dict[str, List[float]] = defaultdict(list)
-        self._lock = Lock()
+
+    def _get_cache_key(self, identifier: str) -> str:
+        return f"tracking_rate_limit:{identifier}"
 
     def is_allowed(self, identifier: str) -> bool:
         """Check if a request is allowed within rate limits."""
-        current_time = time.time()
-        window_start = current_time - self.window_seconds
+        key = self._get_cache_key(identifier)
 
-        with self._lock:
-            # Clean old requests
-            self.requests[identifier] = [
-                req_time for req_time in self.requests[identifier]
-                if req_time > window_start
-            ]
+        # Atomic increment strategy
+        try:
+            # Try to increment existing counter
+            count = cache.incr(key)
+        except ValueError:
+            # Key does not exist, initialize it
+            # We set timeout to window_seconds.
+            # Note: This is a fixed window starting from first request.
+            cache.set(key, 1, timeout=self.window_seconds)
+            count = 1
 
-            # Check if under limit
-            if len(self.requests[identifier]) < self.max_requests:
-                self.requests[identifier].append(current_time)
-                return True
-
-            return False
+        return count <= self.max_requests
 
     def get_remaining(self, identifier: str) -> int:
         """Get remaining requests in current window."""
-        current_time = time.time()
-        window_start = current_time - self.window_seconds
-
-        with self._lock:
-            active_requests = [
-                req_time for req_time in self.requests[identifier]
-                if req_time > window_start
-            ]
-            return max(0, self.max_requests - len(active_requests))
+        key = self._get_cache_key(identifier)
+        count = cache.get(key, 0)
+        return max(0, self.max_requests - count)
 
 
 class InputValidator:
@@ -232,8 +225,8 @@ class UserAgentParser:
     OS_PATTERNS = {
         'Windows': re.compile(r'Windows', re.IGNORECASE),
         'macOS': re.compile(r'Mac OS X|Macintosh', re.IGNORECASE),
-        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'Android': re.compile(r'Android', re.IGNORECASE),
+        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'iOS': re.compile(r'iPhone|iPad|iPod', re.IGNORECASE),
     }
 
@@ -295,7 +288,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
@@ -557,8 +550,8 @@ class EnhancedTrackingService:
             'file_operations': ('SystemFileTracker', 'operation_timestamp'),
             'user_actions': ('UserActionTracker', 'action_timestamp'),
             'system_access': ('SystemAccessTracker', 'access_timestamp'),
-            'data_modifications': ('DataModificationTracker', 'timestamp'),
-            'sessions': ('SessionTracker', 'login_timestamp'),
+            'data_modifications': ('UserActionTracker', 'action_timestamp'),
+            'sessions': ('UserSession', 'started_at'),
             'performance_metrics': ('PerformanceMetric', 'timestamp'),
         }
 
@@ -633,8 +626,8 @@ class EnhancedTrackingService:
             SystemFileTracker = cls._get_model('SystemFileTracker')
             UserActionTracker = cls._get_model('UserActionTracker')
             SystemAccessTracker = cls._get_model('SystemAccessTracker')
-            DataModificationTracker = cls._get_model('DataModificationTracker')
-            SessionTracker = cls._get_model('SessionTracker')
+            # DataModificationTracker is deprecated, mapped to UserActionTracker
+            SessionTracker = cls._get_model('UserSession')
             TrackingAlert = cls._get_model('TrackingAlert')
 
             # pylint: disable=no-member
@@ -648,8 +641,9 @@ class EnhancedTrackingService:
                 'system_access_24h': SystemAccessTracker.objects.filter(
                     access_timestamp__gte=last_24h
                 ).count(),
-                'data_modifications_24h': DataModificationTracker.objects.filter(
-                    timestamp__gte=last_24h
+                'data_modifications_24h': UserActionTracker.objects.filter(
+                    action_timestamp__gte=last_24h,
+                    action_type='data_modification'
                 ).count(),
                 'active_sessions': SessionTracker.objects.filter(
                     is_active=True

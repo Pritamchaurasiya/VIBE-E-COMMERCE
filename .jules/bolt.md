@@ -1,0 +1,3 @@
+## 2025-10-26 - [Verification is Key]
+**Learning:** Always verify that file reads are complete and not truncated. Assuming a file's content based on a partial read can lead to incorrect planning (e.g., proposing to optimize a loop that might be different or more complex than assumed). Also, ensure that imported modules for optimization (like `ExtractHour`) are actually available in the environment/imports.
+**Action:** When reading large files, check the output length or use `grep` to isolate specific sections if the file is too large. Explicitly verify method signatures and imports before proposing code changes.
