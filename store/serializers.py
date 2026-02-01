@@ -8,7 +8,7 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, UserFarm
 )
 # Analytics model imports
 from .models import (
@@ -524,6 +524,18 @@ class UserAnalyticsAuditLogSerializer(serializers.ModelSerializer):
             'ip_address', 'timestamp'
         ]
         read_only_fields = ['id', 'timestamp']
+
+class UserFarmSerializer(serializers.ModelSerializer):
+    """Serializer for UserFarm model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = UserFarm
+        fields = [
+            'id', 'user', 'farm_name', 'farm_size', 'location', 'soil_type',
+            'primary_crops', 'livestock', 'irrigation_type', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
 READ_ONLY_ERROR_MSG = "This serializer is read-only."
 

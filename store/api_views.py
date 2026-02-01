@@ -47,7 +47,7 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment, UserFarm
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,11 +55,12 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer, UserFarmSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
 )
+from .ml_analytics import get_ml_engine
 
 logger = logging.getLogger(__name__)
 
@@ -1004,6 +1005,47 @@ class VendorAnalyticsAPIView(APIView):
                 'average_rating': round(avg_rating, 1),
             },
             'top_products': list(top_products),
+        })
+
+
+class AdvancedAnalyticsView(APIView):
+    """API view for advanced analytics using ML engine."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        """Get advanced analytics data."""
+        engine = get_ml_engine()
+
+        # Feed recent order values to engine
+        recent_orders = Order.objects.filter(paid=True).order_by('-created_at')[:100]
+        # Reverse to feed chronologically
+        for order in reversed(recent_orders):
+            engine.add_data_point('order_value', float(order.paid_amount or 0))
+
+        # Detect anomalies in latest order
+        latest_value = 0.0
+        if recent_orders:
+            latest_value = float(recent_orders[0].paid_amount or 0)
+
+        anomaly = engine.detect_anomaly('order_value', latest_value)
+        prediction = engine.predict_next_value('order_value')
+        trend = engine.get_trend('order_value')
+
+        return Response({
+            'anomaly_detection': {
+                'is_anomaly': anomaly.is_anomaly,
+                'score': anomaly.score,
+                'severity': anomaly.severity,
+                'expected_range': anomaly.expected_range,
+                'metric': 'order_value'
+            },
+            'forecast': {
+                'predicted_value': prediction.predicted_value if prediction else None,
+                'confidence': prediction.confidence if prediction else None,
+                'trend': prediction.trend if prediction else None,
+                'timeframe': prediction.timeframe if prediction else None
+            },
+            'trend_analysis': trend
         })
 
 
@@ -2751,6 +2793,20 @@ class NewlyLaunchedView(APIView):
         return Response({
             'products': serializer.data
         })
+
+
+class UserFarmView(generics.RetrieveUpdateAPIView):
+    """API view for managing user farm details."""
+    serializer_class = UserFarmSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        """Get or create user farm."""
+        farm, _ = UserFarm.objects.get_or_create(
+            user=self.request.user,
+            defaults={'farm_size': 0.00}
+        )
+        return farm
 
 
 # ============================================

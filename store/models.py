@@ -2719,3 +2719,25 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class UserFarm(models.Model):
+    """
+    Model for storing user farm details (My Farm).
+    """
+    user = models.OneToOneField(User, related_name='farm', on_delete=models.CASCADE)
+    farm_name = models.CharField(max_length=255, blank=True)
+    farm_size = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Size in acres")
+    location = models.CharField(max_length=255, blank=True)
+    soil_type = models.CharField(max_length=100, blank=True)
+    primary_crops = models.JSONField(default=list, blank=True, help_text="List of primary crops")
+    livestock = models.JSONField(default=list, blank=True, help_text="List of livestock")
+    irrigation_type = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'User Farm'
+        verbose_name_plural = 'User Farms'
+
+    def __str__(self):
+        return f"{self.user.username}'s Farm"
