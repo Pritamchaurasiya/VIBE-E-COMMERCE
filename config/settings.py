@@ -26,6 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True'
+TESTING = os.environ.get('TESTING') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
@@ -353,7 +354,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and not TESTING:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -445,17 +446,27 @@ else:
         }
     }
 
-# Content Security Policy - Use constant for common values
+# Content Security Policy
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': (CSP_SELF,),
+        'script-src': (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"),
+        'style-src': (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"),
+        'font-src': (CSP_SELF, "https://fonts.gstatic.com"),
+        'img-src': (CSP_SELF, "data:", "https:", "http:"),
+        'connect-src': (CSP_SELF, "https://api.stripe.com", "wss:", "ws:"),
+    }
+}
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
+    AUTHENTICATION_BACKENDS.append('axes.backends.AxesStandaloneBackend')
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
