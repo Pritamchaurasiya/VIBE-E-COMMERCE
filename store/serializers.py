@@ -8,7 +8,7 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, UserFarm
 )
 # Analytics model imports
 from .models import (
@@ -25,6 +25,13 @@ class CategorySerializer(serializers.ModelSerializer):
         """Meta class for CategorySerializer."""
         model = Category
         fields = ['id', 'name', 'slug']
+
+
+class UserFarmSerializer(serializers.ModelSerializer):
+    """Serializer for UserFarm model."""
+    class Meta:
+        model = UserFarm
+        fields = ['farm_name', 'farm_size', 'location', 'primary_crops', 'soil_type', 'irrigation_type']
 
 
 class VendorSerializer(serializers.ModelSerializer):

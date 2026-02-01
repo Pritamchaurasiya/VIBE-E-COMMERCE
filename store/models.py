@@ -16,6 +16,23 @@ logger = logging.getLogger(__name__)
 # Constants
 SITE_SETTINGS_NAME = 'Site Settings'
 
+class UserFarm(models.Model):
+    """
+    Model for storing user farm details.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='farm')
+    farm_name = models.CharField(max_length=255, default="My Farm")
+    farm_size = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Size in acres")
+    location = models.CharField(max_length=255, blank=True)
+    primary_crops = models.JSONField(default=list, help_text="List of crops grown")
+    soil_type = models.CharField(max_length=100, blank=True)
+    irrigation_type = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Farm"
+
 class Vendor(models.Model):
     """
     Vendor model representing a seller or manufacturer.

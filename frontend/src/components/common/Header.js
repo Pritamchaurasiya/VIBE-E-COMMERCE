@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -46,6 +46,8 @@ import {
   Compare,
   ContactSupport,
   Info,
+  Mic,
+  Agriculture,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -71,6 +73,7 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  const [isListening, setIsListening] = useState(false);
 
   // Sample notifications - would come from API in production
   const notifications = [
@@ -124,6 +127,41 @@ const Header = () => {
     [searchQuery, navigate],
   );
 
+  const handleVoiceSearch = useCallback(() => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Voice search is not supported in this browser.");
+      return;
+    }
+
+    if (isListening) {
+      // Stop logic would go here if we kept reference
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript);
+      navigate(`/products?q=${encodeURIComponent(transcript)}`);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  }, [isListening, navigate]);
+
   const toggleMobileDrawer = useCallback(() => {
     setMobileDrawerOpen((prev) => !prev);
   }, []);
@@ -156,6 +194,7 @@ const Header = () => {
 
   const userMenuItems = [
     { label: "Profile", path: "/profile", icon: <AccountCircle /> },
+    { label: "My Farm", path: "/my-farm", icon: <Agriculture /> },
     { label: "Orders", path: "/orders", icon: <Receipt /> },
     { label: "Wishlist", path: "/wishlist", icon: <Favorite /> },
     { label: "Messages", path: "/messages", icon: <Message /> },
@@ -302,6 +341,13 @@ const Header = () => {
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
               />
+              <IconButton
+                size="small"
+                onClick={handleVoiceSearch}
+                sx={{ color: isListening ? "secondary.main" : "white" }}
+              >
+                <Mic fontSize="small" />
+              </IconButton>
             </Box>
 
             {/* Theme Toggle */}

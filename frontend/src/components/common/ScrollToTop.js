@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Fab, Zoom, useScrollTrigger, Box } from "@mui/material";
 import { KeyboardArrowUp } from "@mui/icons-material";
 

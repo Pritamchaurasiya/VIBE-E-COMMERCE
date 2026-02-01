@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { Link } from "react-router-dom";
 import TopNav from "../components/layout/TopNav";
 import BottomNav from "../components/layout/BottomNav";
 import AgriProductCard from "../components/products/AgriProductCard";
+import { useAuth } from "../utils/AuthContext";
 import {
   productsAPI,
   wishlistAPI,
@@ -39,12 +40,15 @@ import {
   Store
 } from "@mui/icons-material";
 
+const ProductRecommendations = React.lazy(() => import('../components/products/ProductRecommendations'));
+
 /**
  * AGRIM-Style Homepage
  * Sections: Promo Banner, Deal of Day, Recently Viewed, Popular in City,
  * Shop by Category/Crop/Disease, High Margin, Newly Launched, Shop by Brand
  */
 const AgriHome = () => {
+  const { user } = useAuth();
   // State for various sections
   const [dealProducts, setDealProducts] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -321,6 +325,11 @@ const AgriHome = () => {
                     ))}
             </div>
           </section>
+
+          {/* ===== RECOMMENDED FOR YOU ===== */}
+          <Suspense fallback={<div className="agri-skeleton" style={{ height: 300, margin: '20px 0' }} />}>
+             <ProductRecommendations userId={user?.id} />
+          </Suspense>
 
           {/* ===== RECENTLY VIEWED ===== */}
           {recentlyViewed.length > 0 && (

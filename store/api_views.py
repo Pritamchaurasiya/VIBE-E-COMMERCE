@@ -47,7 +47,7 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment, UserFarm
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,7 +55,7 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer, UserFarmSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
@@ -638,6 +638,26 @@ class RegisterView(APIView):
             'token': token.key,
             'user': user_data
         }, status=status.HTTP_201_CREATED)
+
+
+class UserFarmView(APIView):
+    """API view for managing user farm details."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Get user farm details."""
+        farm, created = UserFarm.objects.get_or_create(user=request.user)
+        serializer = UserFarmSerializer(farm)
+        return Response(serializer.data)
+
+    def put(self, request):
+        """Update user farm details."""
+        farm, created = UserFarm.objects.get_or_create(user=request.user)
+        serializer = UserFarmSerializer(farm, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(APIView):
