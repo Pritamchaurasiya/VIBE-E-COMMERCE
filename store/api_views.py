@@ -945,25 +945,31 @@ class VendorAnalyticsAPIView(APIView):
         products = Product.objects.filter(vendor=vendor).select_related('category')
 
         # Get orders for this vendor's products
-        order_items = OrderItem.objects.filter(
+        # Optimized: Use DB aggregation instead of loading all items into memory
+        revenue_metrics = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        ).aggregate(
+            total=Sum(models.F('price') * models.F('quantity')),
+            monthly=Sum(
+                models.Case(
+                    models.When(order__created_at__gte=thirty_days_ago, then=models.F('price') * models.F('quantity')),
+                    default=0,
+                    output_field=models.DecimalField()
+                )
+            ),
+            weekly=Sum(
+                models.Case(
+                    models.When(order__created_at__gte=seven_days_ago, then=models.F('price') * models.F('quantity')),
+                    default=0,
+                    output_field=models.DecimalField()
+                )
+            )
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
-        )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+        total_revenue = revenue_metrics['total'] or 0
+        monthly_revenue = revenue_metrics['monthly'] or 0
+        weekly_revenue = revenue_metrics['weekly'] or 0
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
@@ -981,6 +987,12 @@ class VendorAnalyticsAPIView(APIView):
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
+        # Calculate distinct orders count
+        total_orders = OrderItem.objects.filter(
+            vendor=vendor,
+            order__paid=True
+        ).values('order').distinct().count()
+
         return Response({
             'overview': {
                 'total_products': products.count(),
@@ -996,7 +1008,7 @@ class VendorAnalyticsAPIView(APIView):
                 'weekly': round(weekly_revenue, 2),
             },
             'orders': {
-                'total': order_items.values('order').distinct().count(),
+                'total': total_orders,
                 'pending_bulk_orders': pending_bulk,
             },
             'reviews': {
