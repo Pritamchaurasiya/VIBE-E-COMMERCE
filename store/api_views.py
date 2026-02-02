@@ -83,9 +83,30 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimize N+1 queries
+        queryset = queryset.prefetch_related('images')
+
+        # Annotate ratings to avoid N+1
+        queryset = queryset.annotate(
+            annotated_average_rating=models.Avg('reviews__rating'),
+            annotated_review_count=models.Count('reviews')
+        )
+
+        # Annotate wishlist status for authenticated users
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=models.Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=models.OuterRef('pk')
+                    )
+                )
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -197,6 +218,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
