@@ -446,16 +446,30 @@ else:
     }
 
 # Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+_CSP_SELF = "'self'"
+
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': (_CSP_SELF,),
+        'script-src': (_CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"),
+        'style-src': (_CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"),
+        'font-src': (_CSP_SELF, "https://fonts.gstatic.com"),
+        'img-src': (_CSP_SELF, "data:", "https:", "http:"),
+        'connect-src': (_CSP_SELF, "https://api.stripe.com", "wss:", "ws:"),
+    }
+}
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
+    # Only enable Axes backend if not running tests
+    import sys
+    if 'test' not in sys.argv:
+        AUTHENTICATION_BACKENDS.insert(0, 'axes.backends.AxesStandaloneBackend')
     AXES_FAILURE_LIMIT = 5
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
