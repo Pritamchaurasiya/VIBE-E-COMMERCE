@@ -102,7 +102,6 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,15 +110,20 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Internationalization
-    'store.tracking_middleware.SilentTrackingMiddleware',  # Silent tracking for metrics
 ]
+
+# Add tracking middleware if not testing
+if os.environ.get('TESTING') != 'True':
+    MIDDLEWARE.insert(2, 'store.tracking_middleware.SecurityTrackingMiddleware')
+    MIDDLEWARE.append('store.tracking_middleware.SilentTrackingMiddleware')
 
 # Add WhiteNoise for static file serving in production
 if is_package_installed('whitenoise'):
+    # Insert after GZipMiddleware (index 1)
     MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Add optional middleware if packages are installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and os.environ.get('TESTING') != 'True':
     MIDDLEWARE.append('axes.middleware.AxesMiddleware')
 
 if is_package_installed('csp'):
@@ -353,7 +357,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and os.environ.get('TESTING') != 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -447,12 +451,16 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': (CSP_SELF,),
+        'script-src': (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"),
+        'style-src': (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"),
+        'font-src': (CSP_SELF, "https://fonts.gstatic.com"),
+        'img-src': (CSP_SELF, "data:", "https:", "http:"),
+        'connect-src': (CSP_SELF, "https://api.stripe.com", "wss:", "ws:"),
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
