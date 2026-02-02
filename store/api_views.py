@@ -1767,15 +1767,18 @@ class WebhookView(APIView):
         razorpay_signature = request.META.get('HTTP_X_RAZORPAY_SIGNATURE', '')
         webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', '')
 
-        if webhook_secret:
-            expected_signature = hmac.new(
-                webhook_secret.encode(),
-                request.body,
-                hashlib.sha256
-            ).hexdigest()
+        if not webhook_secret:
+            logger.error("RAZORPAY_WEBHOOK_SECRET is not configured")
+            return Response({'error': 'Server configuration error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            if not hmac.compare_digest(razorpay_signature, expected_signature):
-                return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
+        expected_signature = hmac.new(
+            webhook_secret.encode(),
+            request.body,
+            hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(razorpay_signature, expected_signature):
+            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Process the webhook
         payload = json.loads(request.body)
