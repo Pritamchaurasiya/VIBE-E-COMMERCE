@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Case, When, F, DecimalField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -941,66 +941,82 @@ class VendorAnalyticsAPIView(APIView):
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Get vendor products with optimized query
-        products = Product.objects.filter(vendor=vendor).select_related('category')
+        # Get vendor products
+        products = Product.objects.filter(vendor=vendor)
+
+        # Optimize product stats with a single query
+        product_stats = products.aggregate(
+            total=Count('id'),
+            active=Count(Case(When(is_active=True, then=1))),
+            out_of_stock=Count(Case(When(stock_quantity=0, then=1))),
+            low_stock=Count(Case(When(stock_quantity__lte=F('low_stock_threshold'), then=1)))
+        )
 
         # Get orders for this vendor's products
         order_items = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
-        )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
+        # Calculate metrics using DB aggregation
+        revenue_metrics = order_items.aggregate(
+            total_revenue=Sum(F('price') * F('quantity')),
+            monthly_revenue=Sum(
+                Case(
+                    When(order__created_at__gte=thirty_days_ago, then=F('price') * F('quantity')),
+                    default=0,
+                    output_field=DecimalField()
+                )
+            ),
+            weekly_revenue=Sum(
+                Case(
+                    When(order__created_at__gte=seven_days_ago, then=F('price') * F('quantity')),
+                    default=0,
+                    output_field=DecimalField()
+                )
+            ),
+            total_orders=Count('order', distinct=True)
         )
 
         # Get reviews
-        reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
-        avg_rating = reviews.aggregate(avg=models.Avg('rating'))['avg'] or 0
+        reviews = Review.objects.filter(product__vendor=vendor)
+        review_stats = reviews.aggregate(
+            avg=models.Avg('rating'),
+            total=Count('id')
+        )
+        avg_rating = review_stats['avg'] or 0
+        total_reviews = review_stats['total']
 
         # Get bulk orders
-        bulk_orders = BulkOrder.objects.filter(vendor=vendor).select_related('product', 'user')
-        pending_bulk = bulk_orders.filter(status='pending').count()
+        pending_bulk = BulkOrder.objects.filter(
+            vendor=vendor, status='pending'
+        ).count()
 
         # Top selling products
-        top_products = OrderItem.objects.filter(
-            vendor=vendor,
-            order__paid=True
-        ).values('product__name', 'product__slug').annotate(
+        top_products = order_items.values(
+            'product__name', 'product__slug'
+        ).annotate(
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
         return Response({
             'overview': {
-                'total_products': products.count(),
-                'active_products': products.filter(is_active=True).count(),
-                'out_of_stock': products.filter(stock_quantity=0).count(),
-                'low_stock': products.filter(
-                    stock_quantity__lte=models.F('low_stock_threshold')
-                ).count(),
+                'total_products': product_stats['total'],
+                'active_products': product_stats['active'],
+                'out_of_stock': product_stats['out_of_stock'],
+                'low_stock': product_stats['low_stock'],
             },
             'revenue': {
-                'total': round(total_revenue, 2),
-                'monthly': round(monthly_revenue, 2),
-                'weekly': round(weekly_revenue, 2),
+                'total': round(revenue_metrics['total_revenue'] or 0, 2),
+                'monthly': round(revenue_metrics['monthly_revenue'] or 0, 2),
+                'weekly': round(revenue_metrics['weekly_revenue'] or 0, 2),
             },
             'orders': {
-                'total': order_items.values('order').distinct().count(),
+                'total': revenue_metrics['total_orders'],
                 'pending_bulk_orders': pending_bulk,
             },
             'reviews': {
-                'total': reviews.count(),
+                'total': total_reviews,
                 'average_rating': round(avg_rating, 1),
             },
             'top_products': list(top_products),
