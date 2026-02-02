@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,6 +84,7 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
@@ -197,6 +199,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -208,17 +211,20 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +290,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +400,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +455,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +505,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +570,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -611,8 +622,8 @@ class RegisterView(APIView):
         )
 
         # Create Profile and UserCoin
-        Profile.objects.create(user=user, shop_name=shop_name, role=role)
-        UserCoin.objects.create(user=user)
+        Profile.objects.get_or_create(user=user, defaults={'shop_name': shop_name, 'role': role})
+        UserCoin.objects.get_or_create(user=user)
 
         logger.info("New user registered: %s", username)
         login(request, user)
@@ -809,6 +820,7 @@ class NotificationListView(APIView):
 class DealListView(generics.ListAPIView):
     """API view for listing active deals."""
     serializer_class = DealSerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -1222,64 +1234,45 @@ class DashboardStatsView(APIView):
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Orders statistics
-        all_orders = Order.objects.all()
-        paid_orders = all_orders.filter(paid=True)
+        # Orders statistics (aggregated in one query)
+        orders_stats = Order.objects.aggregate(
+            total_count=Count('id'),
+            paid_count=Count('id', filter=Q(paid=True)),
+            pending_count=Count('id', filter=Q(status='pending')),
+            processing_count=Count('id', filter=Q(status='processing')),
+            shipped_count=Count('id', filter=Q(status='shipped')),
+            delivered_count=Count('id', filter=Q(status='delivered')),
+            cancelled_count=Count('id', filter=Q(status='cancelled')),
+            today_count=Count('id', filter=Q(created_at__date=today)),
+            total_revenue=Sum('paid_amount', filter=Q(paid=True)),
+            monthly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=thirty_days_ago)),
+            weekly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=seven_days_ago)),
+            today_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__date=today)),
+        )
 
-        # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
+        # Products statistics (aggregated in one query)
+        products_stats = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(stock_quantity__lte=models.F('low_stock_threshold'), stock_quantity__gt=0)),
+        )
 
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        # Order counts
-        orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
-        }
-
-        # Products statistics
-        products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
-                stock_quantity__lte=models.F('low_stock_threshold'),
-                stock_quantity__gt=0
-            ).count(),
-        }
-
-        # Users statistics (User already imported at top)
-        users_stats = {
-            'total': User.objects.count(),
-            'new_today': User.objects.filter(date_joined__date=today).count(),
-            'new_this_week': User.objects.filter(date_joined__gte=seven_days_ago).count(),
-            'new_this_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
-        }
+        # Users statistics (aggregated in one query)
+        users_stats = User.objects.aggregate(
+            total=Count('id'),
+            new_today=Count('id', filter=Q(date_joined__date=today)),
+            new_this_week=Count('id', filter=Q(date_joined__gte=seven_days_ago)),
+            new_this_month=Count('id', filter=Q(date_joined__gte=thirty_days_ago)),
+        )
 
         # Vendors statistics
+        vendors_count = Vendor.objects.count()
+        vendors_with_products = Vendor.objects.filter(products__isnull=False).distinct().count()
+
         vendors_stats = {
-            'total': Vendor.objects.count(),
-            'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
-            ).filter(product_count__gt=0).count(),
+            'total': vendors_count,
+            'with_products': vendors_with_products,
         }
 
         # Recent orders
@@ -1297,12 +1290,21 @@ class DashboardStatsView(APIView):
 
         return Response({
             'revenue': {
-                'total': float(total_revenue),
-                'monthly': float(monthly_revenue),
-                'weekly': float(weekly_revenue),
-                'today': float(today_revenue),
+                'total': float(orders_stats['total_revenue'] or 0),
+                'monthly': float(orders_stats['monthly_revenue'] or 0),
+                'weekly': float(orders_stats['weekly_revenue'] or 0),
+                'today': float(orders_stats['today_revenue'] or 0),
             },
-            'orders': orders_stats,
+            'orders': {
+                'total': orders_stats['total_count'],
+                'paid': orders_stats['paid_count'],
+                'pending': orders_stats['pending_count'],
+                'processing': orders_stats['processing_count'],
+                'shipped': orders_stats['shipped_count'],
+                'delivered': orders_stats['delivered_count'],
+                'cancelled': orders_stats['cancelled_count'],
+                'today': orders_stats['today_count'],
+            },
             'products': products_stats,
             'users': users_stats,
             'vendors': vendors_stats,
