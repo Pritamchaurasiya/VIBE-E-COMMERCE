@@ -353,7 +353,9 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+TESTING = os.environ.get('TESTING') == 'True'
+
+if is_package_installed('django_redis') and not TESTING:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
