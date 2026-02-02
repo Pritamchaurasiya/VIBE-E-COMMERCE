@@ -1,0 +1,3 @@
+## 2026-02-02 - Keyboard Shortcuts and Visual Hints
+**Learning:** Users often miss keyboard shortcuts if they aren't visually indicated. Adding a subtle visual cue (like `(/)` inside a search bar) dramatically improves discoverability without cluttering the UI. This pattern is becoming standard in modern web apps (Linear, GitHub, etc.) and aligns well with accessibility goals by making power-user features transparent.
+**Action:** When implementing keyboard shortcuts, always pair them with a visual indicator (tooltip or inline hint) and ensure they respect focus context (don't trigger when user is typing in another field).
