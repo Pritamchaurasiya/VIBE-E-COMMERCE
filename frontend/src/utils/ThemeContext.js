@@ -9,6 +9,8 @@
 import PropTypes from "prop-types";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
+import { useAuth } from "./AuthContext";
+import { analyticsAPI } from "../services/api";
 
 const ThemeContext = createContext();
 
@@ -273,6 +275,7 @@ const darkTheme = createTheme({
 });
 
 export const ThemeContextProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
     return saved ? JSON.parse(saved) : false;
@@ -282,9 +285,41 @@ export const ThemeContextProvider = ({ children }) => {
     localStorage.setItem("darkMode", JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
+  // Sync with backend when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      analyticsAPI
+        .getUserPreferences()
+        .then((res) => {
+          if (res.data && Array.isArray(res.data)) {
+            const pref = res.data.find(
+              (p) =>
+                p.preference_type === "ui" && p.preference_key === "dark_mode",
+            );
+            if (pref) {
+              setIsDarkMode(pref.preference_value === "true");
+            }
+          }
+        })
+        .catch((err) => console.error("Failed to load theme preference", err));
+    }
+  }, [isAuthenticated]);
+
   const toggleTheme = useCallback(() => {
-    setIsDarkMode((prev) => !prev);
-  }, []);
+    setIsDarkMode((prev) => {
+      const newVal = !prev;
+      if (isAuthenticated) {
+        analyticsAPI
+          .updateUserPreference({
+            preference_type: "ui",
+            preference_key: "dark_mode",
+            preference_value: String(newVal),
+          })
+          .catch((err) => console.error("Failed to save theme preference", err));
+      }
+      return newVal;
+    });
+  }, [isAuthenticated]);
 
   const theme = isDarkMode ? darkTheme : lightTheme;
 

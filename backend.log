@@ -1,0 +1,10 @@
+INFO AXES: BEGIN version 8.1.0, blocking by ip_address
+INFO AXES: BEGIN version 8.1.0, blocking by ip_address
+INFO Watching for file changes with StatReloader
+System check identified some issues:
+
+WARNINGS:
+?: (axes.W002) You do not have 'axes.middleware.AxesMiddleware' in your settings.MIDDLEWARE.
+
+System check identified 1 issue (0 silenced).
+INFO "HEAD /admin/ HTTP/1.1" 302 0

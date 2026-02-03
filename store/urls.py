@@ -528,6 +528,11 @@ urlpatterns = [
         name='api_user_feedback'
     ),
     path(
+        'api/analytics/segmentation/',
+        api_views.UserSegmentationView.as_view(),
+        name='api_user_segmentation'
+    ),
+    path(
         'api/analytics/summary/',
         api_views.UserAnalyticsSummaryView.as_view(),
         name='api_user_analytics_summary'
