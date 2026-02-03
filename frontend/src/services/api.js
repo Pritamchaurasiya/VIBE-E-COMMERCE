@@ -265,6 +265,11 @@ export const analyticsAPI = {
     api.post("/api/analytics/interactions/", interactionData),
   getBehaviorPatterns: () => api.get("/api/analytics/behavior-patterns/"),
   getUserPreferences: () => api.get("/api/analytics/preferences/"),
+  updateUserPreference: (data) =>
+    api.post("/api/analytics/segmentation/", {
+      action: "update_preference",
+      ...data,
+    }),
   createUserFeedback: (feedbackData) =>
     api.post("/api/analytics/feedback/", feedbackData),
 };

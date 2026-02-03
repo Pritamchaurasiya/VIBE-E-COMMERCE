@@ -12,6 +12,7 @@ import { AnimatePresence } from "framer-motion";
 // Context
 import { AuthProvider } from "./utils/AuthContext";
 import { CartProvider } from "./utils/CartContext";
+import { ThemeContextProvider } from "./utils/ThemeContext";
 
 // Components
 import Header from "./components/common/Header";
@@ -41,6 +42,7 @@ const About = lazy(() => import("./components/pages/About"));
 const Contact = lazy(() => import("./components/pages/Contact"));
 const Settings = lazy(() => import("./components/settings/Settings"));
 const NotFound = lazy(() => import("./components/pages/NotFound"));
+const AnalyticsDashboard = lazy(() => import("./pages/AnalyticsDashboard"));
 
 // AGRIM-Style Pages
 const AgriHome = lazy(() => import("./pages/AgriHome"));
@@ -316,6 +318,16 @@ const AnimatedRoutes = () => {
               </Slide>
             }
           />
+          <Route
+            path="/analytics"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <AnalyticsDashboard />
+                </Box>
+              </Slide>
+            }
+          />
           {/* AGRIM-Style Routes */}
           <Route
             path="/agri"
@@ -447,27 +459,29 @@ const AnimatedRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <AnimatedBox>
-            <Header />
-            <Box
-              component="main"
-              sx={{
-                flex: 1,
-                padding: { xs: "10px 0", sm: "20px 0" },
-                transition: "all 0.3s ease-in-out",
-              }}
-            >
-              <ErrorBoundary>
-                <AnimatedRoutes />
-              </ErrorBoundary>
-            </Box>
-            <Footer />
-            <ScrollToTop />
-          </AnimatedBox>
-        </Router>
-      </CartProvider>
+      <ThemeContextProvider>
+        <CartProvider>
+          <Router>
+            <AnimatedBox>
+              <Header />
+              <Box
+                component="main"
+                sx={{
+                  flex: 1,
+                  padding: { xs: "10px 0", sm: "20px 0" },
+                  transition: "all 0.3s ease-in-out",
+                }}
+              >
+                <ErrorBoundary>
+                  <AnimatedRoutes />
+                </ErrorBoundary>
+              </Box>
+              <Footer />
+              <ScrollToTop />
+            </AnimatedBox>
+          </Router>
+        </CartProvider>
+      </ThemeContextProvider>
     </AuthProvider>
   );
 }
