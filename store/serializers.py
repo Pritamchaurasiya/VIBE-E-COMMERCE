@@ -6,12 +6,14 @@ Serializers for the store app REST API.
 from rest_framework import serializers
 from django.db.models import Avg
 from .models import (
+    Equipment, RentalBooking, GovernmentScheme, ForumPost, ForumComment,
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
     InventoryLog, VendorAnalytics
 )
 # Analytics model imports
 from .models import (
+    Equipment, RentalBooking, GovernmentScheme, ForumPost, ForumComment,
     UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
     UserFeedback, UserSegment, UserSegmentMembership, UserAnalyticsReport,
     UserPredictiveModel, UserPredictiveResult, UserActivityLog, UserDataEncryption,
@@ -605,3 +607,76 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+# ============================================
+# NEW FEATURES: RENTALS, SCHEMES, COMMUNITY
+# ============================================
+
+class EquipmentSerializer(serializers.ModelSerializer):
+    """Serializer for Equipment model."""
+    vendor = VendorSerializer(read_only=True)
+
+    class Meta:
+        model = Equipment
+        fields = [
+            'id', 'name', 'slug', 'description', 'image',
+            'vendor', 'daily_rate', 'location', 'is_available', 'created_at'
+        ]
+
+class RentalBookingSerializer(serializers.ModelSerializer):
+    """Serializer for RentalBooking model."""
+    equipment = EquipmentSerializer(read_only=True)
+    equipment_id = serializers.PrimaryKeyRelatedField(
+        queryset=Equipment.objects.all(), source='equipment', write_only=True
+    )
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = RentalBooking
+        fields = [
+            'id', 'user', 'equipment', 'equipment_id',
+            'start_date', 'end_date', 'total_cost', 'status', 'created_at'
+        ]
+        read_only_fields = ['id', 'user', 'total_cost', 'status', 'created_at']
+
+class GovernmentSchemeSerializer(serializers.ModelSerializer):
+    """Serializer for GovernmentScheme model."""
+    class Meta:
+        model = GovernmentScheme
+        fields = [
+            'id', 'title', 'slug', 'description', 'eligibility',
+            'benefits', 'link', 'state', 'created_at'
+        ]
+
+class ForumCommentSerializer(serializers.ModelSerializer):
+    """Serializer for ForumComment model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = ForumComment
+        fields = ['id', 'user', 'post', 'content', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
+
+class ForumPostSerializer(serializers.ModelSerializer):
+    """Serializer for ForumPost model."""
+    user = serializers.StringRelatedField(read_only=True)
+    comments = ForumCommentSerializer(many=True, read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ForumPost
+        fields = [
+            'id', 'user', 'title', 'content', 'image',
+            'created_at', 'comments', 'likes_count', 'is_liked'
+        ]
+        read_only_fields = ['id', 'user', 'created_at']
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(id=request.user.id).exists()
+        return False

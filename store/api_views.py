@@ -30,7 +30,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 # DRF imports
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -47,7 +47,8 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment,
+    Equipment, RentalBooking, GovernmentScheme, ForumPost, ForumComment
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,7 +56,9 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer,
+    EquipmentSerializer, RentalBookingSerializer, GovernmentSchemeSerializer,
+    ForumPostSerializer, ForumCommentSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
@@ -3742,3 +3745,95 @@ __all__ = [
     'tracking_realtime_stats',
 ]
 
+
+# ============================================
+# NEW FEATURES: RENTALS, SCHEMES, COMMUNITY, AGRIBOT
+# ============================================
+
+class EquipmentViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for Equipment rentals."""
+    queryset = Equipment.objects.filter(is_available=True).select_related('vendor')
+    serializer_class = EquipmentSerializer
+    permission_classes = [permissions.AllowAny]
+    filterset_fields = ['location']
+    search_fields = ['name', 'description', 'location']
+
+class RentalBookingViewSet(viewsets.ModelViewSet):
+    """ViewSet for Equipment bookings."""
+    serializer_class = RentalBookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return RentalBooking.objects.filter(user=self.request.user).select_related('equipment')
+
+    def perform_create(self, serializer):
+        equipment = serializer.validated_data['equipment']
+        start_date = serializer.validated_data['start_date']
+        end_date = serializer.validated_data['end_date']
+        days = (end_date - start_date).days
+        if days <= 0:
+            raise ValidationError("End date must be after start date")
+
+        total_cost = equipment.daily_rate * days
+        serializer.save(user=self.request.user, total_cost=total_cost)
+
+class GovernmentSchemeViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for Government Schemes."""
+    queryset = GovernmentScheme.objects.all().order_by('-created_at')
+    serializer_class = GovernmentSchemeSerializer
+    permission_classes = [permissions.AllowAny]
+    filterset_fields = ['state']
+    search_fields = ['title', 'description', 'benefits']
+
+class ForumPostViewSet(viewsets.ModelViewSet):
+    """ViewSet for Forum Posts."""
+    queryset = ForumPost.objects.all().select_related('user').prefetch_related('comments').order_by('-created_at')
+    serializer_class = ForumPostSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'like']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+class ForumCommentViewSet(viewsets.ModelViewSet):
+    """ViewSet for Forum Comments."""
+    serializer_class = ForumCommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        post_id = self.request.query_params.get('post_id')
+        if post_id:
+            return ForumComment.objects.filter(post_id=post_id).select_related('user').order_by('created_at')
+        return ForumComment.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class AgriBotView(APIView):
+    """API view for Agri-Bot chat."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        """Handle chat message."""
+        message = request.data.get('message', '').lower()
+        response_text = "I'm sorry, I didn't understand that. You can ask me about 'rentals', 'schemes', 'wheat price', or 'weather'."
+
+        if 'rental' in message or 'tractor' in message:
+            response_text = "You can find farm equipment rentals in our Rentals section. We have tractors, harvesters, and more available."
+        elif 'scheme' in message or 'subsidy' in message:
+            response_text = "Check out the Government Schemes section for the latest agricultural subsidies and programs."
+        elif 'wheat' in message and 'price' in message:
+            response_text = "The current mandi price for Wheat is approx ₹2125/quintal. Prices may vary by location."
+        elif 'weather' in message:
+            response_text = "Please check your local weather forecast. Generally, it's a good time for Rabi sowing in North India."
+        elif 'hello' in message or 'hi' in message:
+            response_text = "Hello! I am your Agri-Assistant. How can I help you today?"
+
+        return Response({'response': response_text})

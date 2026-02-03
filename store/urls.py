@@ -850,3 +850,21 @@ urlpatterns = [
 
 
 
+
+# ============================================
+# NEW FEATURES URLS
+# ============================================
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'api/v1/equipment', api_views.EquipmentViewSet)
+router.register(r'api/v1/rentals', api_views.RentalBookingViewSet, basename='rentalbooking')
+router.register(r'api/v1/schemes', api_views.GovernmentSchemeViewSet)
+router.register(r'api/v1/forum/posts', api_views.ForumPostViewSet)
+router.register(r'api/v1/forum/comments', api_views.ForumCommentViewSet, basename='forumcomment')
+
+urlpatterns += [
+    path('api/v1/chat/', api_views.AgriBotView.as_view(), name='api_agribot'),
+]
+
+urlpatterns += router.urls
