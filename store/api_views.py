@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,9 +84,15 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            avg_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -167,7 +174,7 @@ class ProductListView(generics.ListAPIView):
         elif sort == 'newest':
             return queryset.order_by('-created_at')
         elif sort == 'rating':
-            return queryset.order_by('-created_at')
+            return queryset.order_by('-avg_rating')
         return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
@@ -195,8 +202,12 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
-    queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+    queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True).prefetch_related('images').annotate(
+        avg_rating=Avg('reviews__rating'),
+        annotated_review_count=Count('reviews')
+    )
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -208,17 +219,20 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +298,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +408,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +463,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +513,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +578,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
