@@ -1222,63 +1222,64 @@ class DashboardStatsView(APIView):
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Orders statistics
-        all_orders = Order.objects.all()
-        paid_orders = all_orders.filter(paid=True)
+        # Orders statistics - Optimized with single aggregate query
+        order_stats = Order.objects.aggregate(
+            total_revenue=Sum('paid_amount', filter=Q(paid=True)),
+            monthly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=thirty_days_ago)),
+            weekly_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__gte=seven_days_ago)),
+            today_revenue=Sum('paid_amount', filter=Q(paid=True, created_at__date=today)),
+
+            total_count=Count('id'),
+            paid_count=Count('id', filter=Q(paid=True)),
+            pending_count=Count('id', filter=Q(status='pending')),
+            processing_count=Count('id', filter=Q(status='processing')),
+            shipped_count=Count('id', filter=Q(status='shipped')),
+            delivered_count=Count('id', filter=Q(status='delivered')),
+            cancelled_count=Count('id', filter=Q(status='cancelled')),
+            today_count=Count('id', filter=Q(created_at__date=today)),
+        )
 
         # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
-
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
+        total_revenue = order_stats['total_revenue'] or 0
+        monthly_revenue = order_stats['monthly_revenue'] or 0
+        weekly_revenue = order_stats['weekly_revenue'] or 0
+        today_revenue = order_stats['today_revenue'] or 0
 
         # Order counts
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': order_stats['total_count'],
+            'paid': order_stats['paid_count'],
+            'pending': order_stats['pending_count'],
+            'processing': order_stats['processing_count'],
+            'shipped': order_stats['shipped_count'],
+            'delivered': order_stats['delivered_count'],
+            'cancelled': order_stats['cancelled_count'],
+            'today': order_stats['today_count'],
         }
 
-        # Products statistics
-        products_stats = {
-            'total': Product.objects.count(),
-            'active': Product.objects.filter(is_active=True).count(),
-            'out_of_stock': Product.objects.filter(stock_quantity=0).count(),
-            'low_stock': Product.objects.filter(
-                stock_quantity__lte=models.F('low_stock_threshold'),
-                stock_quantity__gt=0
-            ).count(),
-        }
+        # Products statistics - Optimized with single aggregate query
+        product_aggs = Product.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            out_of_stock=Count('id', filter=Q(stock_quantity=0)),
+            low_stock=Count('id', filter=Q(stock_quantity__lte=models.F('low_stock_threshold'), stock_quantity__gt=0))
+        )
+        products_stats = product_aggs
 
-        # Users statistics (User already imported at top)
-        users_stats = {
-            'total': User.objects.count(),
-            'new_today': User.objects.filter(date_joined__date=today).count(),
-            'new_this_week': User.objects.filter(date_joined__gte=seven_days_ago).count(),
-            'new_this_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
-        }
+        # Users statistics - Optimized with single aggregate query
+        user_aggs = User.objects.aggregate(
+            total=Count('id'),
+            new_today=Count('id', filter=Q(date_joined__date=today)),
+            new_this_week=Count('id', filter=Q(date_joined__gte=seven_days_ago)),
+            new_this_month=Count('id', filter=Q(date_joined__gte=thirty_days_ago))
+        )
+        users_stats = user_aggs
 
         # Vendors statistics
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
