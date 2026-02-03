@@ -330,3 +330,34 @@ export const businessIntelligenceAPI = {
 
 // Export all APIs
 export default api;
+
+// ============================================
+// NEW FEATURES API ENDPOINTS
+// ============================================
+
+export const equipmentAPI = {
+  getAll: () => api.get("/api/v1/equipment/"),
+  get: (id) => api.get(`/api/v1/equipment/${id}/`),
+};
+
+export const rentalsAPI = {
+  getAll: () => api.get("/api/v1/rentals/"),
+  create: (data) => api.post("/api/v1/rentals/", data),
+};
+
+export const schemesAPI = {
+  getAll: () => api.get("/api/v1/schemes/"),
+  get: (id) => api.get(`/api/v1/schemes/${id}/`),
+};
+
+export const forumAPI = {
+  getPosts: () => api.get("/api/v1/forum/posts/"),
+  getPost: (id) => api.get(`/api/v1/forum/posts/${id}/`),
+  createPost: (data) => api.post("/api/v1/forum/posts/", data),
+  getComments: (postId) => api.get(`/api/v1/forum/comments/?post_id=${postId}`),
+  createComment: (data) => api.post("/api/v1/forum/comments/", data),
+};
+
+export const chatAPI = {
+  sendMessage: (message) => api.post("/api/v1/chat/", { message }),
+};

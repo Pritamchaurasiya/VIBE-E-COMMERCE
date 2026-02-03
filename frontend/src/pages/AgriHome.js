@@ -36,7 +36,10 @@ import {
   ContentCopy,
   ArrowForward,
   Category,
-  Store
+  Store,
+  People,
+  Timeline,
+  Description
 } from "@mui/icons-material";
 
 /**
@@ -380,6 +383,33 @@ const AgriHome = () => {
                       onWishlistToggle={handleWishlistToggle}
                     />
                   ))}
+            </div>
+          </section>
+
+          {/* ===== AGRI SERVICES ===== */}
+          <section className="agri-section">
+            <div className="agri-section-header">
+              <h2 className="agri-section-title">
+                <span className="agri-section-title-icon"><Handyman /></span> Agri Services
+              </h2>
+            </div>
+            <div className="agri-category-grid">
+              <Link to="/rentals" className="agri-category-card">
+                <span className="agri-category-icon mui-icon"><Agriculture /></span>
+                <span className="agri-category-name">Equipment Rentals</span>
+              </Link>
+              <Link to="/schemes" className="agri-category-card">
+                <span className="agri-category-icon mui-icon"><Description /></span>
+                <span className="agri-category-name">Govt Schemes</span>
+              </Link>
+              <Link to="/community" className="agri-category-card">
+                <span className="agri-category-icon mui-icon"><People /></span>
+                <span className="agri-category-name">Community Forum</span>
+              </Link>
+              <Link to="/monitoring" className="agri-category-card">
+                <span className="agri-category-icon mui-icon"><Timeline /></span>
+                <span className="agri-category-name">Crop Monitoring</span>
+              </Link>
             </div>
           </section>
 

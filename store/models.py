@@ -2719,3 +2719,89 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+# ============================================
+# NEW FEATURES: RENTALS, SCHEMES, COMMUNITY
+# ============================================
+
+class Equipment(models.Model):
+    """
+    Model for farm equipment available for rent.
+    """
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField()
+    image = models.ImageField(upload_to='equipment/', blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, related_name='equipment', on_delete=models.CASCADE)
+    daily_rate = models.DecimalField(max_digits=10, decimal_places=2)
+    location = models.CharField(max_length=100, help_text="City or District")
+    is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class RentalBooking(models.Model):
+    """
+    Model for equipment rental bookings.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(User, related_name='rentals', on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, related_name='bookings', on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.equipment.name}"
+
+class GovernmentScheme(models.Model):
+    """
+    Model for government agricultural schemes.
+    """
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField()
+    eligibility = models.TextField(help_text="Who can apply?")
+    benefits = models.TextField(help_text="What are the benefits?")
+    link = models.URLField(help_text="Official link to apply", blank=True)
+    state = models.CharField(max_length=100, default='All India', help_text="State or All India")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+class ForumPost(models.Model):
+    """
+    Model for community forum posts.
+    """
+    user = models.ForeignKey(User, related_name='forum_posts', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    image = models.ImageField(upload_to='forum/', blank=True, null=True)
+    likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+class ForumComment(models.Model):
+    """
+    Model for comments on forum posts.
+    """
+    user = models.ForeignKey(User, related_name='forum_comments', on_delete=models.CASCADE)
+    post = models.ForeignKey(ForumPost, related_name='comments', on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username}"

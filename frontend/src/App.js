@@ -18,6 +18,7 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 import ScrollToTop from "./components/common/ScrollToTop";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import AgriBot from "./components/AgriBot";
 
 // Lazy loaded components for code splitting
 // const HomePage = lazy(() => import("./components/common/HomePage")); // Switched to AgriHome
@@ -49,6 +50,11 @@ const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
+
+// New Feature Pages
+const RentalPage = lazy(() => import("./pages/RentalPage"));
+const SchemesPage = lazy(() => import("./pages/SchemesPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 
 const AnimatedBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
@@ -82,6 +88,36 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/rentals"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <RentalPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/schemes"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SchemesPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/community"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <CommunityPage />
                 </Box>
               </Slide>
             }
@@ -463,6 +499,7 @@ function App() {
                 <AnimatedRoutes />
               </ErrorBoundary>
             </Box>
+            <AgriBot />
             <Footer />
             <ScrollToTop />
           </AnimatedBox>
