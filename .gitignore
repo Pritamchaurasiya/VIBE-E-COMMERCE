@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+db.sqlite3
+media/
+staticfiles/
+*.log
+node_modules/
+.DS_Store
+.vscode/
+.idea/
+coverage/
+.coverage
+htmlcov/
