@@ -2,27 +2,27 @@
 // register() is not called by default.
 
 const isLocalhost = Boolean(
-  globalThis.location.hostname === "localhost" ||
+  window.location.hostname === "localhost" ||
     // [::1] is the IPv6 localhost address.
-    globalThis.location.hostname === "[::1]" ||
+    window.location.hostname === "[::1]" ||
     // 127.0.0.0/8 are considered localhost for IPv4.
     /^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)){3}$/.test(
-      globalThis.location.hostname
+      window.location.hostname
     )
 );
 
 export function register(config) {
   if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
     // The URL constructor is available in all browsers that support SW.
-    const publicUrl = new URL(process.env.PUBLIC_URL, globalThis.location.href);
-    if (publicUrl.origin !== globalThis.location.origin) {
+    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
+    if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to
       // serve assets; see https://github.com/facebook/create-react-app/issues/2374
       return;
     }
 
-    globalThis.addEventListener("load", () => {
+    window.addEventListener("load", () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
 
       if (isLocalhost) {
@@ -101,7 +101,7 @@ function checkValidServiceWorker(swUrl, config) {
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
           registration.unregister().then(() => {
-            globalThis.location.reload();
+            window.location.reload();
           });
         });
       } else {
