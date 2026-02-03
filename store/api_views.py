@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, OuterRef, Exists
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -83,9 +83,24 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimization: Prefetch images and annotate ratings/wishlist
+        queryset = queryset.prefetch_related('images')
+        queryset = queryset.annotate(
+            avg_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
+
+        if self.request.user.is_authenticated:
+            wishlist_subquery = Wishlist.objects.filter(
+                product=OuterRef('pk'),
+                user=self.request.user
+            )
+            queryset = queryset.annotate(is_in_wishlist_annotated=Exists(wishlist_subquery))
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
