@@ -314,9 +314,9 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',      # Anonymous users: 100 requests per hour
-        'user': '1000/hour',     # Authenticated users: 1000 requests per hour
-        'login': '5/minute',     # Login attempts: 5 per minute
+        'anon': '100/hour' if os.environ.get('IS_TESTING') != 'True' else '10000/minute',
+        'user': '1000/hour' if os.environ.get('IS_TESTING') != 'True' else '10000/minute',
+        'login': '5/minute' if os.environ.get('IS_TESTING') != 'True' else '10000/minute',
     },
     'DEFAULT_FILTER_BACKENDS': [
         'rest_framework.filters.SearchFilter',
@@ -353,7 +353,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and os.environ.get('IS_TESTING') != 'True':
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -428,7 +428,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Channels configuration for WebSockets (only if installed)
-if is_package_installed('channels_redis'):
+if is_package_installed('channels_redis') and os.environ.get('IS_TESTING') != 'True':
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -447,12 +447,16 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': (CSP_SELF,),
+        'script-src': (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"),
+        'style-src': (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"),
+        'font-src': (CSP_SELF, "https://fonts.gstatic.com"),
+        'img-src': (CSP_SELF, "data:", "https:", "http:"),
+        'connect-src': (CSP_SELF, "https://api.stripe.com", "wss:", "ws:"),
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
