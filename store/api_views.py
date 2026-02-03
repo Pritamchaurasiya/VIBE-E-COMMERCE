@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Case, When, F, Value, DecimalField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,6 +84,7 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
@@ -197,6 +199,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -208,17 +211,20 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +290,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +400,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +455,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +505,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +570,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -948,22 +959,30 @@ class VendorAnalyticsAPIView(APIView):
         order_items = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
+        # Calculate metrics using database aggregation
+        revenue_metrics = order_items.aggregate(
+            total=Sum(F('price') * F('quantity')),
+            monthly=Sum(
+                Case(
+                    When(order__created_at__gte=thirty_days_ago, then=F('price') * F('quantity')),
+                    default=Value(0),
+                    output_field=DecimalField()
+                )
+            ),
+            weekly=Sum(
+                Case(
+                    When(order__created_at__gte=seven_days_ago, then=F('price') * F('quantity')),
+                    default=Value(0),
+                    output_field=DecimalField()
+                )
+            )
         )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+
+        total_revenue = revenue_metrics['total'] or 0
+        monthly_revenue = revenue_metrics['monthly'] or 0
+        weekly_revenue = revenue_metrics['weekly'] or 0
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
@@ -1107,6 +1126,7 @@ class RecentlyViewedView(APIView):
 
 class AdvancedSearchView(APIView):
     """API view for advanced product search with faceted filters."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Advanced search with aggregations."""
