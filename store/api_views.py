@@ -948,22 +948,30 @@ class VendorAnalyticsAPIView(APIView):
         order_items = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
+        # Calculate metrics using database aggregation
+        metrics = order_items.aggregate(
+            total_revenue=Sum(models.F('price') * models.F('quantity')),
+            monthly_revenue=Sum(
+                models.Case(
+                    models.When(order__created_at__gte=thirty_days_ago, then=models.F('price') * models.F('quantity')),
+                    default=0,
+                    output_field=models.DecimalField()
+                )
+            ),
+            weekly_revenue=Sum(
+                models.Case(
+                    models.When(order__created_at__gte=seven_days_ago, then=models.F('price') * models.F('quantity')),
+                    default=0,
+                    output_field=models.DecimalField()
+                )
+            )
         )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+
+        total_revenue = metrics['total_revenue'] or 0
+        monthly_revenue = metrics['monthly_revenue'] or 0
+        weekly_revenue = metrics['weekly_revenue'] or 0
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
