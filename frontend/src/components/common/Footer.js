@@ -230,6 +230,7 @@ const Footer = () => {
                 placeholder="Your email"
                 size="small"
                 fullWidth
+                inputProps={{ "aria-label": "Enter your email for newsletter" }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     bgcolor: "rgba(255,255,255,0.1)",
@@ -244,7 +245,11 @@ const Footer = () => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton size="small" sx={{ color: "primary.light" }}>
+                      <IconButton
+                        size="small"
+                        sx={{ color: "primary.light" }}
+                        aria-label="Subscribe to newsletter"
+                      >
                         <Send />
                       </IconButton>
                     </InputAdornment>
