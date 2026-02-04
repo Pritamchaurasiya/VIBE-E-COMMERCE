@@ -269,6 +269,10 @@ export const analyticsAPI = {
     api.post("/api/analytics/feedback/", feedbackData),
 };
 
+// Compatibility exports
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
+
 // Real-time Monitoring API
 export const monitoringAPI = {
   getSystemHealth: () => api.get("/api/v1/health/"),
