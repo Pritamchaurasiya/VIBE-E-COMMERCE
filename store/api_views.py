@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -86,6 +86,23 @@ class ProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimization: Prefetch images and annotate ratings to prevent N+1 queries
+        queryset = queryset.prefetch_related('images').annotate(
+            annotated_avg_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
+
+        # Optimization: Check wishlist status in one query if user is authenticated
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=self.request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -1122,9 +1139,23 @@ class AdvancedSearchView(APIView):
         per_page = int(request.query_params.get('per_page', 20))
 
         # Base queryset with optimization
+        # Remove reviews prefetch to avoid loading all reviews into memory
         queryset = Product.objects.filter(is_active=True).select_related(
             'category', 'vendor'
-        ).prefetch_related('reviews', 'images')
+        ).prefetch_related('images').annotate(
+            annotated_avg_rating=Avg('reviews__rating'),
+            annotated_review_count=Count('reviews')
+        )
+
+        if request.user.is_authenticated:
+            queryset = queryset.annotate(
+                is_in_wishlist=Exists(
+                    Wishlist.objects.filter(
+                        user=request.user,
+                        product=OuterRef('pk')
+                    )
+                )
+            )
 
         # Apply filters
         if query:
@@ -1153,20 +1184,19 @@ class AdvancedSearchView(APIView):
             queryset = queryset.filter(stock_quantity__gt=0)
 
         if rating:
-            queryset = queryset.annotate(
-                avg_rating=models.Avg('reviews__rating')
-            ).filter(avg_rating__gte=float(rating))
+            queryset = queryset.filter(annotated_avg_rating__gte=float(rating))
 
         # Get facets before sorting/pagination
+        # Use Count('id', distinct=True) because annotations introduce joins
         facets = {
             'categories': list(
                 queryset.values('category__slug', 'category__name').annotate(
-                    count=Count('id')
+                    count=Count('id', distinct=True)
                 ).order_by('-count')[:20]
             ),
             'vendors': list(
                 queryset.values('vendor__slug', 'vendor__name').annotate(
-                    count=Count('id')
+                    count=Count('id', distinct=True)
                 ).order_by('-count')[:20]
             ),
             'price_range': queryset.aggregate(
@@ -1186,9 +1216,7 @@ class AdvancedSearchView(APIView):
         elif sort == 'name':
             queryset = queryset.order_by('name')
         elif sort == 'rating':
-            queryset = queryset.annotate(
-                avg_rating=models.Avg('reviews__rating')
-            ).order_by('-avg_rating')
+            queryset = queryset.order_by('-annotated_avg_rating')
         else:
             queryset = queryset.order_by('-created_at')
 
