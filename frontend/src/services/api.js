@@ -328,5 +328,28 @@ export const businessIntelligenceAPI = {
     api.get("/api/analytics/churn-analysis/", { params }),
 };
 
+// ============================================
+// AGRI-INTELLIGENCE API ENDPOINTS
+// ============================================
+
+export const rentalsAPI = {
+  getEquipment: (params) => api.get("/api/v1/equipment/", { params }),
+  getEquipmentDetail: (slug) => api.get(`/api/v1/equipment/${slug}/`),
+  getBookings: () => api.get("/api/v1/rentals/"),
+  bookEquipment: (bookingData) => api.post("/api/v1/rentals/book/", bookingData),
+};
+
+export const schemesAPI = {
+  getSchemes: (params) => api.get("/api/v1/schemes/", { params }),
+};
+
+export const forumAPI = {
+  getPosts: (params) => api.get("/api/v1/forum/posts/", { params }),
+  getPostDetail: (id) => api.get(`/api/v1/forum/posts/${id}/`),
+  createPost: (postData) => api.post("/api/v1/forum/posts/", postData),
+  addComment: (postId, commentData) =>
+    api.post(`/api/v1/forum/posts/${postId}/comments/`, commentData),
+};
+
 // Export all APIs
 export default api;

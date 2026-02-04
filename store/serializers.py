@@ -8,7 +8,8 @@ from django.db.models import Avg
 from .models import (
     Product, Category, Vendor, Order, OrderItem, Profile, Wishlist,
     Coupon, Review, FlashSale, BulkOrder, Notification, Deal,
-    InventoryLog, VendorAnalytics
+    InventoryLog, VendorAnalytics, Equipment, RentalBooking,
+    GovernmentScheme, ForumPost, ForumComment
 )
 # Analytics model imports
 from .models import (
@@ -605,3 +606,72 @@ class WishlistPriceAlertSerializer(serializers.ModelSerializer):
         if value is not None and value <= 0:
             raise serializers.ValidationError("Target price must be a positive number.")
         return value
+
+# ============================================
+# NEW AGRI-INTELLIGENCE SERIALIZERS
+# ============================================
+
+class EquipmentSerializer(serializers.ModelSerializer):
+    """Serializer for Equipment model."""
+    vendor = VendorSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        model = Equipment
+        fields = [
+            'id', 'name', 'slug', 'description', 'category', 'vendor',
+            'image', 'daily_rate', 'condition', 'is_available',
+            'location', 'created_at'
+        ]
+
+class RentalBookingSerializer(serializers.ModelSerializer):
+    """Serializer for RentalBooking model."""
+    equipment = EquipmentSerializer(read_only=True)
+    equipment_id = serializers.PrimaryKeyRelatedField(
+        queryset=Equipment.objects.all(),
+        source='equipment',
+        write_only=True
+    )
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = RentalBooking
+        fields = [
+            'id', 'user', 'equipment', 'equipment_id', 'start_date',
+            'end_date', 'total_cost', 'status', 'notes', 'created_at'
+        ]
+        read_only_fields = ['total_cost', 'status', 'user']
+
+class GovernmentSchemeSerializer(serializers.ModelSerializer):
+    """Serializer for GovernmentScheme model."""
+    crops = serializers.StringRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = GovernmentScheme
+        fields = [
+            'id', 'name', 'slug', 'description', 'eligibility_criteria',
+            'benefits', 'application_link', 'state', 'crops', 'is_active'
+        ]
+
+class ForumCommentSerializer(serializers.ModelSerializer):
+    """Serializer for ForumComment model."""
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = ForumComment
+        fields = ['id', 'post', 'user', 'content', 'created_at']
+        read_only_fields = ['user', 'post']
+
+class ForumPostSerializer(serializers.ModelSerializer):
+    """Serializer for ForumPost model."""
+    user = serializers.StringRelatedField(read_only=True)
+    comments = ForumCommentSerializer(many=True, read_only=True)
+    comment_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ForumPost
+        fields = [
+            'id', 'user', 'title', 'content', 'image', 'tags',
+            'views', 'likes', 'created_at', 'comments', 'comment_count'
+        ]
+        read_only_fields = ['user', 'views', 'likes']

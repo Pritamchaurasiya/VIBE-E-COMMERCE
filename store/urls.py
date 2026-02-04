@@ -846,6 +846,21 @@ urlpatterns = [
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
     ),
+
+    # ====== AGRI-INTELLIGENCE API ENDPOINTS ======
+    # Equipment Rental API
+    path('api/v1/equipment/', api_views.EquipmentListView.as_view(), name='api_equipment_list'),
+    path('api/v1/equipment/<slug:slug>/', api_views.EquipmentDetailView.as_view(), name='api_equipment_detail'),
+    path('api/v1/rentals/', api_views.RentalBookingListView.as_view(), name='api_rental_list'),
+    path('api/v1/rentals/book/', api_views.RentalBookingCreateView.as_view(), name='api_rental_book'),
+
+    # Government Schemes API
+    path('api/v1/schemes/', api_views.GovernmentSchemeListView.as_view(), name='api_schemes'),
+
+    # Community Forum API
+    path('api/v1/forum/posts/', api_views.ForumPostListCreateView.as_view(), name='api_forum_posts'),
+    path('api/v1/forum/posts/<int:pk>/', api_views.ForumPostDetailView.as_view(), name='api_forum_post_detail'),
+    path('api/v1/forum/posts/<int:post_id>/comments/', api_views.ForumCommentCreateView.as_view(), name='api_forum_comment_create'),
 ]
 
 

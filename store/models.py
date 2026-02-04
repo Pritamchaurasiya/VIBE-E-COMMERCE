@@ -2719,3 +2719,111 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+# ============================================
+# NEW AGRI-INTELLIGENCE FEATURES
+# ============================================
+
+class Equipment(models.Model):
+    """
+    Model for agricultural equipment available for rent.
+    """
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
+    vendor = models.ForeignKey('Vendor', related_name='equipment', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='equipment/', blank=True, null=True)
+    daily_rate = models.DecimalField(max_digits=10, decimal_places=2, help_text="Rental price per day")
+    condition = models.CharField(max_length=50, blank=True)
+    is_available = models.BooleanField(default=True)
+    location = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class RentalBooking(models.Model):
+    """
+    Model for equipment rental bookings.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(User, related_name='rentals', on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, related_name='bookings', on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    total_cost = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.equipment.name}"
+
+class GovernmentScheme(models.Model):
+    """
+    Model for Government Agricultural Schemes.
+    """
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField()
+    eligibility_criteria = models.TextField(blank=True)
+    benefits = models.TextField(blank=True)
+    application_link = models.URLField(blank=True)
+    state = models.CharField(max_length=100, blank=True, help_text="State specific or 'All India'")
+    crops = models.ManyToManyField('Crop', blank=True, related_name='schemes')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class ForumPost(models.Model):
+    """
+    Model for Community Forum Posts.
+    """
+    user = models.ForeignKey(User, related_name='forum_posts', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    image = models.ImageField(upload_to='forum/', blank=True, null=True)
+    tags = models.CharField(max_length=255, blank=True, help_text="Comma separated tags")
+    views = models.PositiveIntegerField(default=0)
+    likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def comment_count(self):
+        return self.comments.count()
+
+class ForumComment(models.Model):
+    """
+    Model for comments on Forum Posts.
+    """
+    post = models.ForeignKey(ForumPost, related_name='comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='forum_comments', on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Comment by {self.user.username}"

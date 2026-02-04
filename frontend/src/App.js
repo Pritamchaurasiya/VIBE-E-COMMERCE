@@ -46,6 +46,9 @@ const NotFound = lazy(() => import("./components/pages/NotFound"));
 const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+const RentalsPage = lazy(() => import("./pages/RentalsPage"));
+const SchemesPage = lazy(() => import("./pages/SchemesPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
@@ -82,6 +85,36 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/rentals"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <RentalsPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/schemes"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SchemesPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/community"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <CommunityPage />
                 </Box>
               </Slide>
             }
