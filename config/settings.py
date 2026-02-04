@@ -460,6 +460,9 @@ if is_package_installed('axes'):
     AXES_COOLOFF_TIME = 1  # hours
     AXES_RESET_ON_SUCCESS = True
 
+# Silence system checks for legacy config
+SILENCED_SYSTEM_CHECKS = ['csp.E001', 'axes.W003']
+
 # Elasticsearch Configuration
 ELASTICSEARCH_DSL = {
     'default': {

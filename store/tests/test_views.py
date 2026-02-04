@@ -10,7 +10,7 @@ variables via TEST_USER_PASSWORD constant from test_config.py.
 """
 # pylint: disable=no-member
 from decimal import Decimal
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from store.models import (
@@ -29,6 +29,15 @@ from store.tests.test_config import (
 )
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class FrontpageViewTest(TestCase):
     """Test cases for frontpage view."""
 
@@ -65,6 +74,15 @@ class FrontpageViewTest(TestCase):
         self.assertIn('products', response.context)
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class ShopViewTest(TestCase):
     """Test cases for shop view."""
 
@@ -126,6 +144,15 @@ class ShopViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class ProductDetailViewTest(TestCase):
     """Test cases for product detail view."""
 
@@ -202,6 +229,15 @@ class ProductDetailViewTest(TestCase):
         self.assertEqual(len(response.context['reviews']), 1)
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class VendorViewTest(TestCase):
     """Test cases for vendor views."""
 
@@ -248,6 +284,15 @@ class VendorViewTest(TestCase):
         self.assertEqual(response.context['vendor'], self.vendor)
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class CartViewTest(TestCase):
     """Test cases for cart views."""
 
@@ -317,6 +362,15 @@ class CartViewTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class AuthenticationViewTest(TestCase):
     """Test cases for authentication views."""
 
@@ -375,6 +429,15 @@ class AuthenticationViewTest(TestCase):
         self.assertEqual(response.status_code, 302)  # Redirect after logout
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class WishlistViewTest(TestCase):
     """Test cases for wishlist views."""
 
@@ -436,6 +499,15 @@ class WishlistViewTest(TestCase):
         self.assertIn(response.status_code, [200, 302, 405])
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class DashboardViewTest(TestCase):
     """Test cases for dashboard view."""
 
@@ -494,6 +566,15 @@ class DashboardViewTest(TestCase):
         self.assertEqual(len(response.context['orders']), 1)
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class ContactViewTest(TestCase):
     """Test cases for contact view."""
 
@@ -518,6 +599,15 @@ class ContactViewTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class AboutViewTest(TestCase):
     """Test cases for about view."""
 
@@ -532,6 +622,15 @@ class AboutViewTest(TestCase):
         self.assertTemplateUsed(response, 'about.html')
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class CheckoutViewTest(TestCase):
     """Test cases for checkout view."""
 
@@ -578,6 +677,15 @@ class CheckoutViewTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class AdminDashboardViewTest(TestCase):
     """Test cases for admin dashboard view."""
 
@@ -609,6 +717,15 @@ class AdminDashboardViewTest(TestCase):
         self.assertTemplateUsed(response, 'admin_dashboard.html')
 
 
+@override_settings(
+    CACHES={
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    },
+    SESSION_ENGINE='django.contrib.sessions.backends.db'
+)
 class ProductCompareViewTest(TestCase):
     """Test cases for product compare view."""
 

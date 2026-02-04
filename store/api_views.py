@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Case, When, Value, IntegerField, DecimalField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1219,40 +1219,51 @@ class DashboardStatsView(APIView):
         """Get comprehensive dashboard statistics."""
         now = timezone.now()
         today = now.date()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         thirty_days_ago = now - timezone.timedelta(days=30)
         seven_days_ago = now - timezone.timedelta(days=7)
 
-        # Orders statistics
-        all_orders = Order.objects.all()
-        paid_orders = all_orders.filter(paid=True)
+        # Revenue calculations with optimized aggregation
+        revenue_data = Order.objects.filter(paid=True).aggregate(
+            total=Sum('paid_amount'),
+            monthly=Sum(Case(
+                When(created_at__gte=thirty_days_ago, then='paid_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            weekly=Sum(Case(
+                When(created_at__gte=seven_days_ago, then='paid_amount'),
+                default=0,
+                output_field=DecimalField()
+            )),
+            today=Sum(Case(
+                When(created_at__gte=today_start, then='paid_amount'),
+                default=0,
+                output_field=DecimalField()
+            ))
+        )
 
-        # Revenue calculations
-        total_revenue = paid_orders.aggregate(
-            total=Sum('paid_amount')
-        )['total'] or 0
+        # Orders statistics with optimized aggregation
+        orders_data = Order.objects.aggregate(
+            total=Count('id'),
+            paid=Count(Case(When(paid=True, then=1))),
+            pending=Count(Case(When(status='pending', then=1))),
+            processing=Count(Case(When(status='processing', then=1))),
+            shipped=Count(Case(When(status='shipped', then=1))),
+            delivered=Count(Case(When(status='delivered', then=1))),
+            cancelled=Count(Case(When(status='cancelled', then=1))),
+            today=Count(Case(When(created_at__gte=today_start, then=1)))
+        )
 
-        monthly_revenue = paid_orders.filter(
-            created_at__gte=thirty_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        weekly_revenue = paid_orders.filter(
-            created_at__gte=seven_days_ago
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        today_revenue = paid_orders.filter(
-            created_at__date=today
-        ).aggregate(total=Sum('paid_amount'))['total'] or 0
-
-        # Order counts
         orders_stats = {
-            'total': all_orders.count(),
-            'paid': paid_orders.count(),
-            'pending': all_orders.filter(status='pending').count(),
-            'processing': all_orders.filter(status='processing').count(),
-            'shipped': all_orders.filter(status='shipped').count(),
-            'delivered': all_orders.filter(status='delivered').count(),
-            'cancelled': all_orders.filter(status='cancelled').count(),
-            'today': all_orders.filter(created_at__date=today).count(),
+            'total': orders_data['total'],
+            'paid': orders_data['paid'],
+            'pending': orders_data['pending'],
+            'processing': orders_data['processing'],
+            'shipped': orders_data['shipped'],
+            'delivered': orders_data['delivered'],
+            'cancelled': orders_data['cancelled'],
+            'today': orders_data['today'],
         }
 
         # Products statistics
@@ -1269,7 +1280,7 @@ class DashboardStatsView(APIView):
         # Users statistics (User already imported at top)
         users_stats = {
             'total': User.objects.count(),
-            'new_today': User.objects.filter(date_joined__date=today).count(),
+            'new_today': User.objects.filter(date_joined__gte=today_start).count(),
             'new_this_week': User.objects.filter(date_joined__gte=seven_days_ago).count(),
             'new_this_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
         }
@@ -1278,7 +1289,7 @@ class DashboardStatsView(APIView):
         vendors_stats = {
             'total': Vendor.objects.count(),
             'with_products': Vendor.objects.annotate(
-                product_count=Count('product')
+                product_count=Count('products')
             ).filter(product_count__gt=0).count(),
         }
 
@@ -1297,10 +1308,10 @@ class DashboardStatsView(APIView):
 
         return Response({
             'revenue': {
-                'total': float(total_revenue),
-                'monthly': float(monthly_revenue),
-                'weekly': float(weekly_revenue),
-                'today': float(today_revenue),
+                'total': float(revenue_data['total'] or 0),
+                'monthly': float(revenue_data['monthly'] or 0),
+                'weekly': float(revenue_data['weekly'] or 0),
+                'today': float(revenue_data['today'] or 0),
             },
             'orders': orders_stats,
             'products': products_stats,
