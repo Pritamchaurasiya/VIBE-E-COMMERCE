@@ -11,11 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+IS_TESTING = 'test' in sys.argv or (sys.argv and 'pytest' in sys.argv[0])
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -353,7 +356,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and not IS_TESTING:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -381,7 +384,7 @@ if is_package_installed('django_redis'):
     SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
     SESSION_CACHE_ALIAS = 'session'
 else:
-    # Fallback to local memory cache
+    # Fallback to local memory cache (and for testing)
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -447,12 +450,16 @@ else:
 
 # Content Security Policy - Use constant for common values
 CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": [CSP_SELF],
+        "script-src": [CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        "style-src": [CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com"],
+        "font-src": [CSP_SELF, "https://fonts.gstatic.com"],
+        "img-src": [CSP_SELF, "data:", "https:", "http:"],
+        "connect-src": [CSP_SELF, "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
