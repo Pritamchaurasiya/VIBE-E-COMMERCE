@@ -30,7 +30,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 # DRF imports
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, filters
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -47,7 +47,8 @@ from .models import (
     Crop, Disease, ProductCropMapping, ProductDiseaseMapping,
     LocationPopularity, DealOfTheDay, PriceAlert, UserCoin, CoinTransaction,
     AnalyticsEvent, UserSession, UserInteraction, UserBehaviorPattern, UserPreference,
-    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment
+    UserActivityLog, UserSegmentMembership, UserFeedback, UserSegment,
+    Equipment, RentalBooking, GovernmentScheme, ForumPost, ForumComment
 )
 from .serializers import (
     ProductSerializer, CategorySerializer, VendorSerializer, OrderSerializer,
@@ -55,7 +56,9 @@ from .serializers import (
     NotificationSerializer, DealSerializer,
     UserSessionSerializer, UserInteractionSerializer, UserBehaviorPatternSerializer,
     UserPreferenceSerializer, UserFeedbackSerializer, UserAnalyticsSummarySerializer,
-    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer
+    RealTimeAnalyticsSerializer, AnalyticsDashboardSerializer,
+    EquipmentSerializer, RentalBookingSerializer, GovernmentSchemeSerializer,
+    ForumPostSerializer, ForumCommentSerializer
 )
 from .services.recommendations import (
     RecommendationService, get_seasonal_recommendations, get_recommendations_for_cart
@@ -3742,3 +3745,93 @@ __all__ = [
     'tracking_realtime_stats',
 ]
 
+
+# ============================================
+# NEW AGRI-INTELLIGENCE VIEWS
+# ============================================
+
+class EquipmentListView(generics.ListAPIView):
+    """API view for listing equipment."""
+    queryset = Equipment.objects.filter(is_available=True)
+    serializer_class = EquipmentSerializer
+    permission_classes = [permissions.AllowAny]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description', 'location']
+
+class EquipmentDetailView(generics.RetrieveAPIView):
+    """API view for equipment details."""
+    queryset = Equipment.objects.all()
+    serializer_class = EquipmentSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = 'slug'
+
+class RentalBookingCreateView(generics.CreateAPIView):
+    """API view for booking equipment."""
+    queryset = RentalBooking.objects.all()
+    serializer_class = RentalBookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        equipment = serializer.validated_data['equipment']
+        start_date = serializer.validated_data['start_date']
+        end_date = serializer.validated_data['end_date']
+        days = (end_date - start_date).days + 1
+        total_cost = equipment.daily_rate * days
+
+        serializer.save(user=self.request.user, total_cost=total_cost)
+
+class RentalBookingListView(generics.ListAPIView):
+    """API view for listing user's rental bookings."""
+    serializer_class = RentalBookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return RentalBooking.objects.filter(user=self.request.user)
+
+class GovernmentSchemeListView(generics.ListAPIView):
+    """API view for government schemes."""
+    queryset = GovernmentScheme.objects.filter(is_active=True)
+    serializer_class = GovernmentSchemeSerializer
+    permission_classes = [permissions.AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'state', 'crops__name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        state = self.request.query_params.get('state')
+        crop = self.request.query_params.get('crop')
+
+        if state:
+            queryset = queryset.filter(Q(state__icontains=state) | Q(state='All India'))
+        if crop:
+            queryset = queryset.filter(crops__name__icontains=crop)
+
+        return queryset
+
+class ForumPostListCreateView(generics.ListCreateAPIView):
+    """API view for listing and creating forum posts."""
+    queryset = ForumPost.objects.all().order_by('-created_at')
+    serializer_class = ForumPostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'content', 'tags']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class ForumPostDetailView(generics.RetrieveAPIView):
+    """API view for retrieving a forum post."""
+    queryset = ForumPost.objects.all()
+    serializer_class = ForumPostSerializer
+    permission_classes = [permissions.AllowAny]
+
+class ForumCommentCreateView(generics.CreateAPIView):
+    """API view for creating a comment."""
+    queryset = ForumComment.objects.all()
+    serializer_class = ForumCommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs.get('post_id')
+        post = get_object_or_404(ForumPost, id=post_id)
+        serializer.save(user=self.request.user, post=post)

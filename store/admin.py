@@ -21,7 +21,8 @@ from .models import (
     Contact, Review, Wishlist, Profile, Coupon, FlashSale, BulkOrder,
     InventoryLog, VendorVerification, BuyerInquiry, RFQ, RFQQuote,
     PremiumListing, Message, Notification, AuditLog, SiteSettings,
-    TradeEvent, EventRegistration, Deal
+    TradeEvent, EventRegistration, Deal,
+    Equipment, RentalBooking, GovernmentScheme, ForumPost, ForumComment
 )
 
 # Constants for admin display
@@ -801,3 +802,35 @@ class DealAdmin(admin.ModelAdmin):
         """Return the number of products in this deal."""
         return obj.products.count()
     products_count.short_description = 'Products'
+
+@admin.register(Equipment)
+class EquipmentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'vendor', 'daily_rate', 'is_available']
+    list_filter = ['is_available', 'category', 'vendor']
+    search_fields = ['name', 'description']
+    prepopulated_fields = {'slug': ('name',)}
+
+@admin.register(RentalBooking)
+class RentalBookingAdmin(admin.ModelAdmin):
+    list_display = ['user', 'equipment', 'start_date', 'end_date', 'total_cost', 'status']
+    list_filter = ['status', 'start_date']
+    search_fields = ['user__username', 'equipment__name']
+
+@admin.register(GovernmentScheme)
+class GovernmentSchemeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'state', 'is_active']
+    list_filter = ['state', 'is_active']
+    search_fields = ['name', 'description']
+    prepopulated_fields = {'slug': ('name',)}
+    filter_horizontal = ['crops']
+
+@admin.register(ForumPost)
+class ForumPostAdmin(admin.ModelAdmin):
+    list_display = ['title', 'user', 'views', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['title', 'content', 'user__username']
+
+@admin.register(ForumComment)
+class ForumCommentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'post', 'created_at']
+    search_fields = ['content', 'user__username', 'post__title']
