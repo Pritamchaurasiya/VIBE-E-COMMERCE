@@ -17,6 +17,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+IS_TESTING = os.environ.get('IS_TESTING') == 'True'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -102,12 +104,12 @@ SESSION_COOKIE_AGE = 86400
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',  # Compress responses for faster load
-    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'store.tracking_middleware.SecurityTrackingMiddleware',  # Security tracking early to block threats
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Internationalization
@@ -119,7 +121,7 @@ if is_package_installed('whitenoise'):
     MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Add optional middleware if packages are installed
-if is_package_installed('axes'):
+if is_package_installed('axes') and not IS_TESTING:
     MIDDLEWARE.append('axes.middleware.AxesMiddleware')
 
 if is_package_installed('csp'):
@@ -324,6 +326,13 @@ REST_FRAMEWORK = {
     ],
 }
 
+if IS_TESTING:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+        'anon': '10000/minute',
+        'user': '10000/minute',
+        'login': '10000/minute',
+    }
+
 # Add JWT authentication if available
 if is_package_installed('rest_framework_simplejwt'):
     REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].append(
@@ -353,7 +362,7 @@ SIMPLE_JWT = {
 }
 
 # Caching Configuration - Use Redis if available, fallback to local memory
-if is_package_installed('django_redis'):
+if is_package_installed('django_redis') and not IS_TESTING:
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -446,13 +455,16 @@ else:
     }
 
 # Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': ["'self'", "https://fonts.gstatic.com"],
+        'img-src': ["'self'", "data:", "https:", "http:"],
+        'connect-src': ["'self'", "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
