@@ -85,7 +85,7 @@ class InputValidator:
     # Compiled regex patterns for efficiency
     SQL_INJECTION_PATTERN = re.compile(
         r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|EXECUTE)\b|"
-        r"(--|;|/\*|\*/|@@|@|char\(|nchar\(|varchar\(|nvarchar\())",
+        r"(--|;|/\*|\*/|@@|char\(|nchar\(|varchar\(|nvarchar\())",
         re.IGNORECASE
     )
 
@@ -232,8 +232,8 @@ class UserAgentParser:
     OS_PATTERNS = {
         'Windows': re.compile(r'Windows', re.IGNORECASE),
         'macOS': re.compile(r'Mac OS X|Macintosh', re.IGNORECASE),
-        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'Android': re.compile(r'Android', re.IGNORECASE),
+        'Linux': re.compile(r'Linux', re.IGNORECASE),
         'iOS': re.compile(r'iPhone|iPad|iPod', re.IGNORECASE),
     }
 
@@ -295,7 +295,7 @@ class EnhancedTrackingService:
     def _get_model(cls, model_name: str):
         """Lazy import of tracking models."""
         # pylint: disable=import-outside-toplevel
-        from . import tracking_models
+        from . import models as tracking_models
         return getattr(tracking_models, model_name)
 
     @classmethod
@@ -505,13 +505,18 @@ class EnhancedTrackingService:
         """Create a tracking alert."""
         try:
             TrackingAlert = cls._get_model('TrackingAlert')
+
+            metadata = kwargs.pop('metadata', {})
+            if triggered_by:
+                metadata['triggered_by'] = InputValidator.sanitize_metadata(triggered_by)
+
             # pylint: disable=no-member
             return TrackingAlert.objects.create(
                 alert_type=alert_type,
                 title=InputValidator.sanitize_string(title, 255),
                 description=InputValidator.sanitize_string(description, 2000),
                 severity=severity,
-                triggered_by=InputValidator.sanitize_metadata(triggered_by or {}),
+                metadata=metadata,
                 **kwargs
             )
         except Exception as exc:
