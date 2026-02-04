@@ -14,6 +14,7 @@ import {
   TrendingDown,
   Add
 } from "@mui/icons-material";
+import { CircularProgress } from "@mui/material";
 
 /**
  * AGRIM-Style Product Card
@@ -27,7 +28,8 @@ const AgriProductCard = ({
   onWishlistToggle,
 }) => {
   const [selectedPacking, setSelectedPacking] = useState(0);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(
     product.in_wishlist || false,
   );
@@ -54,15 +56,24 @@ const AgriProductCard = ({
   // Handle add to cart
   const handleAddToCart = async (e) => {
     e.stopPropagation();
-    setIsAddingToCart(true);
+    if (isLoading || isAdded) return;
+
+    setIsLoading(true);
 
     try {
-      await addToCart(product.id, 1, packingOptions[selectedPacking]?.size);
-      // Briefly show success state
-      setTimeout(() => setIsAddingToCart(false), 1500);
+      const result = await addToCart(product.id, 1, packingOptions[selectedPacking]?.size);
+
+      if (result.success) {
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 1500);
+      } else {
+        console.error("Failed to add to cart:", result.error);
+        // Could show a toast here in the future
+      }
     } catch (error) {
       console.error("Failed to add to cart:", error);
-      setIsAddingToCart(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -141,7 +152,7 @@ const AgriProductCard = ({
 
         {/* Packing Options */}
         {packingOptions.length > 1 && (
-          <div className="agri-product-packing">
+          <div className="agri-product-packing" role="group" aria-label="Packing options">
             {packingOptions.slice(0, 3).map((option, optionIndex) => (
               <button
                 type="button"
@@ -151,6 +162,8 @@ const AgriProductCard = ({
                   e.stopPropagation();
                   setSelectedPacking(optionIndex);
                 }}
+                aria-pressed={selectedPacking === optionIndex}
+                aria-label={`Select packing size ${option.size}`}
               >
                 {option.size}
               </button>
@@ -199,11 +212,18 @@ const AgriProductCard = ({
         {/* Add to Cart Button */}
         <button
           type="button"
-          className={`agri-add-to-cart ${isAddingToCart ? "added" : ""}`}
+          className={`agri-add-to-cart ${isAdded ? "added" : ""}`}
           onClick={handleAddToCart}
-          disabled={isAddingToCart}
+          disabled={isLoading || isAdded}
+          aria-label={isAdded ? "Added to cart" : isLoading ? "Adding to cart" : "Add to cart"}
         >
-          {isAddingToCart ? <><Check fontSize="small" /> Added</> : <><Add fontSize="small" /> Add to Cart</>}
+          {isLoading ? (
+            <CircularProgress size={20} color="inherit" thickness={5} />
+          ) : isAdded ? (
+            <><Check fontSize="small" /> Added</>
+          ) : (
+            <><Add fontSize="small" /> Add to Cart</>
+          )}
         </button>
       </div>
     </article>
