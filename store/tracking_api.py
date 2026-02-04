@@ -233,19 +233,19 @@ class TrackingAnalyticsAPIView(View):
         active_sessions = SessionTracker.objects.filter(is_active=True).count()
 
         daily_sessions = SessionTracker.objects.filter(
-            login_timestamp__gte=cutoff
-        ).annotate(date=TruncDate('login_timestamp')).values('date').annotate(
+            started_at__gte=cutoff
+        ).annotate(date=TruncDate('started_at')).values('date').annotate(
             count=Count('id')
         ).order_by('date')
 
         device_distribution = SessionTracker.objects.filter(
-            login_timestamp__gte=cutoff
+            started_at__gte=cutoff
         ).values('device_type').annotate(count=Count('id'))
 
         return {
             'active_sessions': active_sessions,
             'total_sessions': SessionTracker.objects.filter(
-                login_timestamp__gte=cutoff
+                started_at__gte=cutoff
             ).count(),
             'daily_trend': [
                 {'date': str(item['date']), 'count': item['count']}

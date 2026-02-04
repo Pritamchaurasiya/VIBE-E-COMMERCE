@@ -3742,3 +3742,73 @@ __all__ = [
     'tracking_realtime_stats',
 ]
 
+
+from .services.analytics_service import AnalyticsService
+
+class PredictiveAnalyticsView(APIView):
+    """API view for predictive analytics."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        """Get predictive analytics data."""
+        service = AnalyticsService()
+
+        # Sales Forecast
+        sales_forecast = service.get_sales_forecast(days=30, forecast_days=7)
+
+        # Churn Risk
+        churn_risk = service.get_churn_risk_distribution()
+
+        return Response({
+            'sales_forecast': sales_forecast,
+            'churn_risk': churn_risk,
+            'timestamp': timezone.now().isoformat()
+        })
+
+class DashboardConfigView(APIView):
+    """API view for managing user dashboard configuration."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Get dashboard configuration."""
+        dashboard, _ = UserAnalyticsDashboard.objects.get_or_create(
+            user=request.user,
+            dashboard_name='main_dashboard',
+            defaults={'configuration': {'widgets': ['weather', 'soil', 'market']}}
+        )
+        return Response(dashboard.configuration)
+
+    def post(self, request):
+        """Update dashboard configuration."""
+        config = request.data.get('configuration', {})
+        dashboard, _ = UserAnalyticsDashboard.objects.update_or_create(
+            user=request.user,
+            dashboard_name='main_dashboard',
+            defaults={'configuration': config}
+        )
+        return Response({'success': True, 'configuration': dashboard.configuration})
+
+from store.models import BlockedIP, SystemAccessTracker
+
+class SecurityDashboardView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        blocked_ips = BlockedIP.objects.all().values()
+        recent_access = SystemAccessTracker.objects.order_by('-access_timestamp')[:20].values()
+
+        return Response({
+            'blocked_ips': list(blocked_ips),
+            'recent_access': list(recent_access)
+        })
+
+    def post(self, request):
+        action = request.data.get('action')
+        ip = request.data.get('ip')
+
+        if action == 'block':
+            BlockedIP.objects.create(ip_address=ip, reason='Manual Block', blocked_by=request.user)
+        elif action == 'unblock':
+            BlockedIP.objects.filter(ip_address=ip).delete()
+
+        return Response({'success': True})

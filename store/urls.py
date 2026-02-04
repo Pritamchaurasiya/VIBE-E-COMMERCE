@@ -846,6 +846,27 @@ urlpatterns = [
         wishlist_price_alert_api.check_price_alerts,
         name='api_wishlist_price_alerts_check'
     ),
+
+    # Predictive Analytics API
+    path(
+        'api/v1/analytics/predictive/',
+        api_views.PredictiveAnalyticsView.as_view(),
+        name='api_predictive_analytics'
+    ),
+
+    # Dashboard Configuration API
+    path(
+        'api/v1/dashboard/config/',
+        api_views.DashboardConfigView.as_view(),
+        name='api_dashboard_config'
+    ),
+
+    # Security Dashboard API
+    path(
+        'api/v1/admin/security/',
+        api_views.SecurityDashboardView.as_view(),
+        name='api_security_dashboard'
+    ),
 ]
 
 

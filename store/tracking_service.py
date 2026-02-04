@@ -558,7 +558,7 @@ class EnhancedTrackingService:
             'user_actions': ('UserActionTracker', 'action_timestamp'),
             'system_access': ('SystemAccessTracker', 'access_timestamp'),
             'data_modifications': ('DataModificationTracker', 'timestamp'),
-            'sessions': ('SessionTracker', 'login_timestamp'),
+            'sessions': ('SessionTracker', 'started_at'),
             'performance_metrics': ('PerformanceMetric', 'timestamp'),
         }
 
