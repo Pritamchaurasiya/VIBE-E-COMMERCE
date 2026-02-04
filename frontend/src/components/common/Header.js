@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -67,6 +67,7 @@ const Header = () => {
     dispatch(toggleTheme());
   };
 
+  const searchInputRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -134,6 +135,24 @@ const Header = () => {
 
   const handleNotificationsClose = useCallback(() => {
     setNotificationsAnchor(null);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Focus search on '/' press if not already in an input
+      if (
+        e.key === "/" &&
+        document.activeElement.tagName !== "INPUT" &&
+        document.activeElement.tagName !== "TEXTAREA" &&
+        !document.activeElement.isContentEditable
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const isActiveRoute = useCallback(
@@ -289,12 +308,14 @@ const Header = () => {
             >
               <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
               <InputBase
-                placeholder="Search products..."
+                inputRef={searchInputRef}
+                placeholder="Search products... (/)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 inputProps={{
                   "aria-label": "search products",
                   role: "searchbox",
+                  "aria-keyshortcuts": "/",
                 }}
                 sx={{
                   color: "white",

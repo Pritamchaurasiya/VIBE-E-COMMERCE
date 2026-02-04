@@ -328,5 +328,44 @@ export const businessIntelligenceAPI = {
     api.get("/api/analytics/churn-analysis/", { params }),
 };
 
+// Compatibility exports
+export const getAnalyticsDashboard = analyticsAPI.getDashboard;
+export const getRealTimeAnalytics = analyticsAPI.getRealTimeAnalytics;
+
+// Equipment API
+export const equipmentAPI = {
+  getEquipment: () => api.get("/api/v1/equipment/"),
+  getEquipmentDetails: (id) => api.get(`/api/v1/equipment/${id}/`),
+  rentEquipment: (id, data) => api.post(`/api/v1/equipment/${id}/rent/`, data),
+};
+
+// Rentals API
+export const rentalsAPI = {
+  getRentals: () => api.get("/api/v1/rentals/"),
+  getRentalDetails: (id) => api.get(`/api/v1/rentals/${id}/`),
+  cancelRental: (id) => api.post(`/api/v1/rentals/${id}/cancel/`),
+};
+
+// Schemes API
+export const schemesAPI = {
+  getSchemes: () => api.get("/api/v1/schemes/"),
+  getSchemeDetails: (id) => api.get(`/api/v1/schemes/${id}/`),
+  applyForScheme: (id, data) => api.post(`/api/v1/schemes/${id}/apply/`, data),
+};
+
+// Forum API
+export const forumAPI = {
+  getPosts: () => api.get("/api/v1/forum/posts/"),
+  createPost: (data) => api.post("/api/v1/forum/posts/", data),
+  getPostDetails: (id) => api.get(`/api/v1/forum/posts/${id}/`),
+  addComment: (id, data) =>
+    api.post(`/api/v1/forum/posts/${id}/comments/`, data),
+};
+
+// Chat API
+export const chatAPI = {
+  sendMessage: (message) => api.post("/api/v1/chat/", { message }),
+};
+
 // Export all APIs
 export default api;
