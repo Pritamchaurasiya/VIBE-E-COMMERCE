@@ -235,6 +235,33 @@ urlpatterns = [
     # User Profile API
     path('api/v1/profile/', api_views.UserProfileView.as_view(), name='api_profile'),
 
+    # ====== FLASH SALE API ENDPOINTS (Phase 2) ======
+    path(
+        'api/v1/flash-sales/active/',
+        flash_sale_api.get_active_flash_sales,
+        name='api_active_flash_sales'
+    ),
+    path(
+        'api/v1/flash-sales/<int:sale_id>/detail/',
+        flash_sale_api.get_flash_sale_detail,
+        name='api_flash_sale_detail_v2'
+    ),
+    path(
+        'api/v1/flash-sales/<int:sale_id>/countdown/',
+        flash_sale_api.get_flash_sale_countdown,
+        name='api_flash_sale_countdown'
+    ),
+    path(
+        'api/v1/flash-sales/<int:sale_id>/subscribe/',
+        flash_sale_api.subscribe_flash_sale,
+        name='api_flash_sale_subscribe'
+    ),
+    path(
+        'api/v1/flash-sales/<int:sale_id>/unsubscribe/',
+        flash_sale_api.unsubscribe_flash_sale,
+        name='api_flash_sale_unsubscribe'
+    ),
+
     # ====== NEW ENHANCED API ENDPOINTS ======
     # Flash Sales API
     path('api/v1/flash-sales/', api_views.FlashSaleListView.as_view(), name='api_flash_sales'),
@@ -774,33 +801,6 @@ urlpatterns = [
         'api/v1/products/<int:product_id>/reviews/',
         review_api.get_product_reviews,
         name='api_product_reviews'
-    ),
-
-    # ====== FLASH SALE API ENDPOINTS (Phase 2) ======
-    path(
-        'api/v1/flash-sales/active/',
-        flash_sale_api.get_active_flash_sales,
-        name='api_active_flash_sales'
-    ),
-    path(
-        'api/v1/flash-sales/<int:sale_id>/detail/',
-        flash_sale_api.get_flash_sale_detail,
-        name='api_flash_sale_detail_v2'
-    ),
-    path(
-        'api/v1/flash-sales/<int:sale_id>/countdown/',
-        flash_sale_api.get_flash_sale_countdown,
-        name='api_flash_sale_countdown'
-    ),
-    path(
-        'api/v1/flash-sales/<int:sale_id>/subscribe/',
-        flash_sale_api.subscribe_flash_sale,
-        name='api_flash_sale_subscribe'
-    ),
-    path(
-        'api/v1/flash-sales/<int:sale_id>/unsubscribe/',
-        flash_sale_api.unsubscribe_flash_sale,
-        name='api_flash_sale_unsubscribe'
     ),
 
     # ====== COUPON API ENDPOINTS (Phase 2) ======

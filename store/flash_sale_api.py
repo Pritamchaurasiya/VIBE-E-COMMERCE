@@ -3,16 +3,21 @@ Flash Sale API Views for VIBE E-Commerce.
 
 REST API endpoints for flash sales with countdown timers and notifications.
 """
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-from store.models import FlashSale
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, authentication_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+
+from store.models import FlashSale, Notification
 
 
-@require_http_methods(["GET"])
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def get_active_flash_sales(_request):
     """
     Get all currently active flash sales with countdown.
@@ -69,14 +74,17 @@ def get_active_flash_sales(_request):
             'products': products,
         })
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'count': len(sales_data),
         'sales': sales_data,
     })
 
 
-@require_http_methods(["GET"])
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def get_flash_sale_detail(_request, sale_id):
     """
     Get detailed information about a flash sale with all products.
@@ -113,7 +121,7 @@ def get_flash_sale_detail(_request, sale_id):
             'in_stock': product.is_in_stock,
         })
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'sale': {
             'id': sale.id,
@@ -131,8 +139,9 @@ def get_flash_sale_detail(_request, sale_id):
     })
 
 
-@login_required
-@require_http_methods(["POST"])
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def subscribe_flash_sale(request, sale_id):
     """
     Subscribe to flash sale notifications.
@@ -150,8 +159,6 @@ def subscribe_flash_sale(request, sale_id):
 
         # Create notification for when sale starts
         try:
-            # pylint: disable=import-outside-toplevel
-            from store.models import Notification
             Notification.objects.get_or_create(  # pylint: disable=no-member
                 user=request.user,
                 notification_type='flash_sale',
@@ -168,15 +175,16 @@ def subscribe_flash_sale(request, sale_id):
     else:
         message = 'Already subscribed'
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'message': message,
         'sale_id': sale_id,
     })
 
 
-@login_required
-@require_http_methods(["DELETE"])
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def unsubscribe_flash_sale(request, sale_id):
     """
     Unsubscribe from flash sale notifications.
@@ -192,13 +200,16 @@ def unsubscribe_flash_sale(request, sale_id):
     else:
         message = 'Not subscribed'
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'message': message,
     })
 
 
-@require_http_methods(["GET"])
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def get_flash_sale_countdown(_request, sale_id):
     """
     Get countdown timer data for a flash sale (lightweight endpoint).
@@ -226,7 +237,7 @@ def get_flash_sale_countdown(_request, sale_id):
     minutes = int((time_remaining % 3600) // 60)
     seconds = int(time_remaining % 60)
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'sale_id': sale_id,
         'status': status,
