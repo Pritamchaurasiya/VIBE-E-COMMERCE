@@ -2719,3 +2719,98 @@ class RecentlyViewed(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.product.name}"
+
+class SystemAccessTracker(models.Model):
+    """
+    Model for tracking system access attempts (login, API access, etc.)
+    """
+    ACCESS_TYPES = [
+        ('login', 'Login Attempt'),
+        ('api', 'API Access'),
+        ('admin', 'Admin Panel Access'),
+        ('file', 'File Access'),
+        ('db', 'Database Access'),
+    ]
+
+    RISK_LEVELS = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    access_type = models.CharField(max_length=20, choices=ACCESS_TYPES)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    access_timestamp = models.DateTimeField(auto_now_add=True)
+    is_successful = models.BooleanField(default=True)
+    risk_level = models.CharField(max_length=20, choices=RISK_LEVELS, default='low')
+    metadata = models.JSONField(default=dict, blank=True)
+    # Added resource_accessed field as used in tracking_service.py
+    resource_accessed = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ['-access_timestamp']
+        indexes = [
+            models.Index(fields=['access_type', 'access_timestamp']),
+            models.Index(fields=['risk_level']),
+            models.Index(fields=['ip_address']),
+        ]
+
+    def __str__(self):
+        return f"{self.access_type} - {self.risk_level} ({self.access_timestamp})"
+
+class DataModificationTracker(models.Model):
+    """
+    Model for tracking data modifications (create, update, delete).
+    """
+    OPERATION_TYPES = [
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=100)
+    operation_type = models.CharField(max_length=20, choices=OPERATION_TYPES)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    changes = models.JSONField(default=dict, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['model_name', 'timestamp']),
+            models.Index(fields=['operation_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.operation_type} {self.model_name} by {self.user}"
+
+# TrackingDataRetention model used in tracking_service
+class TrackingDataRetention(models.Model):
+    data_type = models.CharField(max_length=50)
+    retention_period = models.PositiveIntegerField()
+    retention_unit = models.CharField(max_length=20, choices=[('days', 'Days'), ('weeks', 'Weeks'), ('months', 'Months'), ('years', 'Years')])
+    auto_cleanup_enabled = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    last_cleanup = models.DateTimeField(null=True, blank=True)
+    next_cleanup = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.data_type} retention"
+
+class BlockedIP(models.Model):
+    """
+    Model for blocking IP addresses.
+    """
+    ip_address = models.GenericIPAddressField(unique=True)
+    reason = models.CharField(max_length=255)
+    blocked_at = models.DateTimeField(auto_now_add=True)
+    blocked_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Blocked: {self.ip_address}"

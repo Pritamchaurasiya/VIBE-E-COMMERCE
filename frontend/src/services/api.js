@@ -330,3 +330,8 @@ export const businessIntelligenceAPI = {
 
 // Export all APIs
 export default api;
+
+// Predictive Analytics API
+export const predictiveAnalyticsAPI = {
+  getPredictions: () => api.get("/api/v1/analytics/predictive/"),
+};

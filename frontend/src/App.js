@@ -49,6 +49,9 @@ const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
+const PredictiveDashboard = lazy(() => import("./pages/PredictiveDashboard"));
+const FarmDashboard = lazy(() => import("./pages/FarmDashboard"));
+const SecurityDashboard = lazy(() => import("./pages/SecurityDashboard"));
 
 const AnimatedBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
@@ -82,6 +85,26 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={600} mountOnEnter unmountOnExit>
                 <Box>
                   <AgriHome />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/admin/security"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SecurityDashboard />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/dashboard/farm"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <FarmDashboard />
                 </Box>
               </Slide>
             }
@@ -424,6 +447,16 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
                 <Box>
                   <MonitoringDashboard />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/analytics/predictive"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <PredictiveDashboard />
                 </Box>
               </Slide>
             }
