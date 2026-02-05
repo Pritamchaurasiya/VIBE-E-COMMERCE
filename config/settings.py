@@ -445,14 +445,17 @@ else:
         }
     }
 
-# Content Security Policy - Use constant for common values
-CSP_SELF = "'self'"
-CSP_DEFAULT_SRC = (CSP_SELF,)
-CSP_SCRIPT_SRC = (CSP_SELF, "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com")
-CSP_STYLE_SRC = (CSP_SELF, "'unsafe-inline'", "https://fonts.googleapis.com")
-CSP_FONT_SRC = (CSP_SELF, "https://fonts.gstatic.com")
-CSP_IMG_SRC = (CSP_SELF, "data:", "https:", "http:")
-CSP_CONNECT_SRC = (CSP_SELF, "https://api.stripe.com", "wss:", "ws:")
+# Content Security Policy - New dictionary format for django-csp 4.0+
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com"],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': ["'self'", "https://fonts.gstatic.com"],
+        'img-src': ["'self'", "data:", "https:", "http:"],
+        'connect-src': ["'self'", "https://api.stripe.com", "wss:", "ws:"],
+    }
+}
 
 # Axes (Brute force protection) - Only if installed
 if is_package_installed('axes'):
@@ -569,3 +572,34 @@ LOGGING = {
 logs_dir = BASE_DIR / 'logs'
 if not logs_dir.exists():
     logs_dir.mkdir(parents=True, exist_ok=True)
+
+import sys
+
+# Test environment settings
+IS_TESTING = 'test' in sys.argv or (sys.argv and 'pytest' in sys.argv[0])
+
+if IS_TESTING:
+    # Use in-memory cache for tests to avoid Redis dependency
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-vibe-test-cache',
+        },
+        'session': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-vibe-test-session-cache',
+        }
+    }
+
+    # Disable throttling for tests
+    if 'REST_FRAMEWORK' in locals():
+        REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
+        REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+            'anon': None,
+            'user': None,
+            'login': None,
+        }
+
+    # Disable Axes if installed
+    if 'AXES_ENABLED' in locals():
+        AXES_ENABLED = False
