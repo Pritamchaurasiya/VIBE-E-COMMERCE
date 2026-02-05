@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Avg, OuterRef, Exists
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -72,6 +72,7 @@ CSV_CONTENT_TYPE = 'text/csv'
 
 class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
+    permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -82,10 +83,25 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+        queryset = Product.objects.select_related('category', 'vendor').prefetch_related('images').filter(is_active=True)
+
+        queryset = queryset.annotate(
+            annotated_review_count=Count('reviews', distinct=True),
+            annotated_average_rating=Avg('reviews__rating')
+        )
+
+        if self.request.user.is_authenticated:
+            wishlist_subquery = Wishlist.objects.filter(
+                user=self.request.user,
+                product=OuterRef('pk')
+            )
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(wishlist_subquery)
+            )
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -195,6 +211,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
@@ -206,12 +223,14 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
@@ -219,6 +238,7 @@ class VendorDetailView(generics.RetrieveAPIView):
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -447,6 +467,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +517,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +582,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -706,6 +729,7 @@ class UserProfileView(APIView):
 
 class FlashSaleListView(generics.ListAPIView):
     """API view for listing active flash sales."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = FlashSaleSerializer
 
     def get_queryset(self):
@@ -720,6 +744,7 @@ class FlashSaleListView(generics.ListAPIView):
 
 class FlashSaleDetailView(generics.RetrieveAPIView):
     """API view for flash sale details."""
+    permission_classes = [permissions.AllowAny]
     queryset = FlashSale.objects.prefetch_related('products__vendor', 'products__category')
     serializer_class = FlashSaleSerializer
     lookup_field = 'slug'
@@ -808,6 +833,7 @@ class NotificationListView(APIView):
 
 class DealListView(generics.ListAPIView):
     """API view for listing active deals."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = DealSerializer
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -828,6 +854,7 @@ class DealListView(generics.ListAPIView):
 
 class DealDetailView(generics.RetrieveAPIView):
     """API view for deal details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Deal.objects.prefetch_related(
         'products__vendor', 'products__category', 'categories', 'vendors'
     )
