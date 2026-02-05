@@ -46,6 +46,10 @@ import {
   Compare,
   ContactSupport,
   Info,
+  Handyman,
+  Policy,
+  Forum,
+  Agriculture,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../utils/AuthContext";
@@ -148,14 +152,14 @@ const Header = () => {
   const navigationItems = [
     { label: "Home", path: "/", icon: <Home /> },
     { label: "Products", path: "/products", icon: <Store /> },
-    { label: "Vendors", path: "/vendors", icon: <Category /> },
-    { label: "Compare", path: "/compare", icon: <Compare /> },
-    { label: "About", path: "/about", icon: <Info /> },
-    { label: "Contact", path: "/contact", icon: <ContactSupport /> },
+    { label: "Rentals", path: "/rentals", icon: <Handyman /> },
+    { label: "Schemes", path: "/schemes", icon: <Policy /> },
+    { label: "Community", path: "/community", icon: <Forum /> },
   ];
 
   const userMenuItems = [
     { label: "Profile", path: "/profile", icon: <AccountCircle /> },
+    { label: "My Farm", path: "/my-farm", icon: <Agriculture /> },
     { label: "Orders", path: "/orders", icon: <Receipt /> },
     { label: "Wishlist", path: "/wishlist", icon: <Favorite /> },
     { label: "Messages", path: "/messages", icon: <Message /> },
@@ -237,7 +241,7 @@ const Header = () => {
             <Box
               sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, gap: 1 }}
             >
-              {navigationItems.slice(0, 4).map((item) => (
+              {navigationItems.map((item) => (
                 <Button
                   key={item.path}
                   color="inherit"

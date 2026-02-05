@@ -74,6 +74,7 @@ class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -83,6 +84,7 @@ class CategoryListView(generics.ListAPIView):
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
@@ -197,6 +199,7 @@ class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
@@ -208,17 +211,20 @@ class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +290,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -447,6 +454,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -707,6 +715,7 @@ class UserProfileView(APIView):
 class FlashSaleListView(generics.ListAPIView):
     """API view for listing active flash sales."""
     serializer_class = FlashSaleSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         """Get currently active flash sales."""
@@ -722,6 +731,7 @@ class FlashSaleDetailView(generics.RetrieveAPIView):
     """API view for flash sale details."""
     queryset = FlashSale.objects.prefetch_related('products__vendor', 'products__category')
     serializer_class = FlashSaleSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
@@ -809,6 +819,7 @@ class NotificationListView(APIView):
 class DealListView(generics.ListAPIView):
     """API view for listing active deals."""
     serializer_class = DealSerializer
+    permission_classes = [permissions.AllowAny]
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -832,6 +843,7 @@ class DealDetailView(generics.RetrieveAPIView):
         'products__vendor', 'products__category', 'categories', 'vendors'
     )
     serializer_class = DealSerializer
+    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 
