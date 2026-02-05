@@ -47,6 +47,13 @@ const AgriHome = lazy(() => import("./pages/AgriHome"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 
+// New Feature Pages
+const RentalsPage = lazy(() => import("./pages/RentalsPage"));
+const SchemesPage = lazy(() => import("./pages/SchemesPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
+const ForumPostDetail = lazy(() => import("./pages/ForumPostDetail"));
+const FarmDashboard = lazy(() => import("./pages/FarmDashboard"));
+
 // Monitoring Dashboard
 const MonitoringDashboard = lazy(() => import("./pages/MonitoringDashboard"));
 
@@ -413,6 +420,57 @@ const AnimatedRoutes = () => {
               <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
                 <Box>
                   <ProductDetail />
+                </Box>
+              </Slide>
+            }
+          />
+          {/* New Features Routes */}
+          <Route
+            path="/rentals"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <RentalsPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/schemes"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <SchemesPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/community"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <CommunityPage />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/community/post/:id"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <ForumPostDetail />
+                </Box>
+              </Slide>
+            }
+          />
+          <Route
+            path="/my-farm"
+            element={
+              <Slide direction="up" in timeout={500} mountOnEnter unmountOnExit>
+                <Box>
+                  <FarmDashboard />
                 </Box>
               </Slide>
             }
