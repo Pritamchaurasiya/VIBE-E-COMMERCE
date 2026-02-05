@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, F, Case, When, DecimalField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -72,6 +72,7 @@ CSV_CONTENT_TYPE = 'text/csv'
 
 class CategoryListView(generics.ListAPIView):
     """API view for listing categories."""
+    permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -82,6 +83,7 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """API view for listing products with filtering and search."""
+    permission_classes = [permissions.AllowAny]
     serializer_class = ProductSerializer
 
     def get_queryset(self):
@@ -195,6 +197,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
@@ -206,12 +209,14 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class VendorListView(generics.ListAPIView):
     """API view for listing vendors."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
 
 
 class VendorDetailView(generics.RetrieveAPIView):
     """API view for vendor details."""
+    permission_classes = [permissions.AllowAny]
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
     lookup_field = 'slug'
@@ -219,6 +224,7 @@ class VendorDetailView(generics.RetrieveAPIView):
 
 class SearchSuggestionsView(APIView):
     """API view for search suggestions."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get search suggestions based on query."""
@@ -284,6 +290,7 @@ class WishlistView(APIView):
 
 class CartView(APIView):
     """API view for managing shopping cart."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         """Get cart contents."""
@@ -393,6 +400,7 @@ class OrderDetailView(generics.RetrieveAPIView):
 
 class ApplyCouponView(APIView):
     """API view for applying coupons."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Apply a coupon code."""
@@ -447,6 +455,7 @@ class ApplyCouponView(APIView):
 
 class RecommendationsView(APIView):
     """API view for product recommendations."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
         """Get product recommendations."""
@@ -496,6 +505,7 @@ class RecommendationsView(APIView):
 
 class LoginView(APIView):
     """API view for user login with rate limiting."""
+    permission_classes = [permissions.AllowAny]
 
     # Apply stricter rate limiting to prevent brute force attacks
     throttle_classes = [AnonRateThrottle]
@@ -560,6 +570,7 @@ class LogoutView(APIView):
 
 class RegisterView(APIView):
     """API view for user registration with validation."""
+    permission_classes = [permissions.AllowAny]
 
     # Rate limit registration to prevent abuse
     throttle_classes = [AnonRateThrottle]
@@ -610,9 +621,13 @@ class RegisterView(APIView):
             last_name=last_name
         )
 
-        # Create Profile and UserCoin
-        Profile.objects.create(user=user, shop_name=shop_name, role=role)
-        UserCoin.objects.create(user=user)
+        # Create/Update Profile and UserCoin
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.shop_name = shop_name
+        profile.role = role
+        profile.save()
+
+        UserCoin.objects.get_or_create(user=user)
 
         logger.info("New user registered: %s", username)
         login(request, user)
@@ -945,25 +960,41 @@ class VendorAnalyticsAPIView(APIView):
         products = Product.objects.filter(vendor=vendor).select_related('category')
 
         # Get orders for this vendor's products
-        order_items = OrderItem.objects.filter(
+        order_items_qs = OrderItem.objects.filter(
             vendor=vendor,
             order__paid=True
-        ).select_related('order', 'product__category')
+        )
 
-        # Calculate metrics
-        total_revenue = sum(
-            float(item.price) * item.quantity for item in order_items
+        # Calculate revenue metrics using database aggregation
+        revenue_metrics = order_items_qs.aggregate(
+            total=Sum(F('price') * F('quantity'), output_field=DecimalField()),
+            monthly=Sum(
+                Case(
+                    When(order__created_at__gte=thirty_days_ago, then=F('price') * F('quantity')),
+                    default=0,
+                    output_field=DecimalField()
+                )
+            ),
+            weekly=Sum(
+                Case(
+                    When(order__created_at__gte=seven_days_ago, then=F('price') * F('quantity')),
+                    default=0,
+                    output_field=DecimalField()
+                )
+            )
         )
-        monthly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= thirty_days_ago
-        )
-        weekly_revenue = sum(
-            float(item.price) * item.quantity
-            for item in order_items
-            if item.order.created_at >= seven_days_ago
-        )
+
+        total_revenue = revenue_metrics['total'] or 0
+        monthly_revenue = revenue_metrics['monthly'] or 0
+        weekly_revenue = revenue_metrics['weekly'] or 0
+
+        # We still need order_items for other calculations?
+        # The original code used order_items for:
+        # 1. Revenue (now optimized)
+        # 2. orders count: order_items.values('order').distinct().count() (This needs query)
+
+        # Get orders for this vendor's products (re-using queryset for count)
+        order_items = order_items_qs
 
         # Get reviews
         reviews = Review.objects.filter(product__vendor=vendor).select_related('product')
@@ -2176,6 +2207,7 @@ class DatabaseDashboardView(APIView):
 
 class ContactFormView(APIView):
     """API view for contact form submissions."""
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         """Submit a contact form."""
