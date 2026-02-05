@@ -22,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import connection, models
-from django.db.models import Q, Sum, Count, Min, Max
+from django.db.models import Q, Sum, Count, Min, Max, Prefetch, Avg, Exists, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -86,6 +86,22 @@ class ProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimization: Add annotations used by ProductSerializer to avoid N+1 queries
+        queryset = queryset.annotate(
+            annotated_review_count=Count('reviews'),
+            annotated_avg_rating=Avg('reviews__rating')
+        )
+
+        user = self.request.user
+        if user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(user=user, product=OuterRef('pk'))
+                )
+            )
+
+        queryset = queryset.prefetch_related('images')
 
         queryset = self._filter_by_search(queryset)
         queryset = self._filter_by_category_and_vendor(queryset)
@@ -195,9 +211,27 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """API view for product details."""
-    queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
+
+    def get_queryset(self):
+        queryset = Product.objects.select_related('category', 'vendor').filter(is_active=True)
+
+        # Optimization: Add annotations used by ProductSerializer
+        queryset = queryset.annotate(
+            annotated_review_count=Count('reviews'),
+            annotated_avg_rating=Avg('reviews__rating')
+        )
+
+        user = self.request.user
+        if user.is_authenticated:
+            queryset = queryset.annotate(
+                annotated_is_in_wishlist=Exists(
+                    Wishlist.objects.filter(user=user, product=OuterRef('pk'))
+                )
+            )
+
+        return queryset.prefetch_related('images')
 
     @method_decorator(cache_page(settings.CACHE_TTL_MEDIUM))
     def dispatch(self, *args, **kwargs):
@@ -373,10 +407,21 @@ class OrderListView(generics.ListAPIView):
 
     def get_queryset(self):
         """Get user's orders."""
+        user = self.request.user
+
+        # Optimization: Use Prefetch with annotations to avoid N+1 in ProductSerializer
+        product_qs = Product.objects.select_related('category', 'vendor').annotate(
+            annotated_review_count=Count('reviews'),
+            annotated_avg_rating=Avg('reviews__rating'),
+            annotated_is_in_wishlist=Exists(
+                Wishlist.objects.filter(user=user, product=OuterRef('pk'))
+            )
+        ).prefetch_related('images')
+
         return Order.objects.filter(
-            user=self.request.user
+            user=user
         ).prefetch_related(
-            'items__product__vendor', 'items__product__category'
+            Prefetch('items__product', queryset=product_qs)
         ).order_by('-created_at')
 
 
