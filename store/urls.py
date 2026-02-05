@@ -239,6 +239,11 @@ urlpatterns = [
     # Flash Sales API
     path('api/v1/flash-sales/', api_views.FlashSaleListView.as_view(), name='api_flash_sales'),
     path(
+        'api/v1/flash-sales/active/',
+        flash_sale_api.get_active_flash_sales,
+        name='api_active_flash_sales'
+    ),
+    path(
         'api/v1/flash-sales/<slug:slug>/',
         api_views.FlashSaleDetailView.as_view(),
         name='api_flash_sale_detail'
@@ -777,11 +782,6 @@ urlpatterns = [
     ),
 
     # ====== FLASH SALE API ENDPOINTS (Phase 2) ======
-    path(
-        'api/v1/flash-sales/active/',
-        flash_sale_api.get_active_flash_sales,
-        name='api_active_flash_sales'
-    ),
     path(
         'api/v1/flash-sales/<int:sale_id>/detail/',
         flash_sale_api.get_flash_sale_detail,

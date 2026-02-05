@@ -3,17 +3,22 @@ Flash Sale API Views for VIBE E-Commerce.
 
 REST API endpoints for flash sales with countdown timers and notifications.
 """
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-from store.models import FlashSale
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from store.models import FlashSale, Notification
 
 
-@require_http_methods(["GET"])
-def get_active_flash_sales(_request):
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
+@permission_classes([AllowAny])
+def get_active_flash_sales(request):
     """
     Get all currently active flash sales with countdown.
 
@@ -31,13 +36,13 @@ def get_active_flash_sales(_request):
     for sale in sales:
         # Calculate time remaining
         if now < sale.start_time:
-            status = 'upcoming'
+            status_text = 'upcoming'
             time_remaining = (sale.start_time - now).total_seconds()
         elif now <= sale.end_time:
-            status = 'active'
+            status_text = 'active'
             time_remaining = (sale.end_time - now).total_seconds()
         else:
-            status = 'ended'
+            status_text = 'ended'
             time_remaining = 0
 
         # Get products with sale prices
@@ -62,22 +67,24 @@ def get_active_flash_sales(_request):
             'discount_percentage': sale.discount_percentage,
             'start_time': sale.start_time.isoformat(),
             'end_time': sale.end_time.isoformat(),
-            'status': status,
+            'status': status_text,
             'time_remaining_seconds': int(time_remaining),
             'banner_image': sale.banner_image.url if sale.banner_image else None,
             'product_count': sale.products.count(),
             'products': products,
         })
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'count': len(sales_data),
         'sales': sales_data,
-    })
+    }, status=status.HTTP_200_OK)
 
 
-@require_http_methods(["GET"])
-def get_flash_sale_detail(_request, sale_id):
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
+@permission_classes([AllowAny])
+def get_flash_sale_detail(request, sale_id):
     """
     Get detailed information about a flash sale with all products.
 
@@ -88,13 +95,13 @@ def get_flash_sale_detail(_request, sale_id):
 
     # Calculate time remaining
     if now < sale.start_time:
-        status = 'upcoming'
+        status_text = 'upcoming'
         time_remaining = (sale.start_time - now).total_seconds()
     elif now <= sale.end_time:
-        status = 'active'
+        status_text = 'active'
         time_remaining = (sale.end_time - now).total_seconds()
     else:
-        status = 'ended'
+        status_text = 'ended'
         time_remaining = 0
 
     # Get all products with sale prices
@@ -113,7 +120,7 @@ def get_flash_sale_detail(_request, sale_id):
             'in_stock': product.is_in_stock,
         })
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'sale': {
             'id': sale.id,
@@ -123,16 +130,17 @@ def get_flash_sale_detail(_request, sale_id):
             'discount_percentage': sale.discount_percentage,
             'start_time': sale.start_time.isoformat(),
             'end_time': sale.end_time.isoformat(),
-            'status': status,
+            'status': status_text,
             'time_remaining_seconds': int(time_remaining),
             'banner_image': sale.banner_image.url if sale.banner_image else None,
         },
         'products': products,
-    })
+    }, status=status.HTTP_200_OK)
 
 
-@login_required
-@require_http_methods(["POST"])
+@api_view(['POST'])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
+@permission_classes([IsAuthenticated])
 def subscribe_flash_sale(request, sale_id):
     """
     Subscribe to flash sale notifications.
@@ -150,8 +158,6 @@ def subscribe_flash_sale(request, sale_id):
 
         # Create notification for when sale starts
         try:
-            # pylint: disable=import-outside-toplevel
-            from store.models import Notification
             Notification.objects.get_or_create(  # pylint: disable=no-member
                 user=request.user,
                 notification_type='flash_sale',
@@ -168,15 +174,16 @@ def subscribe_flash_sale(request, sale_id):
     else:
         message = 'Already subscribed'
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'message': message,
         'sale_id': sale_id,
-    })
+    }, status=status.HTTP_200_OK)
 
 
-@login_required
-@require_http_methods(["DELETE"])
+@api_view(['DELETE'])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
+@permission_classes([IsAuthenticated])
 def unsubscribe_flash_sale(request, sale_id):
     """
     Unsubscribe from flash sale notifications.
@@ -192,14 +199,16 @@ def unsubscribe_flash_sale(request, sale_id):
     else:
         message = 'Not subscribed'
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'message': message,
-    })
+    }, status=status.HTTP_200_OK)
 
 
-@require_http_methods(["GET"])
-def get_flash_sale_countdown(_request, sale_id):
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
+@permission_classes([AllowAny])
+def get_flash_sale_countdown(request, sale_id):
     """
     Get countdown timer data for a flash sale (lightweight endpoint).
 
@@ -209,13 +218,13 @@ def get_flash_sale_countdown(_request, sale_id):
     now = timezone.now()
 
     if now < sale.start_time:
-        status = 'upcoming'
+        status_text = 'upcoming'
         target_time = sale.start_time
     elif now <= sale.end_time:
-        status = 'active'
+        status_text = 'active'
         target_time = sale.end_time
     else:
-        status = 'ended'
+        status_text = 'ended'
         target_time = sale.end_time
 
     time_remaining = max(0, (target_time - now).total_seconds())
@@ -226,10 +235,10 @@ def get_flash_sale_countdown(_request, sale_id):
     minutes = int((time_remaining % 3600) // 60)
     seconds = int(time_remaining % 60)
 
-    return JsonResponse({
+    return Response({
         'success': True,
         'sale_id': sale_id,
-        'status': status,
+        'status': status_text,
         'time_remaining': {
             'total_seconds': int(time_remaining),
             'days': days,
@@ -238,4 +247,4 @@ def get_flash_sale_countdown(_request, sale_id):
             'seconds': seconds,
             'formatted': f"{days}d {hours:02d}:{minutes:02d}:{seconds:02d}",
         },
-    })
+    }, status=status.HTTP_200_OK)
