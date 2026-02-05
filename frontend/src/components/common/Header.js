@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -71,6 +71,23 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (
+        e.key === "/" &&
+        !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) &&
+        !document.activeElement.isContentEditable
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Sample notifications - would come from API in production
   const notifications = [
@@ -289,12 +306,14 @@ const Header = () => {
             >
               <SearchIcon sx={{ color: "white", mr: 1 }} fontSize="small" />
               <InputBase
+                inputRef={searchInputRef}
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 inputProps={{
                   "aria-label": "search products",
                   role: "searchbox",
+                  "aria-keyshortcuts": "/",
                 }}
                 sx={{
                   color: "white",
@@ -302,6 +321,31 @@ const Header = () => {
                   "& input::placeholder": { color: "rgba(255,255,255,0.7)" },
                 }}
               />
+              <Box
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  borderRadius: 1,
+                  px: 0.8,
+                  py: 0.2,
+                  ml: 1,
+                  bgcolor: "rgba(255,255,255,0.1)",
+                  userSelect: "none",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "rgba(255,255,255,0.8)",
+                    fontWeight: "bold",
+                    lineHeight: 1,
+                  }}
+                >
+                  /
+                </Typography>
+              </Box>
             </Box>
 
             {/* Theme Toggle */}
