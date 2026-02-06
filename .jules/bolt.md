@@ -1,0 +1,3 @@
+## 2024-05-23 - Django Redis in Tests
+**Learning:** When `django-redis` is installed, `settings.py` often defaults `SESSION_ENGINE` to use a specific cache alias (e.g., `'session'`). When testing with `@override_settings(CACHES={...})`, you must ensure you override ALL cache aliases used by the session engine, or update `SESSION_CACHE_ALIAS` to point to a valid local memory cache. Failure to do so leads to obscure `AttributeError: 'WSGIRequest' object has no attribute 'session'` errors because `SessionMiddleware` crashes silently (or exception is masked) when connecting to Redis.
+**Action:** Always check `settings.py` logic for `SESSION_ENGINE` and `SESSION_CACHE_ALIAS` when overriding `CACHES` in tests. Explicitly define all used cache aliases in `override_settings`.
