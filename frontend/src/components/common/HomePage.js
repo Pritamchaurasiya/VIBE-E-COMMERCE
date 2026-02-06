@@ -268,6 +268,7 @@ const HomePage = () => {
                   placeholder="What are you looking for?"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  inputProps={{ "aria-label": "Search products" }}
                 />
                 <IconButton
                   type="submit"
@@ -582,6 +583,11 @@ const HomePage = () => {
                             transition: "all 0.2s ease",
                           }}
                           size="small"
+                          aria-label={
+                            product.is_in_wishlist
+                              ? "Remove from wishlist"
+                              : "Add to wishlist"
+                          }
                         >
                           {product.is_in_wishlist ? (
                             <Favorite color="error" fontSize="small" />
@@ -912,6 +918,7 @@ const HomePage = () => {
                 fullWidth
                 placeholder="Enter your email address"
                 variant="outlined"
+                inputProps={{ "aria-label": "Email address" }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "rgba(255,255,255,0.1)",
