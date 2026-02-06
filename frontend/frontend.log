@@ -1,0 +1,36 @@
+
+> frontend@0.1.0 start /app/frontend
+> react-scripts start
+
+(node:5726) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:5726) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+Starting the development server...
+
+Failed to compile.
+
+Module parse failed: 'import' and 'export' may appear only with 'sourceType: module' (4:0)
+File was processed with these loaders:
+ * ./node_modules/.pnpm/@pmmmwh+react-refresh-webpack-plugin@0.5.17_react-refresh@0.11.0_type-fest@0.21.3_webpa_4535020c3ecf7d815d5fdc95a227d415/node_modules/@pmmmwh/react-refresh-webpack-plugin/loader/index.js
+ * ./node_modules/.pnpm/babel-loader@8.4.1_@babel+core@7.29.0_webpack@5.105.0/node_modules/babel-loader/lib/index.js
+ * ./node_modules/.pnpm/source-map-loader@3.0.2_webpack@5.105.0/node_modules/source-map-loader/dist/cjs.js
+You may need an additional loader to handle the result of these loaders.
+|
+| var _jsxFileName = "/app/frontend/src/index.js";
+> import React from "react";
+| import ReactDOM from "react-dom/client";
+| import "./index.css";
+ERROR in ./src/index.js 4:0
+Module parse failed: 'import' and 'export' may appear only with 'sourceType: module' (4:0)
+File was processed with these loaders:
+ * ./node_modules/.pnpm/@pmmmwh+react-refresh-webpack-plugin@0.5.17_react-refresh@0.11.0_type-fest@0.21.3_webpa_4535020c3ecf7d815d5fdc95a227d415/node_modules/@pmmmwh/react-refresh-webpack-plugin/loader/index.js
+ * ./node_modules/.pnpm/babel-loader@8.4.1_@babel+core@7.29.0_webpack@5.105.0/node_modules/babel-loader/lib/index.js
+ * ./node_modules/.pnpm/source-map-loader@3.0.2_webpack@5.105.0/node_modules/source-map-loader/dist/cjs.js
+You may need an additional loader to handle the result of these loaders.
+|
+| var _jsxFileName = "/app/frontend/src/index.js";
+> import React from "react";
+| import ReactDOM from "react-dom/client";
+| import "./index.css";
+
+webpack compiled with 1 error
